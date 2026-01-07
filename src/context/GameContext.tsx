@@ -1,0 +1,106 @@
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { GameState, UserType, GameMode, Player, Team, YearGroup } from '@/types/game';
+
+interface GameContextType {
+  gameState: GameState;
+  setUserType: (type: UserType) => void;
+  setGameMode: (mode: GameMode) => void;
+  setPlayer: (player: Player) => void;
+  setTeams: (teams: Team[]) => void;
+  updateTeamScore: (teamId: string, points: number) => void;
+  setYearGroup: (year: YearGroup) => void;
+  setAIOpponent: (isAI: boolean) => void;
+  startGame: () => void;
+  resetGame: () => void;
+  nextRound: () => void;
+}
+
+const initialState: GameState = {
+  userType: null,
+  gameMode: null,
+  player: null,
+  teams: [],
+  currentRound: 1,
+  selectedYearGroup: 7,
+  isAIOpponent: false,
+  gameStarted: false,
+};
+
+const GameContext = createContext<GameContextType | undefined>(undefined);
+
+export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [gameState, setGameState] = useState<GameState>(initialState);
+
+  const setUserType = (type: UserType) => {
+    setGameState(prev => ({ ...prev, userType: type }));
+  };
+
+  const setGameMode = (mode: GameMode) => {
+    setGameState(prev => ({ ...prev, gameMode: mode }));
+  };
+
+  const setPlayer = (player: Player) => {
+    setGameState(prev => ({ ...prev, player }));
+  };
+
+  const setTeams = (teams: Team[]) => {
+    setGameState(prev => ({ ...prev, teams }));
+  };
+
+  const updateTeamScore = (teamId: string, points: number) => {
+    setGameState(prev => ({
+      ...prev,
+      teams: prev.teams.map(team =>
+        team.id === teamId ? { ...team, score: team.score + points } : team
+      ),
+    }));
+  };
+
+  const setYearGroup = (year: YearGroup) => {
+    setGameState(prev => ({ ...prev, selectedYearGroup: year }));
+  };
+
+  const setAIOpponent = (isAI: boolean) => {
+    setGameState(prev => ({ ...prev, isAIOpponent: isAI }));
+  };
+
+  const startGame = () => {
+    setGameState(prev => ({ ...prev, gameStarted: true }));
+  };
+
+  const resetGame = () => {
+    setGameState(initialState);
+  };
+
+  const nextRound = () => {
+    setGameState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
+  };
+
+  return (
+    <GameContext.Provider
+      value={{
+        gameState,
+        setUserType,
+        setGameMode,
+        setPlayer,
+        setTeams,
+        updateTeamScore,
+        setYearGroup,
+        setAIOpponent,
+        startGame,
+        resetGame,
+        nextRound,
+      }}
+    >
+      {children}
+    </GameContext.Provider>
+  );
+};
+
+export const useGame = () => {
+  const context = useContext(GameContext);
+  if (!context) {
+    throw new Error('useGame must be used within a GameProvider');
+  }
+  return context;
+};
