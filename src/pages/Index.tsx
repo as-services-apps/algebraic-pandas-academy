@@ -1,13 +1,53 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import React, { useState } from 'react';
+import { GameProvider } from '@/context/GameContext';
+import LoadingScreen from '@/components/LoadingScreen';
+import UserTypeSelection from '@/components/UserTypeSelection';
+import GameModeSelection from '@/components/GameModeSelection';
+import NameInput from '@/components/NameInput';
+import TeamSetup from '@/components/TeamSetup';
+import GameDashboard from '@/components/GameDashboard';
+import { useGame } from '@/context/GameContext';
 
-const Index = () => {
+type AppStep = 'loading' | 'userType' | 'gameMode' | 'name' | 'teamSetup' | 'dashboard';
+
+const GameApp: React.FC = () => {
+  const [step, setStep] = useState<AppStep>('loading');
+  const { gameState, resetGame } = useGame();
+
+  const handleReset = () => {
+    resetGame();
+    setStep('userType');
+  };
+
+  const handleModeSelect = () => {
+    setStep('name');
+  };
+
+  const handleNameComplete = () => {
+    if (gameState.gameMode === 'team') {
+      setStep('teamSetup');
+    } else {
+      setStep('dashboard');
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      {step === 'loading' && <LoadingScreen onComplete={() => setStep('userType')} />}
+      {step === 'userType' && <UserTypeSelection onSelect={() => setStep('gameMode')} />}
+      {step === 'gameMode' && <GameModeSelection onSelect={handleModeSelect} />}
+      {step === 'name' && <NameInput onComplete={handleNameComplete} />}
+      {step === 'teamSetup' && <TeamSetup onComplete={() => setStep('dashboard')} />}
+      {step === 'dashboard' && <GameDashboard onReset={handleReset} />}
+    </>
+  );
+};
+
+const Index: React.FC = () => {
+  return (
+    <GameProvider>
+      <GameApp />
+    </GameProvider>
   );
 };
 
