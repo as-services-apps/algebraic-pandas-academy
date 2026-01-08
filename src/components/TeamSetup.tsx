@@ -78,7 +78,7 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
             className="w-24 h-24 mx-auto mb-4 float"
           />
           <h1 className="text-4xl font-bold text-gradient mb-2">
-            Set Up Your Teams! 🏆
+            Set Up Your Teams! <span className="emoji">🏆</span>
           </h1>
           <p className="text-muted-foreground">
             Create 2-4 teams to compete against each other

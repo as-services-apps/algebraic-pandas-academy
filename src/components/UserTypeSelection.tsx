@@ -27,7 +27,7 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({ onSelect }) => {
             className="w-28 h-28 mx-auto mb-4 float"
           />
           <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-2">
-            Welcome! 👋
+            Welcome! <span className="emoji">👋</span>
           </h1>
           <p className="text-muted-foreground text-lg">
             Let's get started! Are you a...
