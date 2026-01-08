@@ -5,9 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  // For GitHub Pages: set base to your repo name (e.g., '/your-repo-name/')
-  // For root domain: use '/'
-  base: mode === "production" ? "./" : "/",
+  base: mode === "production" ? "/algebraic-pandas-academy/" : "/",
   server: {
     host: "::",
     port: 8080,
@@ -17,9 +15,5 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-  },
-  build: {
-    outDir: "dist",
-    assetsDir: "assets",
   },
 }));
