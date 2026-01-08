@@ -48,6 +48,9 @@
     --team-2: 28 95% 55%;
     --team-3: 270 60% 55%;
     --team-4: 340 80% 55%;
+    
+    /* Wave emoji color (skin tone yellow-orange) */
+    --wave: 35 90% 65%;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;

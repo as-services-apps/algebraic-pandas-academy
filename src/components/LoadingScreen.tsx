@@ -76,12 +76,14 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-8 text-center">
-        <p className="text-white/70 text-sm">
-          Made by <span className="font-semibold text-white">Angad Singh</span> from{' '}
-          <span className="font-semibold text-white">AS Services</span>
-        </p>
-      </div>
+      <footer className="absolute bottom-0 left-0 right-0 bg-black/20 backdrop-blur-sm py-4">
+        <div className="text-center">
+          <p className="text-white/90 text-sm">
+            <span className="text-[hsl(35,90%,65%)]">👋</span> Made by <span className="font-semibold text-white">Angad Singh</span> from{' '}
+            <span className="font-semibold text-white">AS Services</span>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 };
