@@ -139,6 +139,24 @@
     background-clip: text;
   }
 
+  /* Keep emojis normal color - not affected by gradients */
+  .text-gradient span,
+  .emoji {
+    -webkit-text-fill-color: initial;
+    background: none;
+    -webkit-background-clip: initial;
+    background-clip: initial;
+  }
+
+  /* Hide Lovable badge globally */
+  #lovable-badge,
+  [id*="lovable-badge"],
+  .lovable-badge {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+  }
+
   .panda-shadow {
     box-shadow: 0 10px 40px -10px hsl(var(--panda-black) / 0.2),
                 0 4px 20px -5px hsl(var(--primary) / 0.15);
