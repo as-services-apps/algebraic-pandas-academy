@@ -8,6 +8,7 @@ interface GameContextType {
   setPlayer: (player: Player) => void;
   setTeams: (teams: Team[]) => void;
   updateTeamScore: (teamId: string, points: number) => void;
+  updatePlayerScore: (points: number) => void;
   setYearGroup: (year: YearGroup) => void;
   setAIOpponent: (isAI: boolean) => void;
   startGame: () => void;
@@ -56,6 +57,13 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }));
   };
 
+  const updatePlayerScore = (points: number) => {
+    setGameState(prev => ({
+      ...prev,
+      player: prev.player ? { ...prev.player, score: prev.player.score + points } : null,
+    }));
+  };
+
   const setYearGroup = (year: YearGroup) => {
     setGameState(prev => ({ ...prev, selectedYearGroup: year }));
   };
@@ -85,6 +93,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setPlayer,
         setTeams,
         updateTeamScore,
+        updatePlayerScore,
         setYearGroup,
         setAIOpponent,
         startGame,
