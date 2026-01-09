@@ -143,27 +143,15 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
           </Button>
         )}
 
-        {/* AI Opponent Toggle */}
+        {/* Team Mode Info */}
         <div className="bg-card rounded-2xl p-4 panda-shadow mb-6">
-          <button
-            onClick={() => setIncludeAI(!includeAI)}
-            className="w-full flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-2xl">🤖</span>
-              <div className="text-left">
-                <p className="font-semibold text-foreground">Include AI Team?</p>
-                <p className="text-sm text-muted-foreground">Add a robot team to compete against!</p>
-              </div>
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🎯</span>
+            <div>
+              <p className="font-semibold text-foreground">Team vs Team Mode</p>
+              <p className="text-sm text-muted-foreground">Teams will compete against each other - no AI opponents!</p>
             </div>
-            <div className={`w-12 h-7 rounded-full transition-colors duration-200 flex items-center px-1 ${
-              includeAI ? 'bg-success' : 'bg-muted'
-            }`}>
-              <div className={`w-5 h-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                includeAI ? 'translate-x-5' : 'translate-x-0'
-              }`} />
-            </div>
-          </button>
+          </div>
         </div>
 
         {/* Continue Button */}
