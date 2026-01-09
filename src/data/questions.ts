@@ -65,7 +65,82 @@ export const gameTopics: GameTopic[] = [
     yearGroups: [7, 8, 9, 10, 11],
     color: 'success',
   },
+  {
+    id: 'trigonometry',
+    name: 'Trigonometry',
+    icon: '📏',
+    description: 'Master sine, cosine, tangent and angle calculations!',
+    yearGroups: [9, 10, 11, 12],
+    color: 'primary',
+  },
+  {
+    id: 'powers',
+    name: 'Powers & Indices',
+    icon: '⬆️',
+    description: 'Work with exponents, roots, and scientific notation!',
+    yearGroups: [7, 8, 9, 10, 11],
+    color: 'secondary',
+  },
+  {
+    id: 'percentages',
+    name: 'Percentages',
+    icon: '💯',
+    description: 'Calculate percentages, discounts, and interest!',
+    yearGroups: [7, 8, 9, 10],
+    color: 'accent',
+  },
+  {
+    id: 'measurement',
+    name: 'Measurement & Units',
+    icon: '📏',
+    description: 'Convert units, calculate time, and measure!',
+    yearGroups: [7, 8, 9],
+    color: 'success',
+  },
+  {
+    id: 'mental',
+    name: 'Mental Maths',
+    icon: '🧠',
+    description: 'Quick mental calculations and number tricks!',
+    yearGroups: [7, 8, 9, 10],
+    color: 'primary',
+  },
+  {
+    id: 'wordproblems',
+    name: 'Word Problems',
+    icon: '📝',
+    description: 'Apply maths skills to real-world problems!',
+    yearGroups: [7, 8, 9, 10, 11],
+    color: 'secondary',
+  },
 ];
+
+// Utility function to shuffle an array
+const shuffleArray = <T>(array: T[]): T[] => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
+// Function to randomize question options while keeping track of correct answer
+const randomizeOptions = (question: Question): Question => {
+  const optionsWithIndex = question.options.map((opt, idx) => ({
+    option: opt,
+    isCorrect: idx === question.correctAnswer
+  }));
+  
+  const shuffled = shuffleArray(optionsWithIndex);
+  const newCorrectIndex = shuffled.findIndex(o => o.isCorrect);
+  
+  return {
+    ...question,
+    options: shuffled.map(o => o.option),
+    correctAnswer: newCorrectIndex
+  };
+};
 
 export const generateQuestions = (topic: string, yearGroup: YearGroup): Question[] => {
   const questions: Record<string, Record<number, Question[]>> = {
@@ -321,51 +396,272 @@ export const generateQuestions = (topic: string, yearGroup: YearGroup): Question
         { id: 'prob11-5', topic: 'probability', question: 'Interquartile range of: 1,2,3,4,5,6,7,8,9?', options: ['4', '8', '5', '6'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
       ],
       12: [
-        { id: 'prob12-1', topic: 'probability', question: 'Normal X~N(50,16). P(X<54)?', options: ['0.8413', '0.5', '0.1587', '0.9'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
-        { id: 'prob12-2', topic: 'probability', question: 'Binomial expectation: n=20, p=0.4?', options: ['8', '12', '0.4', '20'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
-        { id: 'prob12-3', topic: 'probability', question: 'Poisson λ=3. P(X=2)?', options: ['0.224', '0.5', '0.149', '0.3'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
-        { id: 'prob12-4', topic: 'probability', question: 'Hypothesis test: What is Type I error?', options: ['Reject true H₀', 'Accept false H₀', 'Both', 'Neither'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
-        { id: 'prob12-5', topic: 'probability', question: 'Correlation coefficient r = -0.85 means?', options: ['Strong negative', 'Weak negative', 'Strong positive', 'No correlation'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
+        { id: 'prob12-1', topic: 'probability', question: 'Z-score for x=75, μ=70, σ=5?', options: ['1', '0.5', '2', '-1'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
+        { id: 'prob12-2', topic: 'probability', question: 'P(Z < 1.5) from normal tables ≈?', options: ['0.9332', '0.5', '0.0668', '1.5'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
+        { id: 'prob12-3', topic: 'probability', question: 'Poisson: λ=3, find P(X=2)', options: ['0.224', '0.149', '0.3', '0.18'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
+        { id: 'prob12-4', topic: 'probability', question: 'Hypothesis testing: Type I error is?', options: ['Rejecting true H₀', 'Accepting false H₀', 'Both', 'Neither'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
+        { id: 'prob12-5', topic: 'probability', question: 'Product moment correlation r = 1 means?', options: ['Perfect positive linear', 'No correlation', 'Perfect negative', 'Curved relationship'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
       ],
     },
     sequences: {
       7: [
-        { id: 'seq7-1', topic: 'sequences', question: 'Next number: 2, 4, 6, 8, __?', options: ['10', '12', '9', '16'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
-        { id: 'seq7-2', topic: 'sequences', question: 'Next number: 3, 6, 9, 12, __?', options: ['15', '18', '14', '13'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
-        { id: 'seq7-3', topic: 'sequences', question: 'Rule for: 5, 10, 15, 20...?', options: ['Add 5', 'Times 2', 'Add 10', 'Times 5'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
-        { id: 'seq7-4', topic: 'sequences', question: 'Next: 1, 4, 9, 16, __?', options: ['25', '20', '24', '36'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
-        { id: 'seq7-5', topic: 'sequences', question: '10th term of sequence 3n + 1?', options: ['31', '30', '33', '34'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+        { id: 'seq7-1', topic: 'sequences', question: 'Find the next term: 2, 4, 6, 8, ...', options: ['10', '12', '9', '16'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'seq7-2', topic: 'sequences', question: 'Find the next term: 1, 4, 9, 16, ...', options: ['25', '20', '24', '36'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+        { id: 'seq7-3', topic: 'sequences', question: 'Find the 10th term: 3, 6, 9, 12, ...', options: ['30', '27', '33', '36'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+        { id: 'seq7-4', topic: 'sequences', question: 'Find the next term: 1, 1, 2, 3, 5, 8, ...', options: ['13', '11', '10', '12'], correctAnswer: 0, difficulty: 'hard', yearGroup: 7, points: 20 },
+        { id: 'seq7-5', topic: 'sequences', question: 'What type: 2, 4, 6, 8, 10?', options: ['Arithmetic', 'Geometric', 'Fibonacci', 'Square'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
       ],
       8: [
-        { id: 'seq8-1', topic: 'sequences', question: 'nth term of 4, 7, 10, 13...?', options: ['3n + 1', '4n', 'n + 3', '3n + 4'], correctAnswer: 0, difficulty: 'hard', yearGroup: 8, points: 20 },
-        { id: 'seq8-2', topic: 'sequences', question: 'Next in Fibonacci: 1, 1, 2, 3, 5, 8, __?', options: ['13', '11', '10', '14'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
-        { id: 'seq8-3', topic: 'sequences', question: '5th term of sequence 2n²?', options: ['50', '10', '25', '100'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
-        { id: 'seq8-4', topic: 'sequences', question: 'nth term of 2, 5, 8, 11...?', options: ['3n - 1', '2n + 3', '3n + 2', 'n + 3'], correctAnswer: 0, difficulty: 'hard', yearGroup: 8, points: 20 },
-        { id: 'seq8-5', topic: 'sequences', question: 'Next: 1, 3, 7, 15, 31, __?', options: ['63', '47', '62', '45'], correctAnswer: 0, difficulty: 'hard', yearGroup: 8, points: 20 },
+        { id: 'seq8-1', topic: 'sequences', question: 'Find the nth term: 5, 8, 11, 14, ...', options: ['3n + 2', '3n + 5', 'n + 3', '5n'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'seq8-2', topic: 'sequences', question: 'Find the next term: 2, 6, 18, 54, ...', options: ['162', '108', '72', '216'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'seq8-3', topic: 'sequences', question: 'Common difference of: 7, 12, 17, 22?', options: ['5', '4', '7', '3'], correctAnswer: 0, difficulty: 'easy', yearGroup: 8, points: 10 },
+        { id: 'seq8-4', topic: 'sequences', question: 'Common ratio of: 3, 12, 48, 192?', options: ['4', '3', '9', '12'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'seq8-5', topic: 'sequences', question: 'Find the 20th term: 4, 7, 10, 13, ... using 3n+1', options: ['61', '64', '58', '63'], correctAnswer: 0, difficulty: 'hard', yearGroup: 8, points: 20 },
       ],
       9: [
-        { id: 'seq9-1', topic: 'sequences', question: 'nth term of 1, 4, 9, 16, 25...?', options: ['n²', '2n', 'n + 3', '4n'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
-        { id: 'seq9-2', topic: 'sequences', question: 'Geometric sequence: 2, 6, 18, __?', options: ['54', '36', '48', '72'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
-        { id: 'seq9-3', topic: 'sequences', question: 'Common ratio of 3, 12, 48, 192...?', options: ['4', '3', '9', '12'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
-        { id: 'seq9-4', topic: 'sequences', question: 'Sum of first 10 terms: 1+2+3+...+10?', options: ['55', '50', '45', '100'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
-        { id: 'seq9-5', topic: 'sequences', question: 'nth term: 3, 8, 15, 24, 35...?', options: ['n² + 2n', 'n² + 3', '2n² + 1', 'n² + n + 1'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'seq9-1', topic: 'sequences', question: 'Sum of first 10 terms: 2, 4, 6, 8, ...', options: ['110', '100', '90', '120'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'seq9-2', topic: 'sequences', question: 'Nth term of: 1, 4, 9, 16, 25, ...', options: ['n²', '2n', 'n+3', '4n'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'seq9-3', topic: 'sequences', question: 'Find term formula: 2, 8, 18, 32, 50, ...', options: ['2n²', 'n²+1', '4n', '2n+2'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'seq9-4', topic: 'sequences', question: 'Triangular numbers: 1, 3, 6, 10, next?', options: ['15', '14', '16', '12'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'seq9-5', topic: 'sequences', question: 'Sum formula for arithmetic: S = n/2(2a + (n-1)d). Find S₅ if a=3, d=2', options: ['35', '30', '25', '40'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
       ],
       10: [
-        { id: 'seq10-1', topic: 'sequences', question: 'Sum formula for arithmetic: Sₙ = ?', options: ['n/2(2a + (n-1)d)', 'a + nd', 'an²', 'a(1-rⁿ)/(1-r)'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
-        { id: 'seq10-2', topic: 'sequences', question: 'Geometric: a=3, r=2. Sum of first 5 terms?', options: ['93', '48', '96', '63'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
-        { id: 'seq10-3', topic: 'sequences', question: '15th term: first term 5, common difference 3?', options: ['47', '50', '45', '48'], correctAnswer: 0, difficulty: 'medium', yearGroup: 10, points: 15 },
-        { id: 'seq10-4', topic: 'sequences', question: 'Arithmetic: a₅=17, d=4. Find a₁?', options: ['1', '5', '13', '21'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
-        { id: 'seq10-5', topic: 'sequences', question: 'Geometric: 4th term=24, ratio=2. First term?', options: ['3', '6', '12', '1.5'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'seq10-1', topic: 'sequences', question: 'Sum of geometric: a=2, r=3, n=4', options: ['80', '54', '40', '66'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'seq10-2', topic: 'sequences', question: 'If a=5, d=3, find the 15th term', options: ['47', '50', '44', '42'], correctAnswer: 0, difficulty: 'medium', yearGroup: 10, points: 15 },
+        { id: 'seq10-3', topic: 'sequences', question: 'Geometric: a=4, r=0.5, find 5th term', options: ['0.25', '0.5', '1', '0.125'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'seq10-4', topic: 'sequences', question: 'Sum to infinity: a=10, r=0.5', options: ['20', '15', '10', '5'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'seq10-5', topic: 'sequences', question: 'Quadratic sequence: 3, 8, 15, 24, 35. Next term?', options: ['48', '46', '50', '44'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
       ],
       11: [
-        { id: 'seq11-1', topic: 'sequences', question: 'Sum to infinity: a=8, r=0.5?', options: ['16', '8', '4', '∞'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
-        { id: 'seq11-2', topic: 'sequences', question: 'Recurrence: uₙ₊₁ = 2uₙ - 1, u₁ = 3. Find u₃?', options: ['9', '7', '5', '11'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
-        { id: 'seq11-3', topic: 'sequences', question: 'Converging geometric series needs |r|...?', options: ['< 1', '> 1', '= 1', '≤ 0'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
-        { id: 'seq11-4', topic: 'sequences', question: '∑(3n + 2) from n=1 to 10?', options: ['185', '175', '165', '195'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
-        { id: 'seq11-5', topic: 'sequences', question: 'How many terms for GP sum: a=1, r=3, Sₙ>1000?', options: ['7', '6', '8', '5'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'seq11-1', topic: 'sequences', question: 'Sum of arithmetic series: n=20, a=5, l=100', options: ['1050', '1000', '950', '1100'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'seq11-2', topic: 'sequences', question: 'Prove converges: |r| < 1 for r=0.8. Sum to infinity = 5. Find a', options: ['1', '4', '0.8', '2'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'seq11-3', topic: 'sequences', question: 'Recurrence: uₙ₊₁ = 2uₙ - 1, u₁=3. Find u₃', options: ['9', '7', '11', '5'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'seq11-4', topic: 'sequences', question: 'Sum: Σᵢ₌₁⁵ (2i + 1)', options: ['35', '30', '25', '40'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'seq11-5', topic: 'sequences', question: 'Arithmetic mean of 8 and 18?', options: ['13', '14', '12', '15'], correctAnswer: 0, difficulty: 'medium', yearGroup: 11, points: 15 },
+      ],
+    },
+    trigonometry: {
+      9: [
+        { id: 'trig9-1', topic: 'trigonometry', question: 'SOH CAH TOA: sin is opposite over...?', options: ['Hypotenuse', 'Adjacent', 'Opposite', 'Base'], correctAnswer: 0, difficulty: 'easy', yearGroup: 9, points: 10 },
+        { id: 'trig9-2', topic: 'trigonometry', question: 'Find sin(45°) exactly', options: ['√2/2', '1/2', '√3/2', '1'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'trig9-3', topic: 'trigonometry', question: 'In a right triangle, opp=3, hyp=5. Find sin(θ)', options: ['0.6', '0.8', '0.75', '1.67'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'trig9-4', topic: 'trigonometry', question: 'tan(θ) = opp/adj. If opp=4, adj=3, find tan(θ)', options: ['4/3', '3/4', '5/3', '3/5'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'trig9-5', topic: 'trigonometry', question: 'Find the angle if sin(θ)=0.5', options: ['30°', '45°', '60°', '90°'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+      ],
+      10: [
+        { id: 'trig10-1', topic: 'trigonometry', question: 'Find cos(30°) exactly', options: ['√3/2', '1/2', '√2/2', '1'], correctAnswer: 0, difficulty: 'medium', yearGroup: 10, points: 15 },
+        { id: 'trig10-2', topic: 'trigonometry', question: 'tan(45°) = ?', options: ['1', '0', '√2', '∞'], correctAnswer: 0, difficulty: 'easy', yearGroup: 10, points: 10 },
+        { id: 'trig10-3', topic: 'trigonometry', question: 'Area of triangle = ½absinC. Find area if a=5, b=8, C=30°', options: ['10', '20', '40', '5'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'trig10-4', topic: 'trigonometry', question: 'Sine rule: a/sinA = b/sinB. Find b if a=10, A=30°, B=45°', options: ['10√2', '5√2', '20', '10'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'trig10-5', topic: 'trigonometry', question: 'If cos(θ) = 0.8, find sin(θ) using sin²θ + cos²θ = 1', options: ['0.6', '0.2', '0.36', '0.64'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+      ],
+      11: [
+        { id: 'trig11-1', topic: 'trigonometry', question: 'Cosine rule: c² = a² + b² - 2abcosC. Find c if a=5, b=7, C=60°', options: ['√39', '6', '8', '√61'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'trig11-2', topic: 'trigonometry', question: 'sin(180° - x) = ?', options: ['sin(x)', '-sin(x)', 'cos(x)', '-cos(x)'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'trig11-3', topic: 'trigonometry', question: 'cos(90° - x) = ?', options: ['sin(x)', 'cos(x)', '-sin(x)', '-cos(x)'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'trig11-4', topic: 'trigonometry', question: 'Solve sin(x) = 0.5 for 0° ≤ x ≤ 360°', options: ['30°, 150°', '30°, 330°', '150°, 210°', '30° only'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'trig11-5', topic: 'trigonometry', question: 'Period of y = sin(2x)?', options: ['180°', '360°', '90°', '720°'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+      ],
+      12: [
+        { id: 'trig12-1', topic: 'trigonometry', question: 'sin(A+B) = ?', options: ['sinAcosB + cosAsinB', 'sinAsinB + cosAcosB', 'sinAcosB - cosAsinB', 'cosAcosB - sinAsinB'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
+        { id: 'trig12-2', topic: 'trigonometry', question: 'cos(2x) = ?', options: ['cos²x - sin²x', '2sinxcosx', 'sin²x - cos²x', 'sinx + cosx'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
+        { id: 'trig12-3', topic: 'trigonometry', question: 'Convert 60° to radians', options: ['π/3', 'π/6', 'π/4', '2π/3'], correctAnswer: 0, difficulty: 'medium', yearGroup: 12, points: 15 },
+        { id: 'trig12-4', topic: 'trigonometry', question: 'd/dx[sin(x)] = ?', options: ['cos(x)', '-cos(x)', 'sin(x)', '-sin(x)'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
+        { id: 'trig12-5', topic: 'trigonometry', question: '∫cos(x)dx = ?', options: ['sin(x) + C', '-sin(x) + C', 'cos(x) + C', '-cos(x) + C'], correctAnswer: 0, difficulty: 'hard', yearGroup: 12, points: 30 },
+      ],
+    },
+    powers: {
+      7: [
+        { id: 'pow7-1', topic: 'powers', question: 'Calculate: 2³', options: ['8', '6', '9', '5'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'pow7-2', topic: 'powers', question: 'Calculate: 5²', options: ['25', '10', '52', '7'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'pow7-3', topic: 'powers', question: 'What is √49?', options: ['7', '24.5', '8', '6'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'pow7-4', topic: 'powers', question: 'Calculate: 10⁰', options: ['1', '0', '10', '100'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+        { id: 'pow7-5', topic: 'powers', question: 'Calculate: √100', options: ['10', '50', '1000', '20'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+      ],
+      8: [
+        { id: 'pow8-1', topic: 'powers', question: 'Simplify: 2³ × 2²', options: ['2⁵', '2⁶', '4⁵', '2¹'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'pow8-2', topic: 'powers', question: 'Simplify: 3⁶ ÷ 3²', options: ['3⁴', '3³', '3⁸', '1⁴'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'pow8-3', topic: 'powers', question: 'Calculate: 4⁻¹', options: ['1/4', '-4', '4', '-1/4'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'pow8-4', topic: 'powers', question: 'Simplify: (2³)²', options: ['2⁶', '2⁵', '2⁹', '4³'], correctAnswer: 0, difficulty: 'hard', yearGroup: 8, points: 20 },
+        { id: 'pow8-5', topic: 'powers', question: 'Calculate: ³√27', options: ['3', '9', '27', '81'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+      ],
+      9: [
+        { id: 'pow9-1', topic: 'powers', question: 'Express 8 as a power of 2', options: ['2³', '2⁴', '2²', '8¹'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'pow9-2', topic: 'powers', question: 'Simplify: x⁵ × x³', options: ['x⁸', 'x¹⁵', 'x²', '2x⁸'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'pow9-3', topic: 'powers', question: 'Calculate: 16^(1/2)', options: ['4', '8', '256', '2'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'pow9-4', topic: 'powers', question: 'Simplify: (x²y³)²', options: ['x⁴y⁶', 'x⁴y⁵', '2x²y³', 'x²y⁶'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'pow9-5', topic: 'powers', question: 'Calculate: 27^(2/3)', options: ['9', '18', '3', '81'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+      ],
+      10: [
+        { id: 'pow10-1', topic: 'powers', question: 'Write 0.00045 in standard form', options: ['4.5 × 10⁻⁴', '45 × 10⁻⁵', '4.5 × 10⁴', '0.45 × 10⁻³'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'pow10-2', topic: 'powers', question: 'Calculate: (3 × 10⁴) × (2 × 10³)', options: ['6 × 10⁷', '5 × 10⁷', '6 × 10¹²', '5 × 10¹'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'pow10-3', topic: 'powers', question: 'Simplify: √50', options: ['5√2', '25√2', '10√5', '2√25'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'pow10-4', topic: 'powers', question: 'Rationalise: 1/√3', options: ['√3/3', '3/√3', '√3', '1/3'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'pow10-5', topic: 'powers', question: 'Calculate: 8^(-2/3)', options: ['1/4', '4', '-4', '-1/4'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+      ],
+      11: [
+        { id: 'pow11-1', topic: 'powers', question: 'Simplify: √18 + √8', options: ['5√2', '√26', '3√2 + 2√2', '6√2'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'pow11-2', topic: 'powers', question: 'Solve: 2^x = 32', options: ['5', '4', '6', '16'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'pow11-3', topic: 'powers', question: 'Expand: (√3 + 1)²', options: ['4 + 2√3', '4', '3 + √3', '2 + 2√3'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'pow11-4', topic: 'powers', question: 'Simplify: √12 × √3', options: ['6', '√36', '6√1', '√15'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'pow11-5', topic: 'powers', question: 'If log₂(x) = 5, find x', options: ['32', '10', '25', '64'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+      ],
+    },
+    percentages: {
+      7: [
+        { id: 'per7-1', topic: 'percentages', question: 'What is 50% of 80?', options: ['40', '30', '50', '45'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'per7-2', topic: 'percentages', question: 'Convert 1/4 to a percentage', options: ['25%', '50%', '75%', '20%'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'per7-3', topic: 'percentages', question: 'What is 10% of 150?', options: ['15', '150', '1.5', '10'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'per7-4', topic: 'percentages', question: 'Convert 0.75 to a percentage', options: ['75%', '7.5%', '0.75%', '750%'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+        { id: 'per7-5', topic: 'percentages', question: 'What is 25% of 60?', options: ['15', '20', '25', '12'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+      ],
+      8: [
+        { id: 'per8-1', topic: 'percentages', question: 'Increase £80 by 10%', options: ['£88', '£90', '£8', '£72'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'per8-2', topic: 'percentages', question: 'Decrease 120 by 25%', options: ['90', '95', '30', '150'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'per8-3', topic: 'percentages', question: '30 out of 50 as a percentage?', options: ['60%', '30%', '50%', '80%'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'per8-4', topic: 'percentages', question: 'Find 15% of 200', options: ['30', '15', '3', '300'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'per8-5', topic: 'percentages', question: 'What percentage is 12 of 48?', options: ['25%', '50%', '12%', '4%'], correctAnswer: 0, difficulty: 'hard', yearGroup: 8, points: 20 },
+      ],
+      9: [
+        { id: 'per9-1', topic: 'percentages', question: 'After 20% discount, find the new price of £50', options: ['£40', '£10', '£60', '£45'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'per9-2', topic: 'percentages', question: 'Price was £48 after 20% off. Original price?', options: ['£60', '£40', '£58', '£56'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'per9-3', topic: 'percentages', question: 'Percentage change from 80 to 100?', options: ['25%', '20%', '80%', '125%'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'per9-4', topic: 'percentages', question: 'VAT is 20%. Find price including VAT for £50 item', options: ['£60', '£70', '£10', '£40'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'per9-5', topic: 'percentages', question: 'Simple interest: £200 at 5% for 3 years', options: ['£30', '£15', '£35', '£50'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+      ],
+      10: [
+        { id: 'per10-1', topic: 'percentages', question: 'Compound interest: £1000 at 5% for 2 years?', options: ['£1102.50', '£1100', '£100', '£1105'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'per10-2', topic: 'percentages', question: 'Depreciation: £5000 loses 10% yearly. Value after 2 years?', options: ['£4050', '£4000', '£4500', '£3500'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'per10-3', topic: 'percentages', question: 'After 30% increase, value is £130. Original?', options: ['£100', '£91', '£169', '£110'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'per10-4', topic: 'percentages', question: 'Multiplier for 8% increase?', options: ['1.08', '0.08', '1.8', '0.92'], correctAnswer: 0, difficulty: 'medium', yearGroup: 10, points: 15 },
+        { id: 'per10-5', topic: 'percentages', question: 'Multiplier for 15% decrease?', options: ['0.85', '1.15', '0.15', '1.85'], correctAnswer: 0, difficulty: 'medium', yearGroup: 10, points: 15 },
+      ],
+    },
+    measurement: {
+      7: [
+        { id: 'meas7-1', topic: 'measurement', question: 'How many cm in 1 metre?', options: ['100', '10', '1000', '50'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'meas7-2', topic: 'measurement', question: 'How many mm in 5 cm?', options: ['50', '5', '500', '0.5'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'meas7-3', topic: 'measurement', question: 'Convert 3 hours to minutes', options: ['180', '30', '300', '18'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'meas7-4', topic: 'measurement', question: 'How many grams in 2.5 kg?', options: ['2500', '250', '25', '25000'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+        { id: 'meas7-5', topic: 'measurement', question: 'Convert 4500m to km', options: ['4.5', '45', '0.45', '450'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+      ],
+      8: [
+        { id: 'meas8-1', topic: 'measurement', question: 'Convert 2.5 litres to ml', options: ['2500', '250', '25', '25000'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'meas8-2', topic: 'measurement', question: 'How many seconds in 2.5 minutes?', options: ['150', '250', '25', '1500'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'meas8-3', topic: 'measurement', question: 'Convert 45 minutes to hours (as decimal)', options: ['0.75', '0.45', '0.5', '1.25'], correctAnswer: 0, difficulty: 'hard', yearGroup: 8, points: 20 },
+        { id: 'meas8-4', topic: 'measurement', question: 'Speed = 60 km/h. Distance in 2.5 hours?', options: ['150 km', '24 km', '62.5 km', '120 km'], correctAnswer: 0, difficulty: 'hard', yearGroup: 8, points: 20 },
+        { id: 'meas8-5', topic: 'measurement', question: 'Area of rectangle 8m × 5m in cm²?', options: ['400000', '4000', '40', '40000'], correctAnswer: 0, difficulty: 'hard', yearGroup: 8, points: 20 },
+      ],
+      9: [
+        { id: 'meas9-1', topic: 'measurement', question: 'Convert 2 m³ to litres', options: ['2000', '200', '20', '20000'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'meas9-2', topic: 'measurement', question: 'Speed = distance/time. D=120km, T=2h. Speed?', options: ['60 km/h', '240 km/h', '118 km/h', '122 km/h'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'meas9-3', topic: 'measurement', question: 'Time = distance/speed. D=300km, S=75km/h. Time?', options: ['4 hours', '375 hours', '225 hours', '3 hours'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'meas9-4', topic: 'measurement', question: 'Density = mass/volume. M=500g, V=100cm³. Density?', options: ['5 g/cm³', '50 g/cm³', '0.2 g/cm³', '500 g/cm³'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'meas9-5', topic: 'measurement', question: 'Convert 72 km/h to m/s', options: ['20 m/s', '72 m/s', '7.2 m/s', '200 m/s'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+      ],
+    },
+    mental: {
+      7: [
+        { id: 'men7-1', topic: 'mental', question: 'Calculate: 15 + 27', options: ['42', '32', '52', '41'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'men7-2', topic: 'mental', question: 'Calculate: 8 × 7', options: ['56', '54', '63', '48'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'men7-3', topic: 'mental', question: 'Calculate: 100 - 37', options: ['63', '73', '67', '53'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'men7-4', topic: 'mental', question: 'Calculate: 144 ÷ 12', options: ['12', '11', '13', '14'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+        { id: 'men7-5', topic: 'mental', question: 'Calculate: 25 × 4', options: ['100', '90', '110', '80'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+      ],
+      8: [
+        { id: 'men8-1', topic: 'mental', question: 'Calculate: 18 × 5', options: ['90', '85', '95', '80'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'men8-2', topic: 'mental', question: 'Calculate: 256 ÷ 8', options: ['32', '28', '36', '24'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'men8-3', topic: 'mental', question: 'Calculate: 99 × 6', options: ['594', '596', '584', '604'], correctAnswer: 0, difficulty: 'hard', yearGroup: 8, points: 20 },
+        { id: 'men8-4', topic: 'mental', question: 'Calculate: 15²', options: ['225', '215', '235', '150'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'men8-5', topic: 'mental', question: 'Calculate: 1000 - 287', options: ['713', '723', '717', '683'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+      ],
+      9: [
+        { id: 'men9-1', topic: 'mental', question: 'Calculate: 37 × 11', options: ['407', '397', '417', '377'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'men9-2', topic: 'mental', question: 'Calculate: 625 ÷ 25', options: ['25', '24', '26', '20'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'men9-3', topic: 'mental', question: 'Calculate: 12³', options: ['1728', '1628', '144', '1828'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'men9-4', topic: 'mental', question: 'Calculate: 0.5 × 0.4', options: ['0.2', '0.9', '2', '0.02'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'men9-5', topic: 'mental', question: 'Calculate: 7.5 + 3.8', options: ['11.3', '10.3', '11.8', '10.8'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+      ],
+      10: [
+        { id: 'men10-1', topic: 'mental', question: 'Calculate: 17² - 15²', options: ['64', '32', '4', '289'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'men10-2', topic: 'mental', question: 'Calculate: √196', options: ['14', '13', '15', '12'], correctAnswer: 0, difficulty: 'medium', yearGroup: 10, points: 15 },
+        { id: 'men10-3', topic: 'mental', question: 'Calculate: 0.125 × 80', options: ['10', '100', '1', '8'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'men10-4', topic: 'mental', question: 'Calculate: 3/8 + 1/4', options: ['5/8', '4/12', '4/8', '1/2'], correctAnswer: 0, difficulty: 'medium', yearGroup: 10, points: 15 },
+        { id: 'men10-5', topic: 'mental', question: 'Calculate: 2.5 × 2.5', options: ['6.25', '5', '5.25', '6.5'], correctAnswer: 0, difficulty: 'medium', yearGroup: 10, points: 15 },
+      ],
+    },
+    wordproblems: {
+      7: [
+        { id: 'wp7-1', topic: 'wordproblems', question: 'Tom has 15 sweets, gives 4 away. How many left?', options: ['11', '19', '10', '9'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'wp7-2', topic: 'wordproblems', question: 'Pencils cost 35p each. Cost of 4 pencils?', options: ['£1.40', '£1.20', '£1.75', '£0.39'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+        { id: 'wp7-3', topic: 'wordproblems', question: 'A book has 256 pages. I read 78. Pages left?', options: ['178', '334', '188', '168'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+        { id: 'wp7-4', topic: 'wordproblems', question: 'Share 24 sweets equally among 6 children. Each gets?', options: ['4', '18', '6', '30'], correctAnswer: 0, difficulty: 'easy', yearGroup: 7, points: 10 },
+        { id: 'wp7-5', topic: 'wordproblems', question: 'Bus leaves at 14:35, arrives at 15:20. Journey time?', options: ['45 minutes', '55 minutes', '1 hour', '35 minutes'], correctAnswer: 0, difficulty: 'medium', yearGroup: 7, points: 15 },
+      ],
+      8: [
+        { id: 'wp8-1', topic: 'wordproblems', question: 'Train travels 240km in 3 hours. Speed?', options: ['80 km/h', '720 km/h', '237 km/h', '243 km/h'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'wp8-2', topic: 'wordproblems', question: 'Shirt costs £25 with 20% off. Sale price?', options: ['£20', '£5', '£30', '£22'], correctAnswer: 0, difficulty: 'hard', yearGroup: 8, points: 20 },
+        { id: 'wp8-3', topic: 'wordproblems', question: 'Recipe for 4 needs 200g flour. For 6 people?', options: ['300g', '400g', '200g', '250g'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'wp8-4', topic: 'wordproblems', question: 'Pool fills at 50L/min. Time for 2000L?', options: ['40 minutes', '100 minutes', '250 minutes', '4 minutes'], correctAnswer: 0, difficulty: 'medium', yearGroup: 8, points: 15 },
+        { id: 'wp8-5', topic: 'wordproblems', question: 'Tom is 3 years older than Sara. Sara is 12. Tom\'s age?', options: ['15', '9', '36', '4'], correctAnswer: 0, difficulty: 'easy', yearGroup: 8, points: 10 },
+      ],
+      9: [
+        { id: 'wp9-1', topic: 'wordproblems', question: 'Car depreciates 15% yearly from £12000. After 1 year?', options: ['£10200', '£1800', '£13800', '£10800'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'wp9-2', topic: 'wordproblems', question: '3 people share £120 in ratio 2:3:5. Largest share?', options: ['£60', '£36', '£24', '£40'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'wp9-3', topic: 'wordproblems', question: 'Fence for rectangular garden 12m×8m. Length needed?', options: ['40m', '96m', '20m', '32m'], correctAnswer: 0, difficulty: 'medium', yearGroup: 9, points: 15 },
+        { id: 'wp9-4', topic: 'wordproblems', question: 'Compound interest: £500 at 10% for 2 years?', options: ['£605', '£600', '£550', '£610'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+        { id: 'wp9-5', topic: 'wordproblems', question: 'Map scale 1:50000. 4cm on map = real distance?', options: ['2km', '200km', '200m', '20km'], correctAnswer: 0, difficulty: 'hard', yearGroup: 9, points: 20 },
+      ],
+      10: [
+        { id: 'wp10-1', topic: 'wordproblems', question: 'Ladder reaches 8m high, 6m from wall base. Ladder length?', options: ['10m', '14m', '2m', '48m'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'wp10-2', topic: 'wordproblems', question: 'Two trains leave same station, opposite directions at 60 and 80 km/h. Apart after 2 hours?', options: ['280km', '140km', '40km', '20km'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'wp10-3', topic: 'wordproblems', question: 'Probability of rain is 0.3. What\'s probability of no rain?', options: ['0.7', '0.3', '1.3', '0.03'], correctAnswer: 0, difficulty: 'medium', yearGroup: 10, points: 15 },
+        { id: 'wp10-4', topic: 'wordproblems', question: 'Area of circular pond r=7m (π=22/7)?', options: ['154m²', '44m²', '22m²', '308m²'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+        { id: 'wp10-5', topic: 'wordproblems', question: 'Age problem: Sarah is twice as old as Tom. Sum of ages is 36. Sarah\'s age?', options: ['24', '12', '18', '36'], correctAnswer: 0, difficulty: 'hard', yearGroup: 10, points: 20 },
+      ],
+      11: [
+        { id: 'wp11-1', topic: 'wordproblems', question: 'Ball dropped from 10m, bounces to 80% height each time. Height after 2 bounces?', options: ['6.4m', '8m', '5.12m', '16m'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'wp11-2', topic: 'wordproblems', question: 'Investment grows at 5% compound interest. Time to double (approx)?', options: ['14 years', '20 years', '10 years', '5 years'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'wp11-3', topic: 'wordproblems', question: 'Cone volume = 1/3πr²h. r=3, h=7. Volume (in terms of π)?', options: ['21π', '63π', '7π', '9π'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'wp11-4', topic: 'wordproblems', question: 'Population grows 2% yearly from 50000. After 3 years (nearest integer)?', options: ['53060', '53000', '56000', '50300'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
+        { id: 'wp11-5', topic: 'wordproblems', question: 'Quadratic: path of ball h = -5t² + 20t. Max height reached?', options: ['20m', '25m', '15m', '40m'], correctAnswer: 0, difficulty: 'hard', yearGroup: 11, points: 25 },
       ],
     },
   };
 
-  return questions[topic]?.[yearGroup] || [];
+  const topicQuestions = questions[topic];
+  if (!topicQuestions) return [];
+
+  const yearQuestions = topicQuestions[yearGroup];
+  if (!yearQuestions) {
+    // Fallback to nearest year group if exact match not found
+    const availableYears = Object.keys(topicQuestions).map(Number);
+    const nearestYear = availableYears.reduce((prev, curr) => 
+      Math.abs(curr - yearGroup) < Math.abs(prev - yearGroup) ? curr : prev
+    );
+    const fallbackQuestions = topicQuestions[nearestYear] || [];
+    // Randomize each question's options
+    return fallbackQuestions.map(randomizeOptions);
+  }
+
+  // Randomize each question's options
+  return yearQuestions.map(randomizeOptions);
+};
+
+// Generate harder versions of questions for hard mode
+export const generateHardModeQuestions = (topic: string, yearGroup: YearGroup): Question[] => {
+  const baseQuestions = generateQuestions(topic, yearGroup);
+  
+  return baseQuestions.map(q => ({
+    ...q,
+    id: `${q.id}-hard`,
+    difficulty: 'hard' as const,
+    points: q.points * 2, // Double points for hard mode
+    // Remove options for manual entry (keep correctAnswer as reference)
+  }));
+};
+
+// Get the correct answer text for a question
+export const getCorrectAnswerText = (question: Question): string => {
+  return question.options[question.correctAnswer];
 };
