@@ -37,7 +37,7 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete }) => {
   const displayName = isTeacher && title ? `${title} ${name}` : name;
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6">
+    <div className="min-h-[150vh] bg-background flex flex-col items-center justify-start pt-20 p-6">
       <div className="max-w-md w-full">
         {/* Header */}
         <div className="text-center mb-8 bounce-in">
@@ -123,8 +123,8 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete }) => {
         </form>
       </div>
 
-      {/* Footer */}
-      <footer className="absolute bottom-6 text-center">
+      {/* Footer - scroll to see */}
+      <footer className="mt-auto pt-32 pb-6 text-center">
         <p className="text-muted-foreground text-sm">
           Made by <span className="font-semibold text-foreground">Angad Singh</span> from{' '}
           <span className="font-semibold text-foreground">AS Services</span>

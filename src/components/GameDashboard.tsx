@@ -190,9 +190,9 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-t border-border py-3 z-30">
-        <div className="container mx-auto px-4 text-center">
+      {/* Footer - scroll to see */}
+      <footer className="mt-20 py-6 text-center border-t border-border">
+        <div className="container mx-auto px-4">
           <p className="text-muted-foreground text-sm">
             <span className="text-[hsl(35,90%,65%)]">👋</span> Made by <span className="font-semibold text-foreground">Angad Singh</span> from{' '}
             <span className="font-semibold text-foreground">AS Services</span>
