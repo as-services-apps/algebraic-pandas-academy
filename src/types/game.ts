@@ -27,6 +27,8 @@ export interface GameState {
   selectedYearGroup: YearGroup;
   isAIOpponent: boolean;
   gameStarted: boolean;
+  isHardMode: boolean;
+  customQuestions: Question[];
 }
 
 export interface Question {

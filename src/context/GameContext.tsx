@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { GameState, UserType, GameMode, Player, Team, YearGroup } from '@/types/game';
+import { GameState, UserType, GameMode, Player, Team, YearGroup, Question } from '@/types/game';
 
 interface GameContextType {
   gameState: GameState;
@@ -11,6 +11,8 @@ interface GameContextType {
   updatePlayerScore: (points: number) => void;
   setYearGroup: (year: YearGroup) => void;
   setAIOpponent: (isAI: boolean) => void;
+  setHardMode: (isHard: boolean) => void;
+  setCustomQuestions: (questions: Question[]) => void;
   startGame: () => void;
   resetGame: () => void;
   nextRound: () => void;
@@ -25,6 +27,8 @@ const initialState: GameState = {
   selectedYearGroup: 7,
   isAIOpponent: false,
   gameStarted: false,
+  isHardMode: false,
+  customQuestions: [],
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
@@ -72,6 +76,14 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setGameState(prev => ({ ...prev, isAIOpponent: isAI }));
   };
 
+  const setHardMode = (isHard: boolean) => {
+    setGameState(prev => ({ ...prev, isHardMode: isHard }));
+  };
+
+  const setCustomQuestions = (questions: Question[]) => {
+    setGameState(prev => ({ ...prev, customQuestions: questions }));
+  };
+
   const startGame = () => {
     setGameState(prev => ({ ...prev, gameStarted: true }));
   };
@@ -96,6 +108,8 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         updatePlayerScore,
         setYearGroup,
         setAIOpponent,
+        setHardMode,
+        setCustomQuestions,
         startGame,
         resetGame,
         nextRound,
