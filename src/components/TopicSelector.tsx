@@ -3,30 +3,20 @@ import { Button } from '@/components/ui/button';
 import { GameTopic, YearGroup } from '@/types/game';
 import { gameTopics } from '@/data/questions';
 import { useGame } from '@/context/GameContext';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Zap } from 'lucide-react';
 
 interface TopicSelectorProps {
   onSelectTopic: (topic: GameTopic) => void;
 }
 
 const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic }) => {
-  const { gameState, setYearGroup } = useGame();
+  const { gameState, setYearGroup, setHardMode } = useGame();
 
   const yearGroups: YearGroup[] = [7, 8, 9, 10, 11, 12];
 
   const filteredTopics = gameTopics.filter(topic => 
     topic.yearGroups.includes(gameState.selectedYearGroup)
   );
-
-  const getColorVariant = (color: string): "default" | "secondary" | "accent" | "success" => {
-    const variants: Record<string, "default" | "secondary" | "accent" | "success"> = {
-      primary: 'default',
-      secondary: 'secondary',
-      accent: 'accent',
-      success: 'success',
-    };
-    return variants[color] || 'default';
-  };
 
   return (
     <div className="space-y-6">
@@ -48,6 +38,36 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic }) => {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Hard Mode Toggle */}
+      <div className="bg-card rounded-2xl p-4 panda-shadow">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Zap className={`w-5 h-5 ${gameState.isHardMode ? 'text-destructive' : 'text-muted-foreground'}`} />
+            <div>
+              <h3 className="font-bold text-foreground">Hard Mode</h3>
+              <p className="text-sm text-muted-foreground">Type your answers - no multiple choice!</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setHardMode(!gameState.isHardMode)}
+            className={`relative w-14 h-8 rounded-full transition-colors duration-200 ${
+              gameState.isHardMode ? 'bg-destructive' : 'bg-muted'
+            }`}
+          >
+            <div
+              className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow transition-transform duration-200 ${
+                gameState.isHardMode ? 'translate-x-7' : 'translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+        {gameState.isHardMode && (
+          <div className="mt-3 p-3 bg-destructive/10 rounded-xl text-sm text-destructive">
+            <strong>⚠️ Hard Mode Active:</strong> Questions are harder and you must type your answer exactly!
+          </div>
+        )}
       </div>
 
       {/* Topics Grid */}

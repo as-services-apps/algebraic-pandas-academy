@@ -3,16 +3,18 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useGame } from '@/context/GameContext';
-import { Question, YearGroup } from '@/types/game';
-import { Plus, Trash2, Save, ArrowLeft } from 'lucide-react';
+import { Question } from '@/types/game';
+import { Plus, Trash2, Save, ArrowLeft, AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface CustomGameCreatorProps {
   onBack: () => void;
-  onSave: (questions: Question[]) => void;
+  onSave: (questions: Question[], gameName: string) => void;
 }
 
 const CustomGameCreator: React.FC<CustomGameCreatorProps> = ({ onBack, onSave }) => {
   const { gameState } = useGame();
+  const { toast } = useToast();
   const [gameName, setGameName] = useState('');
   const [questions, setQuestions] = useState<Partial<Question>[]>([
     { question: '', options: ['', '', '', ''], correctAnswer: 0, points: 10, difficulty: 'medium' }
@@ -43,24 +45,63 @@ const CustomGameCreator: React.FC<CustomGameCreatorProps> = ({ onBack, onSave })
     setQuestions(updated);
   };
 
-  const handleSave = () => {
-    const validQuestions: Question[] = questions
-      .filter(q => q.question && q.options?.every(o => o.trim()))
-      .map((q, i) => ({
-        id: `custom-${Date.now()}-${i}`,
-        topic: 'custom',
-        question: q.question!,
-        options: q.options!,
-        correctAnswer: q.correctAnswer!,
-        difficulty: q.difficulty as 'easy' | 'medium' | 'hard',
-        yearGroup: gameState.selectedYearGroup,
-        points: q.points!,
-      }));
-
-    if (validQuestions.length > 0) {
-      onSave(validQuestions);
+  const validateQuestions = (): boolean => {
+    if (!gameName.trim()) {
+      toast({
+        title: "Missing Game Name",
+        description: "Please enter a name for your game.",
+        variant: "destructive"
+      });
+      return false;
     }
+
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      if (!q.question?.trim()) {
+        toast({
+          title: "Missing Question",
+          description: `Question ${i + 1} is empty.`,
+          variant: "destructive"
+        });
+        return false;
+      }
+      if (!q.options?.every(o => o.trim())) {
+        toast({
+          title: "Missing Options",
+          description: `Question ${i + 1} has empty options.`,
+          variant: "destructive"
+        });
+        return false;
+      }
+    }
+    return true;
   };
+
+  const handleSave = () => {
+    if (!validateQuestions()) return;
+
+    const validQuestions: Question[] = questions.map((q, i) => ({
+      id: `custom-${Date.now()}-${i}`,
+      topic: 'custom',
+      question: q.question!,
+      options: q.options!,
+      correctAnswer: q.correctAnswer!,
+      difficulty: q.difficulty as 'easy' | 'medium' | 'hard',
+      yearGroup: gameState.selectedYearGroup,
+      points: q.points!,
+    }));
+
+    toast({
+      title: "Game Created! 🎉",
+      description: `${gameName} with ${validQuestions.length} questions is ready to play!`,
+    });
+
+    onSave(validQuestions, gameName);
+  };
+
+  const isValid = gameName.trim() && questions.every(q => 
+    q.question?.trim() && q.options?.every(o => o.trim())
+  );
 
   return (
     <div className="max-w-3xl mx-auto">
@@ -77,7 +118,7 @@ const CustomGameCreator: React.FC<CustomGameCreatorProps> = ({ onBack, onSave })
 
       {/* Game Name */}
       <div className="bg-card rounded-2xl p-4 panda-shadow mb-6">
-        <label className="block text-sm font-medium text-foreground mb-2">Game Name</label>
+        <label className="block text-sm font-medium text-foreground mb-2">Game Name *</label>
         <Input
           type="text"
           placeholder="My Awesome Maths Quiz"
@@ -85,6 +126,20 @@ const CustomGameCreator: React.FC<CustomGameCreatorProps> = ({ onBack, onSave })
           onChange={(e) => setGameName(e.target.value)}
           className="h-12 rounded-xl"
         />
+      </div>
+
+      {/* Instructions */}
+      <div className="bg-primary/10 rounded-2xl p-4 mb-6 flex items-start gap-3">
+        <AlertCircle className="w-5 h-5 text-primary mt-0.5" />
+        <div className="text-sm text-foreground">
+          <p className="font-medium mb-1">How to create questions:</p>
+          <ul className="list-disc list-inside text-muted-foreground space-y-1">
+            <li>Enter your question text</li>
+            <li>Fill in all 4 answer options</li>
+            <li>Click the letter (A, B, C, D) to mark the correct answer (green = correct)</li>
+            <li>Set difficulty and points</li>
+          </ul>
+        </div>
       </div>
 
       {/* Questions */}
@@ -107,7 +162,7 @@ const CustomGameCreator: React.FC<CustomGameCreatorProps> = ({ onBack, onSave })
 
             {/* Question Text */}
             <Textarea
-              placeholder="Enter your question..."
+              placeholder="Enter your question... (e.g., What is 5 + 7?)"
               value={q.question || ''}
               onChange={(e) => updateQuestion(qIndex, 'question', e.target.value)}
               className="mb-4 rounded-xl"
@@ -119,18 +174,20 @@ const CustomGameCreator: React.FC<CustomGameCreatorProps> = ({ onBack, onSave })
               {q.options?.map((option, oIndex) => (
                 <div key={oIndex} className="flex items-center gap-2">
                   <button
+                    type="button"
                     onClick={() => updateQuestion(qIndex, 'correctAnswer', oIndex)}
                     className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${
                       q.correctAnswer === oIndex
                         ? 'bg-success text-white'
                         : 'bg-muted text-muted-foreground hover:bg-muted/80'
                     }`}
+                    title={q.correctAnswer === oIndex ? 'This is the correct answer' : 'Click to mark as correct'}
                   >
                     {String.fromCharCode(65 + oIndex)}
                   </button>
                   <Input
                     type="text"
-                    placeholder={`Option ${String.fromCharCode(65 + oIndex)}`}
+                    placeholder={`Option ${String.fromCharCode(65 + oIndex)} ${oIndex === 0 ? '(e.g., 12)' : ''}`}
                     value={option}
                     onChange={(e) => updateOption(qIndex, oIndex, e.target.value)}
                     className="flex-1 h-10 rounded-lg"
@@ -147,6 +204,7 @@ const CustomGameCreator: React.FC<CustomGameCreatorProps> = ({ onBack, onSave })
                   {(['easy', 'medium', 'hard'] as const).map((diff) => (
                     <button
                       key={diff}
+                      type="button"
                       onClick={() => updateQuestion(qIndex, 'difficulty', diff)}
                       className={`px-3 py-1 rounded-lg text-sm font-medium capitalize transition-colors ${
                         q.difficulty === diff
@@ -168,6 +226,7 @@ const CustomGameCreator: React.FC<CustomGameCreatorProps> = ({ onBack, onSave })
                   {[10, 15, 20, 25].map((pts) => (
                     <button
                       key={pts}
+                      type="button"
                       onClick={() => updateQuestion(qIndex, 'points', pts)}
                       className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
                         q.points === pts
@@ -201,10 +260,10 @@ const CustomGameCreator: React.FC<CustomGameCreatorProps> = ({ onBack, onSave })
         size="lg"
         onClick={handleSave}
         className="w-full mt-6"
-        disabled={!gameName.trim() || questions.some(q => !q.question?.trim())}
+        disabled={!isValid}
       >
         <Save className="w-5 h-5 mr-2" />
-        Save & Play
+        Save & Play ({questions.length} question{questions.length !== 1 ? 's' : ''})
       </Button>
     </div>
   );
