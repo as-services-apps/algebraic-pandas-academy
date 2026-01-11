@@ -37,97 +37,99 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete }) => {
   const displayName = isTeacher && title ? `${title} ${name}` : name;
 
   return (
-    <div className="min-h-[150vh] bg-background flex flex-col items-center justify-start pt-20 p-6">
-      <div className="max-w-md w-full">
-        {/* Header */}
-        <div className="text-center mb-8 bounce-in">
-          <img 
-            src={pandaMascot} 
-            alt="Panda Mascot" 
-            className="w-24 h-24 mx-auto mb-4 float"
-          />
-          <h1 className="text-4xl font-bold text-gradient mb-2">
-            What's your name?
-          </h1>
-          <p className="text-muted-foreground">
-            {isTeacher 
-              ? "Let your students know who's in charge! 🎓"
-              : "Tell us who you are, champion! 🌟"
-            }
-          </p>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6 slide-up">
-          <div className="bg-card rounded-3xl p-6 panda-shadow">
-            {/* Title Selection for Teachers */}
-            {isTeacher && (
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-foreground mb-3">
-                  Title
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {titles.map((t) => (
-                    <button
-                      key={t}
-                      type="button"
-                      onClick={() => setTitle(t)}
-                      className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
-                        title === t
-                          ? 'bg-primary text-primary-foreground scale-105'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Name Input */}
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-3">
-                {isTeacher ? 'Surname' : 'Your Name'}
-              </label>
-              <Input
-                type="text"
-                placeholder={isTeacher ? "Smith" : "Enter your name"}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="h-14 text-lg rounded-xl border-2 focus:border-primary"
-                autoFocus
-              />
-            </div>
-
-            {/* Preview */}
-            {displayName && (
-              <div className="mt-6 p-4 bg-muted rounded-xl text-center">
-                <p className="text-sm text-muted-foreground mb-1">You'll be known as:</p>
-                <p className="text-2xl font-bold text-foreground">
-                  {displayName || '...'}
-                </p>
-              </div>
-            )}
+    <div className="min-h-[120vh] bg-background flex flex-col">
+      {/* Main content - fits in viewport */}
+      <div className="h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+        <div className="max-w-md w-full">
+          {/* Header */}
+          <div className="text-center mb-3 sm:mb-4 bounce-in">
+            <img 
+              src={pandaMascot} 
+              alt="Panda Mascot" 
+              className="w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-2 float"
+            />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gradient mb-1">
+              What's your name?
+            </h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              {isTeacher 
+                ? "Let your students know who's in charge! 🎓"
+                : "Tell us who you are, champion! 🌟"
+              }
+            </p>
           </div>
 
-          <Button
-            type="submit"
-            variant="game"
-            size="xl"
-            className="w-full"
-            disabled={!name.trim() || (isTeacher && !title)}
-          >
-            Continue 🚀
-          </Button>
-        </form>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 slide-up">
+            <div className="bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 panda-shadow">
+              {/* Title Selection for Teachers */}
+              {isTeacher && (
+                <div className="mb-3 sm:mb-4">
+                  <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
+                    Title
+                  </label>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    {titles.map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setTitle(t)}
+                        className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-sm font-medium transition-all duration-200 ${
+                          title === t
+                            ? 'bg-primary text-primary-foreground scale-105'
+                            : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                        }`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Name Input */}
+              <div>
+                <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
+                  {isTeacher ? 'Surname' : 'Your Name'}
+                </label>
+                <Input
+                  type="text"
+                  placeholder={isTeacher ? "Smith" : "Enter your name"}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="h-10 sm:h-12 text-base rounded-lg sm:rounded-xl border-2 focus:border-primary"
+                  autoFocus
+                />
+              </div>
+
+              {/* Preview */}
+              {displayName && (
+                <div className="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-muted rounded-lg sm:rounded-xl text-center">
+                  <p className="text-xs text-muted-foreground mb-0.5">You'll be known as:</p>
+                  <p className="text-lg sm:text-xl font-bold text-foreground">
+                    {displayName || '...'}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              variant="game"
+              size="lg"
+              className="w-full"
+              disabled={!name.trim() || (isTeacher && !title)}
+            >
+              Continue 🚀
+            </Button>
+          </form>
+        </div>
       </div>
 
       {/* Footer - scroll to see */}
-      <footer className="mt-auto pt-32 pb-6 text-center">
+      <footer className="py-6 text-center">
         <p className="text-muted-foreground text-sm">
-          Made by <span className="font-semibold text-foreground">Angad Singh</span> from{' '}
-          <span className="font-semibold text-foreground">AS Services</span>
+          Made by <span className="font-semibold text-foreground">Angad</span>
         </p>
       </footer>
     </div>
