@@ -68,110 +68,112 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
   };
 
   return (
-    <div className="min-h-[150vh] bg-background flex flex-col items-center justify-start pt-20 p-6">
-      <div className="max-w-2xl w-full">
-        {/* Header */}
-        <div className="text-center mb-8 bounce-in">
-          <img 
-            src={pandaMascot} 
-            alt="Panda Mascot" 
-            className="w-24 h-24 mx-auto mb-4 float"
-          />
-          <h1 className="text-4xl font-bold text-gradient mb-2">
-            Set Up Your Teams! <span className="emoji">🏆</span>
-          </h1>
-          <p className="text-muted-foreground">
-            Create 2-4 teams to compete against each other
-          </p>
-        </div>
+    <div className="min-h-[120vh] bg-background flex flex-col">
+      {/* Main content - fits in viewport */}
+      <div className="h-screen flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div className="max-w-xl w-full">
+          {/* Header */}
+          <div className="text-center mb-3 sm:mb-4 bounce-in">
+            <img 
+              src={pandaMascot} 
+              alt="Panda Mascot" 
+              className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2 float"
+            />
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gradient mb-1">
+              Set Up Your Teams! 🏆
+            </h1>
+            <p className="text-muted-foreground text-xs sm:text-sm">
+              Create 2-4 teams to compete
+            </p>
+          </div>
 
-        {/* Teams List */}
-        <div className="space-y-4 mb-6 slide-up">
-          {teams.map((team, index) => (
-            <div 
-              key={index}
-              className="bg-card rounded-2xl p-4 panda-shadow flex items-center gap-4"
-            >
-              {/* Color Picker */}
-              <div className="flex gap-2">
-                {teamColors.map((color) => (
-                  <button
-                    key={color.value}
-                    onClick={() => updateTeamColor(index, color.value)}
-                    className={`w-8 h-8 rounded-full ${color.class} transition-all duration-200 ${
-                      team.color === color.value 
-                        ? 'ring-2 ring-offset-2 ring-foreground scale-110' 
-                        : 'opacity-50 hover:opacity-75'
-                    }`}
-                  />
-                ))}
+          {/* Teams List */}
+          <div className="space-y-2 sm:space-y-3 mb-3 sm:mb-4 slide-up">
+            {teams.map((team, index) => (
+              <div 
+                key={index}
+                className="bg-card rounded-xl sm:rounded-2xl p-2.5 sm:p-3 panda-shadow flex items-center gap-2 sm:gap-3"
+              >
+                {/* Color Picker */}
+                <div className="flex gap-1.5">
+                  {teamColors.map((color) => (
+                    <button
+                      key={color.value}
+                      onClick={() => updateTeamColor(index, color.value)}
+                      className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full ${color.class} transition-all duration-200 ${
+                        team.color === color.value 
+                          ? 'ring-2 ring-offset-1 ring-foreground scale-110' 
+                          : 'opacity-50 hover:opacity-75'
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {/* Team Name */}
+                <Input
+                  type="text"
+                  value={team.name}
+                  onChange={(e) => updateTeamName(index, e.target.value)}
+                  className="flex-1 h-9 sm:h-10 text-sm sm:text-base rounded-lg sm:rounded-xl border-2"
+                  placeholder="Team name"
+                />
+
+                {/* Remove Button */}
+                {teams.length > 2 && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeTeam(index)}
+                    className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
+            ))}
+          </div>
 
-              {/* Team Name */}
-              <Input
-                type="text"
-                value={team.name}
-                onChange={(e) => updateTeamName(index, e.target.value)}
-                className="flex-1 h-12 text-lg rounded-xl border-2"
-                placeholder="Team name"
-              />
+          {/* Add Team Button */}
+          {teams.length < 4 && (
+            <Button
+              variant="outline"
+              onClick={addTeam}
+              className="w-full mb-3 sm:mb-4 h-9 sm:h-10 text-sm"
+            >
+              <Plus className="w-4 h-4 mr-1.5" />
+              Add Team
+            </Button>
+          )}
 
-              {/* Remove Button */}
-              {teams.length > 2 && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => removeTeam(index)}
-                  className="text-destructive hover:bg-destructive/10"
-                >
-                  <Trash2 className="w-5 h-5" />
-                </Button>
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Add Team Button */}
-        {teams.length < 4 && (
-          <Button
-            variant="outline"
-            onClick={addTeam}
-            className="w-full mb-6"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Add Another Team
-          </Button>
-        )}
-
-        {/* Team Mode Info */}
-        <div className="bg-card rounded-2xl p-4 panda-shadow mb-6">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🎯</span>
-            <div>
-              <p className="font-semibold text-foreground">Team vs Team Mode</p>
-              <p className="text-sm text-muted-foreground">Teams will compete against each other - no AI opponents!</p>
+          {/* Team Mode Info */}
+          <div className="bg-card rounded-xl sm:rounded-2xl p-2.5 sm:p-3 panda-shadow mb-3 sm:mb-4">
+            <div className="flex items-center gap-2">
+              <span className="text-lg sm:text-xl">🎯</span>
+              <div>
+                <p className="font-semibold text-foreground text-sm">Team vs Team</p>
+                <p className="text-xs text-muted-foreground">Teams compete against each other</p>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Continue Button */}
-        <Button
-          variant="game"
-          size="xl"
-          onClick={handleSubmit}
-          className="w-full"
-          disabled={teams.some(t => !t.name.trim())}
-        >
-          <Check className="w-6 h-6 mr-2" />
-          Start Playing!
-        </Button>
+          {/* Continue Button */}
+          <Button
+            variant="game"
+            size="lg"
+            onClick={handleSubmit}
+            className="w-full"
+            disabled={teams.some(t => !t.name.trim())}
+          >
+            <Check className="w-5 h-5 mr-2" />
+            Start Playing!
+          </Button>
+        </div>
       </div>
 
       {/* Footer - scroll to see */}
-      <footer className="mt-auto pt-32 pb-6 text-center">
+      <footer className="py-6 text-center">
         <p className="text-muted-foreground text-sm">
-          Made by <span className="font-semibold text-foreground">Angad Singh</span> from{' '}
-          <span className="font-semibold text-foreground">AS Services</span>
+          Made by <span className="font-semibold text-foreground">Angad</span>
         </p>
       </footer>
     </div>
