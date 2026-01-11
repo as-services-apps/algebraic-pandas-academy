@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Car, Trophy, Zap } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { ArrowLeft, Car, Trophy, Zap, Keyboard } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
 import confetti from '@/lib/confetti';
 
@@ -14,11 +15,12 @@ interface RaceQuestion {
   options: number[];
 }
 
-const generateQuestion = (difficulty: number): RaceQuestion => {
-  const a = Math.floor(Math.random() * (10 * difficulty)) + 1;
-  const b = Math.floor(Math.random() * (10 * difficulty)) + 1;
-  const operators = ['+', '-', '×'];
-  const op = operators[Math.floor(Math.random() * (difficulty > 2 ? 3 : 2))];
+const generateQuestion = (difficulty: number, isHard: boolean): RaceQuestion => {
+  const mult = isHard ? 2 : 1;
+  const a = Math.floor(Math.random() * (10 * difficulty * mult)) + 1;
+  const b = Math.floor(Math.random() * (10 * difficulty * mult)) + 1;
+  const operators = isHard ? ['+', '-', '×', '÷'] : ['+', '-', '×'];
+  const op = operators[Math.floor(Math.random() * (difficulty > 2 ? operators.length : 2))];
   
   let answer: number;
   let question: string;
@@ -35,6 +37,11 @@ const generateQuestion = (difficulty: number): RaceQuestion => {
     case '×':
       answer = a * b;
       question = `${a} × ${b}`;
+      break;
+    case '÷':
+      const product = a * b;
+      answer = a;
+      question = `${product} ÷ ${b}`;
       break;
     default:
       answer = a + b;
@@ -55,9 +62,10 @@ const generateQuestion = (difficulty: number): RaceQuestion => {
 const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
+  const isSoloMode = gameState.gameMode === 'solo';
   
-  const team1 = isTeamMode ? gameState.teams[0] : { id: '1', name: 'Player 1', score: 0, color: 'team-1' };
-  const team2 = isTeamMode ? gameState.teams[1] : { id: '2', name: 'Player 2', score: 0, color: 'team-2' };
+  const team1 = isTeamMode ? gameState.teams[0] : { id: '1', name: isSoloMode ? 'You' : 'Player 1', score: 0, color: 'team-1' };
+  const team2 = isTeamMode ? gameState.teams[1] : { id: '2', name: isSoloMode ? 'AI' : 'Player 2', score: 0, color: 'team-2' };
   
   const [team1Position, setTeam1Position] = useState(0);
   const [team2Position, setTeam2Position] = useState(0);
@@ -68,12 +76,15 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
   const [currentPlayer, setCurrentPlayer] = useState<'team1' | 'team2'>('team1');
   const [streak, setStreak] = useState(0);
   const [isStarted, setIsStarted] = useState(false);
+  const [isHardMode, setIsHardMode] = useState(false);
+  const [typedAnswer, setTypedAnswer] = useState('');
+  const [isAITurn, setIsAITurn] = useState(false);
   
   const finishLine = 100;
 
   const nextQuestion = useCallback(() => {
-    setCurrentQuestion(generateQuestion(difficulty));
-  }, [difficulty]);
+    setCurrentQuestion(generateQuestion(difficulty, isHardMode));
+  }, [difficulty, isHardMode]);
 
   useEffect(() => {
     if (isStarted && !currentQuestion && !gameOver) {
@@ -81,25 +92,49 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
     }
   }, [isStarted, currentQuestion, gameOver, nextQuestion]);
 
+  // AI turn handling
+  useEffect(() => {
+    if (isSoloMode && currentPlayer === 'team2' && isStarted && !gameOver && currentQuestion) {
+      setIsAITurn(true);
+      // AI "thinks" and answers (80% correct rate)
+      const thinkTime = 800 + Math.random() * 1200;
+      const timeout = setTimeout(() => {
+        const isCorrect = Math.random() > 0.2;
+        if (isCorrect) {
+          const boost = 10 + streak * 2;
+          setTeam2Position(prev => Math.min(prev + boost, finishLine));
+          setStreak(prev => prev + 1);
+        } else {
+          setTeam1Position(prev => Math.min(prev + 5, finishLine));
+          setStreak(0);
+        }
+        setCurrentPlayer('team1');
+        setIsAITurn(false);
+        nextQuestion();
+      }, thinkTime);
+      return () => clearTimeout(timeout);
+    }
+  }, [isSoloMode, currentPlayer, isStarted, gameOver, currentQuestion, streak, nextQuestion]);
+
   useEffect(() => {
     if (team1Position >= finishLine && !gameOver) {
       setGameOver(true);
       setWinner('team1');
       confetti();
-      if (isTeamMode) updateTeamScore(team1.id, 10);
+      if (isTeamMode) updateTeamScore(team1.id, isHardMode ? 20 : 10);
     } else if (team2Position >= finishLine && !gameOver) {
       setGameOver(true);
       setWinner('team2');
       confetti();
-      if (isTeamMode) updateTeamScore(team2.id, 10);
+      if (isTeamMode) updateTeamScore(team2.id, isHardMode ? 20 : 10);
     }
-  }, [team1Position, team2Position, gameOver, isTeamMode, team1.id, team2.id, updateTeamScore]);
+  }, [team1Position, team2Position, gameOver, isTeamMode, isHardMode, team1.id, team2.id, updateTeamScore]);
 
   const handleAnswer = (option: number) => {
-    if (!currentQuestion || gameOver) return;
+    if (!currentQuestion || gameOver || isAITurn) return;
     
     if (option === currentQuestion.answer) {
-      const boost = 10 + streak * 2;
+      const boost = isHardMode ? 15 + streak * 3 : 10 + streak * 2;
       if (currentPlayer === 'team1') {
         setTeam1Position(prev => Math.min(prev + boost, finishLine));
       } else {
@@ -119,7 +154,16 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
     
     // Switch players
     setCurrentPlayer(currentPlayer === 'team1' ? 'team2' : 'team1');
+    setTypedAnswer('');
     nextQuestion();
+  };
+
+  const handleTypedSubmit = () => {
+    if (!typedAnswer.trim() || isAITurn) return;
+    const parsed = parseFloat(typedAnswer);
+    if (!isNaN(parsed)) {
+      handleAnswer(parsed);
+    }
   };
 
   const startRace = () => {
@@ -131,103 +175,114 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
     setStreak(0);
     setDifficulty(1);
     setCurrentPlayer('team1');
+    setTypedAnswer('');
+    setIsAITurn(false);
     nextQuestion();
   };
 
   const getCurrentTeamName = () => currentPlayer === 'team1' ? team1.name : team2.name;
 
   return (
-    <div className="space-y-6 fade-in">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={onBack}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back
-        </Button>
-        <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Car className="w-6 h-6 text-primary" />
-            Math Racing 🏎️
-          </h2>
-          <p className="text-muted-foreground">
-            {isTeamMode ? 'Team vs Team - Answer correctly to speed ahead!' : 'Player vs Player - Answer correctly to speed ahead!'}
-          </p>
+    <div className="space-y-4 fade-in">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={onBack}>
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
+              <Car className="w-5 h-5 text-primary" />
+              Math Racing 🏎️
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              {isSoloMode ? 'You vs AI' : isTeamMode ? 'Team vs Team' : 'Player vs Player'}
+            </p>
+          </div>
         </div>
+        <Button 
+          variant={isHardMode ? "destructive" : "outline"} 
+          size="sm"
+          onClick={() => setIsHardMode(!isHardMode)}
+          disabled={isStarted && !gameOver}
+        >
+          <Keyboard className="w-4 h-4 mr-1" />
+          {isHardMode ? 'Hard' : 'Normal'}
+        </Button>
       </div>
 
-      <div className="bg-card rounded-2xl p-6 panda-shadow">
-        {/* Team 1 Track */}
-        <div className="space-y-4 mb-6">
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
+      <div className="bg-card rounded-xl p-4 panda-shadow">
+        {/* Race Tracks */}
+        <div className="space-y-3 mb-4">
+          {/* Team 1 Track */}
+          <div>
+            <div className="flex items-center gap-2 mb-1">
               <span className="text-lg">🟡</span>
-              <span className="font-bold text-foreground">{team1.name}</span>
+              <span className="font-bold text-foreground text-sm">{team1.name}</span>
             </div>
-            <div className="h-12 bg-muted rounded-full overflow-hidden relative">
+            <div className="h-10 bg-muted rounded-full overflow-hidden relative">
               <div className="absolute inset-0 flex items-center px-2">
                 <div className="flex-1 border-b-2 border-dashed border-border" />
               </div>
               <div 
                 className="absolute top-1 bottom-1 left-1 flex items-center transition-all duration-300"
-                style={{ left: `${Math.min(team1Position, 95)}%` }}
+                style={{ left: `${Math.min(team1Position, 90)}%` }}
               >
-                <div className="bg-secondary text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg">
+                <div className="bg-secondary text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-lg">
                   🚗
                 </div>
               </div>
               <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                <Trophy className="w-6 h-6 text-secondary" />
+                <Trophy className="w-5 h-5 text-secondary" />
               </div>
             </div>
-            <div className="flex justify-between text-xs text-muted-foreground mt-1">
-              <span>Start</span>
-              <span>{Math.round(team1Position)}%</span>
-              <span>Finish</span>
+            <div className="text-right text-xs text-muted-foreground mt-0.5">
+              {Math.round(team1Position)}%
             </div>
           </div>
 
           {/* Team 2 Track */}
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
               <span className="text-lg">🔴</span>
-              <span className="font-bold text-foreground">{team2.name}</span>
+              <span className="font-bold text-foreground text-sm">{team2.name}</span>
             </div>
-            <div className="h-12 bg-muted rounded-full overflow-hidden relative">
+            <div className="h-10 bg-muted rounded-full overflow-hidden relative">
               <div className="absolute inset-0 flex items-center px-2">
                 <div className="flex-1 border-b-2 border-dashed border-border" />
               </div>
               <div 
                 className="absolute top-1 bottom-1 left-1 flex items-center transition-all duration-300"
-                style={{ left: `${Math.min(team2Position, 95)}%` }}
+                style={{ left: `${Math.min(team2Position, 90)}%` }}
               >
-                <div className="bg-destructive text-white px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg">
+                <div className="bg-destructive text-white px-2 py-0.5 rounded-full text-xs font-bold shadow-lg">
                   🚗
                 </div>
               </div>
               <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                <Trophy className="w-6 h-6 text-secondary" />
+                <Trophy className="w-5 h-5 text-secondary" />
               </div>
             </div>
-            <div className="text-right text-xs text-muted-foreground mt-1">
+            <div className="text-right text-xs text-muted-foreground mt-0.5">
               {Math.round(team2Position)}%
             </div>
           </div>
         </div>
 
-        {/* Current Turn & Streak */}
+        {/* Current Turn */}
         {isStarted && !gameOver && (
-          <div className="text-center mb-4">
-            <div className={`inline-block px-4 py-2 rounded-full font-bold ${
+          <div className="text-center mb-3">
+            <div className={`inline-block px-3 py-1.5 rounded-full font-bold text-sm ${
               currentPlayer === 'team1' ? 'bg-secondary' : 'bg-destructive'
             } text-white`}>
-              {getCurrentTeamName()}'s Turn!
+              {isAITurn ? 'AI is racing...' : `${getCurrentTeamName()}'s Turn!`}
             </div>
           </div>
         )}
 
-        {streak > 0 && (
-          <div className="flex items-center justify-center gap-2 mb-4 text-secondary font-bold">
-            <Zap className="w-5 h-5" />
-            {streak} Streak! +{streak * 2} bonus speed!
+        {streak > 0 && !isAITurn && (
+          <div className="flex items-center justify-center gap-1 mb-3 text-secondary font-bold text-sm">
+            <Zap className="w-4 h-4" />
+            {streak} Streak! +{isHardMode ? streak * 3 : streak * 2} bonus!
           </div>
         )}
 
@@ -239,34 +294,55 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
             </Button>
           </div>
         ) : gameOver ? (
-          <div className="text-center space-y-4">
-            <div className={`text-3xl font-bold ${winner === 'team1' ? 'text-secondary' : 'text-destructive'}`}>
-              🎉 {winner === 'team1' ? team1.name : team2.name} Wins! +10 Points!
+          <div className="text-center space-y-3">
+            <div className={`text-xl font-bold ${winner === 'team1' ? 'text-secondary' : 'text-destructive'}`}>
+              🎉 {winner === 'team1' ? team1.name : team2.name} Wins!
             </div>
-            <Button onClick={startRace} size="lg">
+            <Button onClick={startRace}>
               Race Again!
             </Button>
           </div>
-        ) : currentQuestion && (
-          <div className="space-y-4">
+        ) : currentQuestion && !isAITurn && (
+          <div className="space-y-3">
             <div className="text-center">
-              <div className="text-3xl font-bold text-foreground mb-4">
+              <div className="text-2xl font-bold text-foreground mb-2">
                 {currentQuestion.question} = ?
               </div>
+              {isHardMode && (
+                <p className="text-xs text-muted-foreground">Use * for × and / for ÷</p>
+              )}
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              {currentQuestion.options.map((option, idx) => (
-                <Button
-                  key={idx}
-                  variant="outline"
-                  size="lg"
-                  onClick={() => handleAnswer(option)}
-                  className="text-xl py-6 hover:bg-primary hover:text-primary-foreground transition-all"
-                >
-                  {option}
+            
+            {isHardMode ? (
+              <div className="space-y-2 max-w-xs mx-auto">
+                <Input
+                  type="text"
+                  placeholder="Type answer..."
+                  value={typedAnswer}
+                  onChange={(e) => setTypedAnswer(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleTypedSubmit()}
+                  className="h-12 text-xl text-center"
+                  autoFocus
+                />
+                <Button onClick={handleTypedSubmit} className="w-full" disabled={!typedAnswer.trim()}>
+                  Submit
                 </Button>
-              ))}
-            </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2">
+                {currentQuestion.options.map((option, idx) => (
+                  <Button
+                    key={idx}
+                    variant="outline"
+                    size="lg"
+                    onClick={() => handleAnswer(option)}
+                    className="text-lg py-4 hover:bg-primary hover:text-primary-foreground transition-all"
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>

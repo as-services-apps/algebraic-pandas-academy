@@ -212,46 +212,46 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl">{topic.icon}</span>
+    <div className="max-w-3xl mx-auto h-[calc(100vh-120px)] flex flex-col">
+      {/* Header - compact */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">{topic.icon}</span>
           <div>
-            <h3 className="font-bold text-foreground flex items-center gap-2">
+            <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
               {topic.name}
               {gameState.isHardMode && (
                 <span className="text-xs bg-destructive text-white px-2 py-0.5 rounded-full">HARD</span>
               )}
             </h3>
-            <p className="text-sm text-muted-foreground">
-              Question {currentQuestionIndex + 1} of {questions.length}
+            <p className="text-xs text-muted-foreground">
+              Q{currentQuestionIndex + 1}/{questions.length}
             </p>
           </div>
         </div>
 
         {/* Timer */}
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold ${
+        <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full font-bold text-sm ${
           timeLeft <= 5 
             ? 'bg-destructive text-destructive-foreground animate-pulse' 
             : 'bg-muted text-foreground'
         }`}>
-          <Clock className="w-5 h-5" />
+          <Clock className="w-4 h-4" />
           {timeLeft}s
         </div>
       </div>
 
       {/* Current Team Indicator */}
       {gameState.gameMode === 'team' && currentTeam && (
-        <div className={`bg-team-${(currentTeamIndex % 4) + 1} text-white rounded-xl p-3 mb-6 text-center`}>
+        <div className={`bg-team-${(currentTeamIndex % 4) + 1} text-white rounded-lg p-2 mb-3 text-center text-sm`}>
           <p className="font-bold">{currentTeam.name}'s Turn!</p>
         </div>
       )}
 
-      {/* Question Card */}
-      <div className="bg-card rounded-3xl p-8 panda-shadow mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+      {/* Question Card - flexible height */}
+      <div className="bg-card rounded-2xl p-4 md:p-6 panda-shadow flex-1 flex flex-col min-h-0">
+        <div className="flex items-center gap-2 mb-2">
+          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${
             currentQuestion.difficulty === 'easy' 
               ? 'bg-success/20 text-success' 
               : currentQuestion.difficulty === 'medium'
@@ -260,26 +260,29 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
           }`}>
             {currentQuestion.difficulty.toUpperCase()}
           </span>
-          <span className="px-3 py-1 rounded-full text-xs font-medium bg-primary/20 text-primary">
+          <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary">
             +{gameState.isHardMode ? currentQuestion.points * 2 : currentQuestion.points} pts
           </span>
         </div>
 
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-8">
+        <h2 className="text-xl md:text-2xl font-bold text-foreground mb-4">
           {currentQuestion.question}
         </h2>
 
         {/* Hard Mode: Text Input */}
         {gameState.isHardMode ? (
-          <div className="space-y-4">
+          <div className="space-y-3 flex-1 flex flex-col justify-center">
+            <p className="text-xs text-muted-foreground text-center">
+              Use * for multiplication, / for division
+            </p>
             <Input
               type="text"
-              placeholder="Type your answer here..."
+              placeholder="Type your answer..."
               value={typedAnswer}
               onChange={(e) => setTypedAnswer(e.target.value)}
               disabled={isAnswerLocked}
               onKeyDown={(e) => e.key === 'Enter' && handleTypedSubmit()}
-              className={`h-14 text-xl text-center rounded-2xl ${
+              className={`h-12 text-lg text-center rounded-xl ${
                 showResult 
                   ? isTypedCorrect 
                     ? 'border-success bg-success/10' 
@@ -301,7 +304,7 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
           </div>
         ) : (
           /* Normal Mode: Multiple Choice */
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-2 md:gap-3 flex-1 content-center">
             {currentQuestion.options.map((option, index) => {
               const isCorrect = index === currentQuestion.correctAnswer;
               const isSelected = selectedAnswer === index;
@@ -325,57 +328,57 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
                   key={index}
                   onClick={() => handleAnswerSelect(index)}
                   disabled={isAnswerLocked}
-                  className={`p-5 rounded-2xl font-semibold text-lg transition-all duration-200 ${buttonClass} ${
+                  className={`p-3 md:p-4 rounded-xl font-semibold text-sm md:text-base transition-all duration-200 ${buttonClass} ${
                     !isAnswerLocked ? 'hover:scale-[1.02] active:scale-[0.98]' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <span className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold shrink-0">
                       {String.fromCharCode(65 + index)}
                     </span>
-                    <span className="flex-1 text-left">{option}</span>
-                    {showResult && isCorrect && <Check className="w-6 h-6" />}
-                    {showResult && isSelected && !isCorrect && <X className="w-6 h-6" />}
+                    <span className="flex-1 text-left truncate">{option}</span>
+                    {showResult && isCorrect && <Check className="w-5 h-5 shrink-0" />}
+                    {showResult && isSelected && !isCorrect && <X className="w-5 h-5 shrink-0" />}
                   </div>
                 </button>
               );
             })}
           </div>
         )}
+
+        {/* Result & Next Button - inside card */}
+        {showResult && (
+          <div className="text-center slide-up mt-3">
+            {gameState.isHardMode ? (
+              <p className={`text-base font-bold mb-2 ${isTypedCorrect ? 'text-success' : 'text-destructive'}`}>
+                {isTypedCorrect 
+                  ? '🎉 Correct!' 
+                  : `❌ Answer: ${currentQuestion.options[currentQuestion.correctAnswer]}`
+                }
+              </p>
+            ) : (
+              <p className={`text-base font-bold mb-2 ${
+                selectedAnswer === currentQuestion.correctAnswer 
+                  ? 'text-success' 
+                  : 'text-destructive'
+              }`}>
+                {selectedAnswer === currentQuestion.correctAnswer 
+                  ? '🎉 Correct!' 
+                  : `❌ Answer: ${currentQuestion.options[currentQuestion.correctAnswer]}`
+                }
+              </p>
+            )}
+            <Button variant="game" size="default" onClick={handleNext}>
+              {currentQuestionIndex < questions.length - 1 ? 'Next' : 'Results'}
+              <ArrowRight className="w-4 h-4 ml-1" />
+            </Button>
+          </div>
+        )}
       </div>
 
-      {/* Result & Next Button */}
-      {showResult && (
-        <div className="text-center slide-up">
-          {gameState.isHardMode ? (
-            <p className={`text-xl font-bold mb-4 ${isTypedCorrect ? 'text-success' : 'text-destructive'}`}>
-              {isTypedCorrect 
-                ? '🎉 Correct! Great job!' 
-                : `❌ Oops! The answer was: ${currentQuestion.options[currentQuestion.correctAnswer]}`
-              }
-            </p>
-          ) : (
-            <p className={`text-xl font-bold mb-4 ${
-              selectedAnswer === currentQuestion.correctAnswer 
-                ? 'text-success' 
-                : 'text-destructive'
-            }`}>
-              {selectedAnswer === currentQuestion.correctAnswer 
-                ? '🎉 Correct! Great job!' 
-                : `❌ Oops! The answer was: ${currentQuestion.options[currentQuestion.correctAnswer]}`
-              }
-            </p>
-          )}
-          <Button variant="game" size="lg" onClick={handleNext}>
-            {currentQuestionIndex < questions.length - 1 ? 'Next Question' : 'See Results'}
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
-        </div>
-      )}
-
-      {/* Progress Bar */}
-      <div className="mt-8">
-        <div className="h-2 bg-muted rounded-full overflow-hidden">
+      {/* Progress Bar - compact */}
+      <div className="mt-3">
+        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
           <div 
             className="h-full bg-primary rounded-full transition-all duration-300"
             style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
