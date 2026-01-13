@@ -45,48 +45,58 @@ const generateQuestion = (isHard: boolean): MathQuestion => {
     }
     return { question, answer, options: options.sort(() => Math.random()-0.5) };
   } else {
-    // Hard mode: algebra (linear, quadratic, substitution)
-    const type = Math.floor(Math.random() * 3); // 0: linear, 1: quadratic factorable, 2: substitution
+    // Hard mode: light algebra (Year 7–9 level)
+    const type = Math.floor(Math.random() * 4); // 0: simple linear, 1: substitution, 2: one-step mult/div, 3: small factorable quadratic
     let question = '';
     let answer = 0;
     let options: number[] = [];
 
     switch(type) {
-      case 0: { // linear ax + b = c
-        const a = Math.floor(Math.random()*10)+1;
-        const x = Math.floor(Math.random()*10)+1;
-        const b = Math.floor(Math.random()*20)-10;
+      case 0: { // simple linear ax + b = c
+        const a = Math.floor(Math.random()*5)+1;
+        const x = Math.floor(Math.random()*10);
+        const b = Math.floor(Math.random()*10);
         const c = a*x + b;
         question = `${a}x + ${b} = ${c}, solve for x`;
         answer = x;
         break;
       }
-      case 1: { // quadratic factorable x^2 + bx + c = 0
+      case 1: { // substitution
+        const x = Math.floor(Math.random()*10);
+        const y = Math.floor(Math.random()*10);
+        const expression = Math.random() < 0.5 ? `2x + y` : `x + 3y`;
+        question = `If x=${x} and y=${y}, evaluate ${expression}`;
+        answer = expression === '2x + y' ? 2*x + y : x + 3*y;
+        break;
+      }
+      case 2: { // one-step multiplication or division
+        const a = Math.floor(Math.random()*10)+1;
+        const x = Math.floor(Math.random()*10)+1;
+        const op = Math.random() < 0.5 ? '×' : '÷';
+        question = op === '×' ? `${x} × ? = ${x*a}, solve for ?` : `${x*a} ÷ ? = ${x}, solve for ?`;
+        answer = a;
+        break;
+      }
+      case 3: { // small factorable quadratic x^2 + bx + c = 0
         const x1 = Math.floor(Math.random()*5)+1;
         const x2 = Math.floor(Math.random()*5)+1;
-        const b = -(x1 + x2);
+        const b = -(x1+x2);
         const c = x1*x2;
         question = `x² + (${b})x + ${c} = 0, solve for x (smallest positive root)`;
         answer = Math.min(x1,x2);
-        break;
-      }
-      case 2: { // substitution
-        const x = Math.floor(Math.random()*10)+1;
-        const y = Math.floor(Math.random()*10)+1;
-        question = `If x=${x} and y=${y}, evaluate 2x + 3y`;
-        answer = 2*x + 3*y;
         break;
       }
     }
 
     options = [answer];
     while(options.length < 4){
-      const wrong = answer + (Math.floor(Math.random()*11)-5);
+      const wrong = answer + (Math.floor(Math.random()*7)-3);
       if (wrong !== answer && !options.includes(wrong)) options.push(wrong);
     }
     return { question, answer, options: options.sort(() => Math.random()-0.5) };
   }
 };
+
 
 /* ---------------- HELPER FUNCTIONS ---------------- */
 const createEmptyBoard = (): Board => Array.from({ length: ROWS }, () => Array(COLS).fill('empty'));
