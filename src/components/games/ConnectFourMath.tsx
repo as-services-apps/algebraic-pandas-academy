@@ -21,7 +21,7 @@ type Board = Cell[][];
 const ROWS = 6;
 const COLS = 7;
 
-/* ---------- helpers unchanged ---------- */
+/* ---------------- helpers ---------------- */
 
 const generateQuestion = (isHard: boolean): MathQuestion => {
   const a = Math.floor(Math.random() * (isHard ? 20 : 12)) + 1;
@@ -67,72 +67,191 @@ const generateQuestion = (isHard: boolean): MathQuestion => {
 };
 
 const createEmptyBoard = (): Board =>
-  Array(ROWS).fill(null).map(() => Array(COLS).fill('empty'));
+  Array.from({ length: ROWS }, () => Array(COLS).fill('empty'));
 
 const checkWinner = (board: Board, player: Cell): boolean => {
-  for (let r = 0; r < ROWS; r++)
-    for (let c = 0; c <= COLS - 4; c++)
-      if (board[r][c] === player && board[r][c + 1] === player && board[r][c + 2] === player && board[r][c + 3] === player)
-        return true;
+  const directions = [
+    [0, 1],
+    [1, 0],
+    [1, 1],
+    [-1, 1],
+  ];
 
-  for (let r = 0; r <= ROWS - 4; r++)
-    for (let c = 0; c < COLS; c++)
-      if (board[r][c] === player && board[r + 1][c] === player && board[r + 2][c] === player && board[r + 3][c] === player)
-        return true;
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
+      if (board[r][c] !== player) continue;
 
-  for (let r = 0; r <= ROWS - 4; r++)
-    for (let c = 0; c <= COLS - 4; c++)
-      if (board[r][c] === player && board[r + 1][c + 1] === player && board[r + 2][c + 2] === player && board[r + 3][c + 3] === player)
-        return true;
-
-  for (let r = 3; r < ROWS; r++)
-    for (let c = 0; c <= COLS - 4; c++)
-      if (board[r][c] === player && board[r - 1][c + 1] === player && board[r - 2][c + 2] === player && board[r - 3][c + 3] === player)
-        return true;
-
+      for (const [dr, dc] of directions) {
+        let count = 1;
+        for (let k = 1; k < 4; k++) {
+          const nr = r + dr * k;
+          const nc = c + dc * k;
+          if (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS) break;
+          if (board[nr][nc] !== player) break;
+          count++;
+        }
+        if (count === 4) return true;
+      }
+    }
+  }
   return false;
 };
 
-const isBoardFull = (board: Board): boolean => board[0].every(cell => cell !== 'empty');
+const isBoardFull = (board: Board) => board[0].every(c => c !== 'empty');
 
-/* ---------- component ---------- */
+/* ---------------- component ---------------- */
 
 const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
   const isSoloMode = gameState.gameMode === 'solo';
 
-  const team1 = isTeamMode ? gameState.teams[0] : { id: '1', name: isSoloMode ? 'You' : 'Player 1', score: 0, color: 'team-1' };
-  const team2 = isTeamMode ? gameState.teams[1] : { id: '2', name: isSoloMode ? 'AI' : 'Player 2', score: 0, color: 'team-2' };
+  const team1 = isTeamMode
+    ? gameState.teams[0]
+    : { id: '1', name: isSoloMode ? 'You' : 'Player 1', score: 0, color: 'team-1' };
+
+  const team2 = isTeamMode
+    ? gameState.teams[1]
+    : { id: '2', name: isSoloMode ? 'AI' : 'Player 2', score: 0, color: 'team-2' };
 
   const [board, setBoard] = useState<Board>(createEmptyBoard());
+  const [currentPlayer, setCurrentPlayer] = useState<'team1' | 'team2'>('team1');
   const [currentQuestion, setCurrentQuestion] = useState<MathQuestion | null>(null);
   const [selectedCol, setSelectedCol] = useState<number | null>(null);
   const [winner, setWinner] = useState<'team1' | 'team2' | 'draw' | null>(null);
-  const [currentPlayer, setCurrentPlayer] = useState<'team1' | 'team2'>('team1');
-  const [team1Score, setTeam1Score] = useState(0);
-  const [team2Score, setTeam2Score] = useState(0);
   const [isHardMode, setIsHardMode] = useState(false);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [isAIThinking, setIsAIThinking] = useState(false);
 
-  const dropPiece = useCallback((col: number, player: Cell, currentBoard: Board): Board | null => {
-    const newBoard = currentBoard.map(row => [...row]);
-    for (let row = ROWS - 1; row >= 0; row--) {
-      if (newBoard[row][col] === 'empty') {
-        newBoard[row][col] = player;
-        return newBoard;
+  const dropPiece = useCallback((col: number, player: Cell) => {
+    setBoard(prev => {
+      const copy = prev.map(r => [...r]);
+      for (let r = ROWS - 1; r >= 0; r--) {
+        if (copy[r][col] === 'empty') {
+          copy[r][col] = player;
+          return copy;
+        }
       }
-    }
-    return null;
+      return prev;
+    });
   }, []);
 
-  /* ---------- FIX APPLIED HERE ---------- */
-  {currentQuestion && (!isSoloMode || currentPlayer === 'team1') && (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in p-4">
-      {/* modal unchanged */}
+  /* ---------- AI TURN ---------- */
+  useEffect(() => {
+    if (!isSoloMode || currentPlayer !== 'team2' || winner) return;
+
+    setIsAIThinking(true);
+    const col = Math.floor(Math.random() * COLS);
+
+    setTimeout(() => {
+      dropPiece(col, 'team2');
+      setIsAIThinking(false);
+      setCurrentPlayer('team1');
+    }, 800);
+  }, [currentPlayer, isSoloMode, winner, dropPiece]);
+
+  const handleColumnClick = (col: number) => {
+    if (winner || isAIThinking || board[0][col] !== 'empty') return;
+    setSelectedCol(col);
+    setCurrentQuestion(generateQuestion(isHardMode));
+  };
+
+  const handleAnswer = (value: number) => {
+    if (!currentQuestion || selectedCol === null) return;
+
+    if (value === currentQuestion.answer) {
+      dropPiece(selectedCol, currentPlayer);
+
+      const nextBoard = board.map(r => [...r]);
+      for (let r = ROWS - 1; r >= 0; r--) {
+        if (nextBoard[r][selectedCol] === 'empty') {
+          nextBoard[r][selectedCol] = currentPlayer;
+          break;
+        }
+      }
+
+      if (checkWinner(nextBoard, currentPlayer)) {
+        setWinner(currentPlayer);
+        confetti();
+        if (isTeamMode) {
+          updateTeamScore(
+            currentPlayer === 'team1' ? team1.id : team2.id,
+            isHardMode ? 30 : 15
+          );
+        }
+      } else if (!isBoardFull(nextBoard)) {
+        setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
+      }
+    } else {
+      setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
+    }
+
+    setCurrentQuestion(null);
+    setSelectedCol(null);
+    setTypedAnswer('');
+  };
+
+  const resetGame = () => {
+    setBoard(createEmptyBoard());
+    setWinner(null);
+    setCurrentPlayer('team1');
+    setCurrentQuestion(null);
+    setSelectedCol(null);
+  };
+
+  const isHumanTurn = !isSoloMode || currentPlayer === 'team1';
+
+  return (
+    <div className="space-y-4">
+      {/* header */}
+      <div className="flex justify-between items-center">
+        <Button variant="ghost" onClick={onBack}>
+          <ArrowLeft />
+        </Button>
+        <Button onClick={resetGame}>
+          <RotateCcw />
+        </Button>
+      </div>
+
+      {/* board */}
+      <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}>
+        {board.map((row, r) =>
+          row.map((cell, c) => (
+            <button
+              key={`${r}-${c}`}
+              onClick={() => handleColumnClick(c)}
+              className={`w-10 h-10 rounded-full ${
+                cell === 'team1' ? 'bg-secondary' : cell === 'team2' ? 'bg-destructive' : 'bg-muted'
+              }`}
+            />
+          ))
+        )}
+      </div>
+
+      {/* QUESTION MODAL */}
+      {currentQuestion && isHumanTurn && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-card p-6 rounded-xl w-full max-w-sm">
+            <h3 className="text-center font-bold mb-4">
+              {currentPlayer === 'team1' ? team1.name : team2.name}
+            </h3>
+
+            <div className="text-center text-3xl mb-4">
+              {currentQuestion.question}
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              {currentQuestion.options.map((o, i) => (
+                <Button key={i} onClick={() => handleAnswer(o)}>
+                  {o}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-  )}
+  );
 };
 
 export default ConnectFourMath;
