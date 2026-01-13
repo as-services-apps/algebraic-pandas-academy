@@ -21,47 +21,74 @@ type Board = Cell[][];
 const ROWS = 6;
 const COLS = 7;
 
-/* ---------------- helpers ---------------- */
-
+/* ---------------- HARD & NORMAL MATH GENERATOR ---------------- */
 const generateQuestion = (isHard: boolean): MathQuestion => {
-  const a = Math.floor(Math.random() * (isHard ? 20 : 12)) + 1;
-  const b = Math.floor(Math.random() * (isHard ? 20 : 12)) + 1;
-  const ops = isHard ? ['+', '-', '×', '÷'] : ['+', '-', '×'];
-  const op = ops[Math.floor(Math.random() * ops.length)];
+  if (!isHard) {
+    // Normal mode: simple arithmetic
+    const a = Math.floor(Math.random() * 12) + 1;
+    const b = Math.floor(Math.random() * 12) + 1;
+    const ops = ['+', '-', '×'];
+    const op = ops[Math.floor(Math.random() * ops.length)];
 
-  let answer = 0;
-  let question = '';
-
-  switch (op) {
-    case '+':
-      answer = a + b;
-      question = `${a} + ${b}`;
-      break;
-    case '-':
-      answer = Math.max(a, b) - Math.min(a, b);
-      question = `${Math.max(a, b)} - ${Math.min(a, b)}`;
-      break;
-    case '×':
-      answer = a * b;
-      question = `${a} × ${b}`;
-      break;
-    case '÷': {
-      const product = a * b;
-      answer = a;
-      question = `${product} ÷ ${b}`;
-      break;
+    let answer = 0;
+    let question = '';
+    switch (op) {
+      case '+': answer = a + b; question = `${a} + ${b}`; break;
+      case '-': answer = Math.max(a,b)-Math.min(a,b); question = `${Math.max(a,b)} - ${Math.min(a,b)}`; break;
+      case '×': answer = a*b; question = `${a} × ${b}`; break;
     }
-  }
 
-  const options = [answer];
-  while (options.length < 4) {
-    const wrong = answer + (Math.floor(Math.random() * 10) - 5);
-    if (wrong !== answer && wrong >= 0 && !options.includes(wrong)) options.push(wrong);
-  }
+    const options = [answer];
+    while (options.length < 4) {
+      const wrong = answer + (Math.floor(Math.random()*10)-5);
+      if (wrong !== answer && wrong >= 0 && !options.includes(wrong)) options.push(wrong);
+    }
+    return { question, answer, options: options.sort(() => Math.random()-0.5) };
+  } else {
+    // Hard mode: algebra (linear, quadratic, substitution)
+    const type = Math.floor(Math.random() * 3); // 0: linear, 1: quadratic factorable, 2: substitution
+    let question = '';
+    let answer = 0;
+    let options: number[] = [];
 
-  return { question, answer, options: options.sort(() => Math.random() - 0.5) };
+    switch(type) {
+      case 0: { // linear ax + b = c
+        const a = Math.floor(Math.random()*10)+1;
+        const x = Math.floor(Math.random()*10)+1;
+        const b = Math.floor(Math.random()*20)-10;
+        const c = a*x + b;
+        question = `${a}x + ${b} = ${c}, solve for x`;
+        answer = x;
+        break;
+      }
+      case 1: { // quadratic factorable x^2 + bx + c = 0
+        const x1 = Math.floor(Math.random()*5)+1;
+        const x2 = Math.floor(Math.random()*5)+1;
+        const b = -(x1 + x2);
+        const c = x1*x2;
+        question = `x² + (${b})x + ${c} = 0, solve for x (smallest positive root)`;
+        answer = Math.min(x1,x2);
+        break;
+      }
+      case 2: { // substitution
+        const x = Math.floor(Math.random()*10)+1;
+        const y = Math.floor(Math.random()*10)+1;
+        question = `If x=${x} and y=${y}, evaluate 2x + 3y`;
+        answer = 2*x + 3*y;
+        break;
+      }
+    }
+
+    options = [answer];
+    while(options.length < 4){
+      const wrong = answer + (Math.floor(Math.random()*11)-5);
+      if (wrong !== answer && !options.includes(wrong)) options.push(wrong);
+    }
+    return { question, answer, options: options.sort(() => Math.random()-0.5) };
+  }
 };
 
+/* ---------------- HELPER FUNCTIONS ---------------- */
 const createEmptyBoard = (): Board => Array.from({ length: ROWS }, () => Array(COLS).fill('empty'));
 
 const checkWinner = (board: Board, player: Cell): boolean => {
@@ -95,14 +122,12 @@ const checkWinner = (board: Board, player: Cell): boolean => {
 const isBoardFull = (board: Board) => board[0].every(c => c !== 'empty');
 
 /* ---------------- AI ---------------- */
-
 const getAIMove = (board: Board): number => {
   const validCols = board[0].map((cell, idx) => cell === 'empty' ? idx : -1).filter(c => c !== -1);
   return validCols[Math.floor(Math.random() * validCols.length)];
 };
 
-/* ---------------- component ---------------- */
-
+/* ---------------- COMPONENT ---------------- */
 const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
@@ -144,7 +169,6 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
 
     setIsAIThinking(true);
     const aiCol = getAIMove(board);
-
     setTimeout(() => {
       setSelectedCol(aiCol);
       setCurrentQuestion(generateQuestion(isHardMode));
