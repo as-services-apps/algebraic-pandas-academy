@@ -22,6 +22,7 @@ const ROWS = 6;
 const COLS = 7;
 
 /* ---------------- helpers ---------------- */
+
 const generateQuestion = (isHard: boolean): MathQuestion => {
   const a = Math.floor(Math.random() * (isHard ? 20 : 12)) + 1;
   const b = Math.floor(Math.random() * (isHard ? 20 : 12)) + 1;
@@ -61,18 +62,20 @@ const generateQuestion = (isHard: boolean): MathQuestion => {
   return { question, answer, options: options.sort(() => Math.random() - 0.5) };
 };
 
-const createEmptyBoard = (): Board =>
-  Array.from({ length: ROWS }, () => Array(COLS).fill('empty'));
+const createEmptyBoard = (): Board => Array.from({ length: ROWS }, () => Array(COLS).fill('empty'));
 
 const checkWinner = (board: Board, player: Cell): boolean => {
-  const directions = [
-    [0, 1], [1, 0], [1, 1], [-1, 1]
+  const dirs = [
+    [0, 1],
+    [1, 0],
+    [1, 1],
+    [-1, 1],
   ];
 
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
       if (board[r][c] !== player) continue;
-      for (const [dr, dc] of directions) {
+      for (const [dr, dc] of dirs) {
         let count = 1;
         for (let k = 1; k < 4; k++) {
           const nr = r + dr * k;
@@ -85,45 +88,21 @@ const checkWinner = (board: Board, player: Cell): boolean => {
       }
     }
   }
+
   return false;
 };
 
-const isBoardFull = (board: Board): boolean => board[0].every(cell => cell !== 'empty');
+const isBoardFull = (board: Board) => board[0].every(c => c !== 'empty');
 
-/* ---------------- AI logic ---------------- */
+/* ---------------- AI ---------------- */
+
 const getAIMove = (board: Board): number => {
-  // Simple AI: first winning move, block opponent, center, random
-  for (let col = 0; col < COLS; col++) {
-    if (board[0][col] !== 'empty') continue;
-    const test = board.map(row => [...row]);
-    for (let row = ROWS - 1; row >= 0; row--) {
-      if (test[row][col] === 'empty') {
-        test[row][col] = 'team2';
-        if (checkWinner(test, 'team2')) return col;
-        break;
-      }
-    }
-  }
-
-  for (let col = 0; col < COLS; col++) {
-    if (board[0][col] !== 'empty') continue;
-    const test = board.map(row => [...row]);
-    for (let row = ROWS - 1; row >= 0; row--) {
-      if (test[row][col] === 'empty') {
-        test[row][col] = 'team1';
-        if (checkWinner(test, 'team1')) return col;
-        break;
-      }
-    }
-  }
-
-  if (board[0][3] === 'empty') return 3;
-  const validCols = [];
-  for (let col = 0; col < COLS; col++) if (board[0][col] === 'empty') validCols.push(col);
+  const validCols = board[0].map((cell, idx) => cell === 'empty' ? idx : -1).filter(c => c !== -1);
   return validCols[Math.floor(Math.random() * validCols.length)];
 };
 
 /* ---------------- component ---------------- */
+
 const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
@@ -132,89 +111,86 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
   const team1 = isTeamMode
     ? gameState.teams[0]
     : { id: '1', name: isSoloMode ? 'You' : 'Player 1', score: 0, color: 'team-1' };
+
   const team2 = isTeamMode
     ? gameState.teams[1]
     : { id: '2', name: isSoloMode ? 'AI' : 'Player 2', score: 0, color: 'team-2' };
 
   const [board, setBoard] = useState<Board>(createEmptyBoard());
+  const [currentPlayer, setCurrentPlayer] = useState<'team1' | 'team2'>('team1');
   const [currentQuestion, setCurrentQuestion] = useState<MathQuestion | null>(null);
   const [selectedCol, setSelectedCol] = useState<number | null>(null);
   const [winner, setWinner] = useState<'team1' | 'team2' | 'draw' | null>(null);
-  const [currentPlayer, setCurrentPlayer] = useState<'team1' | 'team2'>('team1');
   const [team1Score, setTeam1Score] = useState(0);
   const [team2Score, setTeam2Score] = useState(0);
   const [isHardMode, setIsHardMode] = useState(false);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [isAIThinking, setIsAIThinking] = useState(false);
 
-  const dropPiece = useCallback((col: number, player: Cell, currentBoard: Board): Board | null => {
-    const newBoard = currentBoard.map(row => [...row]);
-    for (let row = ROWS - 1; row >= 0; row--) {
-      if (newBoard[row][col] === 'empty') {
-        newBoard[row][col] = player;
+  const dropPiece = useCallback((col: number, player: Cell, board: Board) => {
+    const newBoard = board.map(r => [...r]);
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (newBoard[r][col] === 'empty') {
+        newBoard[r][col] = player;
         return newBoard;
       }
     }
     return null;
   }, []);
 
+  /* ---------- AI TURN ---------- */
   useEffect(() => {
-    if (isSoloMode && currentPlayer === 'team2' && !winner && !currentQuestion && !isAIThinking) {
-      setIsAIThinking(true);
-      const aiCol = getAIMove(board);
-      setTimeout(() => {
-        setSelectedCol(aiCol);
-        setCurrentQuestion(generateQuestion(isHardMode));
-        setTimeout(() => {
-          const newBoard = dropPiece(aiCol, 'team2', board);
-          if (newBoard) {
-            setBoard(newBoard);
-            if (checkWinner(newBoard, 'team2')) {
-              setWinner('team2');
-              setTeam2Score(prev => prev + 1);
-              if (isTeamMode) updateTeamScore(team2.id, isHardMode ? 30 : 15);
-              confetti();
-            } else if (isBoardFull(newBoard)) setWinner('draw');
-            else setCurrentPlayer('team1');
-          }
-          setCurrentQuestion(null);
-          setSelectedCol(null);
-          setIsAIThinking(false);
-        }, 800);
-      }, 500);
-    }
-  }, [board, currentPlayer, currentQuestion, isAIThinking, isHardMode, dropPiece, isSoloMode, winner, isTeamMode, team2.id, updateTeamScore]);
+    if (!isSoloMode || currentPlayer !== 'team2' || winner || currentQuestion || isAIThinking) return;
 
-  const handleColumnSelect = (col: number) => {
-    if (winner || currentQuestion || board[0][col] !== 'empty' || isAIThinking) return;
+    setIsAIThinking(true);
+    const aiCol = getAIMove(board);
+
+    setTimeout(() => {
+      setSelectedCol(aiCol);
+      setCurrentQuestion(generateQuestion(isHardMode));
+
+      // Simulate AI answering correctly
+      setTimeout(() => {
+        const newBoard = dropPiece(aiCol, 'team2', board);
+        if (newBoard) {
+          setBoard(newBoard);
+          if (checkWinner(newBoard, 'team2')) {
+            setWinner('team2');
+            setTeam2Score(prev => prev + 1);
+          } else if (isBoardFull(newBoard)) setWinner('draw');
+          else setCurrentPlayer('team1');
+        }
+        setCurrentQuestion(null);
+        setSelectedCol(null);
+        setIsAIThinking(false);
+      }, 1000);
+    }, 500);
+  }, [board, currentPlayer, winner, currentQuestion, isAIThinking, isHardMode, dropPiece, isSoloMode]);
+
+  const handleColumnClick = (col: number) => {
+    if (winner || currentQuestion || isAIThinking || board[0][col] !== 'empty') return;
     if (isSoloMode && currentPlayer === 'team2') return;
     setSelectedCol(col);
     setCurrentQuestion(generateQuestion(isHardMode));
   };
 
-  const handleAnswer = (option: number) => {
+  const handleAnswer = (value: number) => {
     if (!currentQuestion || selectedCol === null) return;
-    const currentCell: Cell = currentPlayer;
 
-    if (option === currentQuestion.answer) {
-      const newBoard = dropPiece(selectedCol, currentCell, board);
+    if (value !== currentQuestion.answer) {
+      setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
+    } else {
+      const newBoard = dropPiece(selectedCol, currentPlayer, board);
       if (newBoard) {
         setBoard(newBoard);
-        if (checkWinner(newBoard, currentCell)) {
+        if (checkWinner(newBoard, currentPlayer)) {
           setWinner(currentPlayer);
           confetti();
-          if (currentPlayer === 'team1') {
-            setTeam1Score(prev => prev + 1);
-            if (isTeamMode) updateTeamScore(team1.id, isHardMode ? 30 : 15);
-          } else {
-            setTeam2Score(prev => prev + 1);
-            if (isTeamMode) updateTeamScore(team2.id, isHardMode ? 30 : 15);
-          }
+          if (isTeamMode) updateTeamScore(currentPlayer === 'team1' ? team1.id : team2.id, isHardMode ? 30 : 15);
+          currentPlayer === 'team1' ? setTeam1Score(prev => prev + 1) : setTeam2Score(prev => prev + 1);
         } else if (isBoardFull(newBoard)) setWinner('draw');
-        else setCurrentPlayer(currentPlayer === 'team1' ? 'team2' : 'team1');
+        else setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
       }
-    } else {
-      setCurrentPlayer(currentPlayer === 'team1' ? 'team2' : 'team1');
     }
 
     setCurrentQuestion(null);
@@ -239,49 +215,38 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
   };
 
   const getCurrentTeamName = () => currentPlayer === 'team1' ? team1.name : team2.name;
+  const isHumanTurn = !isSoloMode || currentPlayer === 'team1';
 
   return (
     <div className="space-y-4 fade-in">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
+          <Button variant="ghost" size="sm" onClick={onBack}><ArrowLeft className="w-4 h-4" /></Button>
           <div>
             <h2 className="text-lg md:text-xl font-bold text-foreground">Connect Four Math 🔴🟡</h2>
-            <p className="text-xs text-muted-foreground">
-              {isSoloMode ? 'You vs AI' : isTeamMode ? 'Team vs Team' : 'Player vs Player'}
-            </p>
+            <p className="text-xs text-muted-foreground">{isSoloMode ? 'You vs AI' : isTeamMode ? 'Team vs Team' : 'Player vs Player'}</p>
           </div>
         </div>
+
         <div className="flex items-center gap-2">
           <Button variant={isHardMode ? "destructive" : "outline"} size="sm" onClick={() => setIsHardMode(!isHardMode)}>
-            <Keyboard className="w-4 h-4 mr-1" />{isHardMode ? 'Hard' : 'Normal'}
+            <Keyboard className="w-4 h-4 mr-1" /> {isHardMode ? 'Hard' : 'Normal'}
           </Button>
-          <Button variant="outline" size="sm" onClick={resetGame}>
-            <RotateCcw className="w-4 h-4" />
-          </Button>
+          <Button variant="outline" size="sm" onClick={resetGame}><RotateCcw className="w-4 h-4" /></Button>
         </div>
       </div>
 
-      {/* Turn Indicator */}
+      {/* Scores & Turn */}
       {!winner && (
         <div className={`text-center p-2 rounded-lg ${currentPlayer === 'team1' ? 'bg-secondary' : 'bg-destructive'} text-white font-bold text-sm`}>
           {isAIThinking ? 'AI is thinking...' : `${getCurrentTeamName()}'s Turn!`}
         </div>
       )}
 
-      {/* Scores */}
       <div className="flex justify-center gap-6">
-        <div className="text-center">
-          <div className="text-2xl">🟡</div>
-          <div className="font-bold text-foreground text-sm">{team1.name}: {team1Score}</div>
-        </div>
-        <div className="text-center">
-          <div className="text-2xl">🔴</div>
-          <div className="font-bold text-foreground text-sm">{team2.name}: {team2Score}</div>
-        </div>
+        <div className="text-center"><div className="text-2xl">🟡</div><div className="font-bold text-foreground text-sm">{team1.name}: {team1Score}</div></div>
+        <div className="text-center"><div className="text-2xl">🔴</div><div className="font-bold text-foreground text-sm">{team2.name}: {team2Score}</div></div>
       </div>
 
       {/* Board */}
@@ -293,13 +258,9 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
                 row.map((cell, colIdx) => (
                   <button
                     key={`${rowIdx}-${colIdx}`}
-                    onClick={() => handleColumnSelect(colIdx)}
+                    onClick={() => handleColumnClick(colIdx)}
                     disabled={!!winner || !!currentQuestion || isAIThinking}
-                    className={`w-8 h-8 md:w-10 md:h-10 rounded-full transition-all duration-200 ${
-                      cell === 'empty' ? 'bg-background hover:bg-muted cursor-pointer' :
-                      cell === 'team1' ? 'bg-secondary shadow-lg' :
-                      'bg-destructive shadow-lg'
-                    } ${selectedCol === colIdx && rowIdx === 0 ? 'ring-2 ring-primary' : ''}`}
+                    className={`w-8 h-8 md:w-10 md:h-10 rounded-full transition-all duration-200 ${cell === 'empty' ? 'bg-background hover:bg-muted cursor-pointer' : cell === 'team1' ? 'bg-secondary shadow-lg' : 'bg-destructive shadow-lg'} ${selectedCol === colIdx && rowIdx === 0 ? 'ring-2 ring-primary' : ''}`}
                   />
                 ))
               )}
@@ -313,14 +274,14 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
             <div className={`text-xl font-bold ${winner === 'draw' ? 'text-muted-foreground' : winner === 'team1' ? 'text-secondary' : 'text-destructive'}`}>
               {winner === 'team1' && `🎉 ${team1.name} Wins!`}
               {winner === 'team2' && `🎉 ${team2.name} Wins!`}
-              {winner === 'draw' && '🤝 Draw!'}
+              {winner === 'draw' && "🤝 Draw!"}
             </div>
             <Button onClick={resetGame} size="sm" className="mt-2">Play Again</Button>
           </div>
         )}
 
         {/* Question Modal */}
-        {currentQuestion && (
+        {currentQuestion && isHumanTurn && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in p-4">
             <div className="bg-card rounded-xl p-4 md:p-6 max-w-sm w-full panda-shadow scale-in">
               <h3 className="text-lg font-bold text-center mb-1 text-foreground">{getCurrentTeamName()}'s Question</h3>
@@ -328,15 +289,21 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
               <div className="text-3xl font-bold text-center text-primary mb-4">{currentQuestion.question} = ?</div>
               {isHardMode ? (
                 <div className="space-y-3">
-                  <Input type="text" placeholder="Type answer..." value={typedAnswer} onChange={e => setTypedAnswer(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleTypedSubmit()} className="h-12 text-xl text-center" autoFocus />
+                  <Input
+                    type="text"
+                    placeholder="Type answer..."
+                    value={typedAnswer}
+                    onChange={(e) => setTypedAnswer(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleTypedSubmit()}
+                    className="h-12 text-xl text-center"
+                    autoFocus
+                  />
                   <Button onClick={handleTypedSubmit} className="w-full" disabled={!typedAnswer.trim()}>Submit</Button>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
                   {currentQuestion.options.map((option, idx) => (
-                    <Button key={idx} variant="outline" size="lg" onClick={() => handleAnswer(option)} className="text-lg py-4 hover:bg-primary hover:text-primary-foreground">
-                      {option}
-                    </Button>
+                    <Button key={idx} variant="outline" size="lg" onClick={() => handleAnswer(option)} className="text-lg py-4 hover:bg-primary hover:text-primary-foreground">{option}</Button>
                   ))}
                 </div>
               )}
