@@ -21,13 +21,13 @@ const generateQuestion = (difficulty: number, isHard: boolean): RaceQuestion => 
   let options: number[] = [];
 
   if (isHard) {
-    // HARD MODE: More advanced algebra (Year 8–9 level)
-    const type = Math.floor(Math.random() * 4); // 0: linear, 1: substitution, 2: multi-step linear, 3: simple inequalities
+    // HARD MODE: More advanced algebra (Year 8–9)
+    const type = Math.floor(Math.random() * 4);
 
     switch(type) {
       case 0: { // simple linear ax + b = c
         const a = Math.floor(Math.random() * 9) + 1;
-        const x = Math.floor(Math.random() * 15) - 5; // allow negative solutions
+        const x = Math.floor(Math.random() * 15) - 5; // allow negative
         const b = Math.floor(Math.random() * 10) - 5;
         const c = a*x + b;
         question = `${a}x + ${b} = ${c}, solve for x`;
@@ -37,12 +37,12 @@ const generateQuestion = (difficulty: number, isHard: boolean): RaceQuestion => 
       case 1: { // substitution
         const x = Math.floor(Math.random() * 10);
         const y = Math.floor(Math.random() * 10);
-        const expression = Math.random() < 0.5 ? `3x + 2y` : `4x - y`;
-        question = `If x=${x} and y=${y}, evaluate ${expression}`;
-        answer = expression === '3x + 2y' ? 3*x + 2*y : 4*x - y;
+        const expr = Math.random() < 0.5 ? `3x + 2y` : `4x - y`;
+        question = `If x=${x} and y=${y}, evaluate ${expr}`;
+        answer = expr === '3x + 2y' ? 3*x + 2*y : 4*x - y;
         break;
       }
-      case 2: { // multi-step linear equation ax + b = cx + d
+      case 2: { // multi-step linear ax + b = cx + d
         const a = Math.floor(Math.random() * 5) + 1;
         const c = Math.floor(Math.random() * 5);
         const x = Math.floor(Math.random() * 10);
@@ -63,32 +63,40 @@ const generateQuestion = (difficulty: number, isHard: boolean): RaceQuestion => 
       }
     }
   } else {
-    // NORMAL MODE: same question types but multiple choice
-    const type = Math.floor(Math.random() * 3); // simpler arithmetic for normal
-    const a = Math.floor(Math.random() * 12) + 1;
-    const b = Math.floor(Math.random() * 12) + 1;
-    const ops = ['+', '-', '×'];
-    const op = ops[Math.floor(Math.random() * ops.length)];
+    // EASY MODE: Year 7 algebra (simple one-step)
+    const type = Math.floor(Math.random() * 2);
 
-    switch (op) {
-      case '+': answer = a + b; question = `${a} + ${b}`; break;
-      case '-': answer = Math.max(a,b)-Math.min(a,b); question = `${Math.max(a,b)} - ${Math.min(a,b)}`; break;
-      case '×': answer = a*b; question = `${a} × ${b}`; break;
+    switch(type) {
+      case 0: { // ax + b = c
+        const a = Math.floor(Math.random() * 5) + 1;
+        const x = Math.floor(Math.random() * 10);
+        const b = Math.floor(Math.random() * 10);
+        const c = a*x + b;
+        question = `${a}x + ${b} = ${c}, solve for x`;
+        answer = x;
+        break;
+      }
+      case 1: { // substitution x and y
+        const x = Math.floor(Math.random() * 10);
+        const y = Math.floor(Math.random() * 10);
+        question = `If x=${x} and y=${y}, evaluate x + y`;
+        answer = x + y;
+        break;
+      }
     }
-  }
 
-  // Generate options for normal mode or for multiple choice display
-  if (!isHard) {
+    // Generate multiple-choice options for easy mode
     options = [answer];
-    while(options.length < 4){
-      const wrong = answer + (Math.floor(Math.random() * 11) - 5);
-      if (wrong !== answer && !options.includes(wrong)) options.push(wrong);
+    while (options.length < 4) {
+      const wrong = answer + (Math.floor(Math.random() * 7) - 3); // small offsets
+      if (wrong !== answer && wrong >= 0 && !options.includes(wrong)) options.push(wrong);
     }
     options = options.sort(() => Math.random() - 0.5);
   }
 
   return { question, answer, options };
 };
+
 
 
 const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
