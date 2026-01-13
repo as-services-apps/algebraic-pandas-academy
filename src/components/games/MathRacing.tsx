@@ -16,48 +16,80 @@ interface RaceQuestion {
 }
 
 const generateQuestion = (difficulty: number, isHard: boolean): RaceQuestion => {
-  const mult = isHard ? 2 : 1;
-  const a = Math.floor(Math.random() * (10 * difficulty * mult)) + 1;
-  const b = Math.floor(Math.random() * (10 * difficulty * mult)) + 1;
-  const operators = isHard ? ['+', '-', '×', '÷'] : ['+', '-', '×'];
-  const op = operators[Math.floor(Math.random() * (difficulty > 2 ? operators.length : 2))];
-  
-  let answer: number;
-  let question: string;
-  
-  switch (op) {
-    case '+':
-      answer = a + b;
-      question = `${a} + ${b}`;
-      break;
-    case '-':
-      answer = Math.max(a, b) - Math.min(a, b);
-      question = `${Math.max(a, b)} - ${Math.min(a, b)}`;
-      break;
-    case '×':
-      answer = a * b;
-      question = `${a} × ${b}`;
-      break;
-    case '÷':
-      const product = a * b;
-      answer = a;
-      question = `${product} ÷ ${b}`;
-      break;
-    default:
-      answer = a + b;
-      question = `${a} + ${b}`;
-  }
-  
-  const options = [answer];
-  while (options.length < 4) {
-    const wrong = answer + (Math.floor(Math.random() * 10) - 5);
-    if (wrong !== answer && wrong > 0 && !options.includes(wrong)) {
-      options.push(wrong);
+  let question = '';
+  let answer = 0;
+  let options: number[] = [];
+
+  if (isHard) {
+    // HARD MODE: More advanced algebra (Year 8–9 level)
+    const type = Math.floor(Math.random() * 4); // 0: linear, 1: substitution, 2: multi-step linear, 3: simple inequalities
+
+    switch(type) {
+      case 0: { // simple linear ax + b = c
+        const a = Math.floor(Math.random() * 9) + 1;
+        const x = Math.floor(Math.random() * 15) - 5; // allow negative solutions
+        const b = Math.floor(Math.random() * 10) - 5;
+        const c = a*x + b;
+        question = `${a}x + ${b} = ${c}, solve for x`;
+        answer = x;
+        break;
+      }
+      case 1: { // substitution
+        const x = Math.floor(Math.random() * 10);
+        const y = Math.floor(Math.random() * 10);
+        const expression = Math.random() < 0.5 ? `3x + 2y` : `4x - y`;
+        question = `If x=${x} and y=${y}, evaluate ${expression}`;
+        answer = expression === '3x + 2y' ? 3*x + 2*y : 4*x - y;
+        break;
+      }
+      case 2: { // multi-step linear equation ax + b = cx + d
+        const a = Math.floor(Math.random() * 5) + 1;
+        const c = Math.floor(Math.random() * 5);
+        const x = Math.floor(Math.random() * 10);
+        const b = Math.floor(Math.random() * 10);
+        const d = a*x + b - c*x;
+        question = `${a}x + ${b} = ${c}x + ${d}, solve for x`;
+        answer = x;
+        break;
+      }
+      case 3: { // simple inequality
+        const a = Math.floor(Math.random() * 5) + 1;
+        const b = Math.floor(Math.random() * 10);
+        const x = Math.floor(Math.random() * 10);
+        const c = a*x + b;
+        question = `${a}x + ${b} > ${c-2}, solve for x (smallest integer solution)`;
+        answer = x;
+        break;
+      }
+    }
+  } else {
+    // NORMAL MODE: same question types but multiple choice
+    const type = Math.floor(Math.random() * 3); // simpler arithmetic for normal
+    const a = Math.floor(Math.random() * 12) + 1;
+    const b = Math.floor(Math.random() * 12) + 1;
+    const ops = ['+', '-', '×'];
+    const op = ops[Math.floor(Math.random() * ops.length)];
+
+    switch (op) {
+      case '+': answer = a + b; question = `${a} + ${b}`; break;
+      case '-': answer = Math.max(a,b)-Math.min(a,b); question = `${Math.max(a,b)} - ${Math.min(a,b)}`; break;
+      case '×': answer = a*b; question = `${a} × ${b}`; break;
     }
   }
-  
-  return { question, answer, options: options.sort(() => Math.random() - 0.5) };
+
+  // Generate options for normal mode or for multiple choice display
+  if (!isHard) {
+    options = [answer];
+    while(options.length < 4){
+      const wrong = answer + (Math.floor(Math.random() * 11) - 5);
+      if (wrong !== answer && !options.includes(wrong)) options.push(wrong);
+    }
+    options = options.sort(() => Math.random() - 0.5);
+  }
+
+  return { question, answer, options };
 };
+
 
 const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
   const { gameState, updateTeamScore } = useGame();
