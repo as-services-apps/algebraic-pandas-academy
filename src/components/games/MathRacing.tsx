@@ -170,41 +170,38 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
     }
   }, [team1Position, team2Position, gameOver, isTeamMode, isHardMode, team1.id, team2.id, updateTeamScore]);
 
-  const handleAnswer = (option: number) => {
-    if (!currentQuestion || gameOver || isAITurn) return;
-    
-    if (option === currentQuestion.answer) {
-      const boost = isHardMode ? 15 + streak * 3 : 10 + streak * 2;
-      if (currentPlayer === 'team1') {
-        setTeam1Position(prev => Math.min(prev + boost, finishLine));
-      } else {
-        setTeam2Position(prev => Math.min(prev + boost, finishLine));
-      }
-      setStreak(prev => prev + 1);
-      if (difficulty < 5) setDifficulty(prev => prev + 0.2);
+const handleAnswer = (option: number) => {
+  if (!currentQuestion || gameOver || isAITurn) return;
+
+  if (option === currentQuestion.answer) {
+    const boost = isHardMode ? 15 + streak * 3 : 10 + streak * 2;
+    if (currentPlayer === 'team1') {
+      setTeam1Position(prev => Math.min(prev + boost, finishLine));
     } else {
-      // Wrong answer - opponent gets a boost
-      if (currentPlayer === 'team1') {
-        setTeam2Position(prev => Math.min(prev + 5, finishLine));
-      } else {
-        setTeam1Position(prev => Math.min(prev + 5, finishLine));
-      }
-      setStreak(0);
+      setTeam2Position(prev => Math.min(prev + boost, finishLine));
     }
-    
-    // Switch players
+    setStreak(prev => prev + 1);
+    if (difficulty < 5) setDifficulty(prev => prev + 0.2);
+
+    // Switch player only after correct answer
     setCurrentPlayer(currentPlayer === 'team1' ? 'team2' : 'team1');
     setTypedAnswer('');
     nextQuestion();
-  };
+  } else {
+    // Wrong answer: do nothing, let player try again
+    setStreak(0);
+    // Optionally, you can show a “❌ Wrong!” message here
+  }
+};
 
-  const handleTypedSubmit = () => {
-    if (!typedAnswer.trim() || isAITurn) return;
-    const parsed = parseFloat(typedAnswer);
-    if (!isNaN(parsed)) {
-      handleAnswer(parsed);
-    }
-  };
+const handleTypedSubmit = () => {
+  if (!typedAnswer.trim() || isAITurn) return;
+  const parsed = parseFloat(typedAnswer);
+  if (!isNaN(parsed)) {
+    handleAnswer(parsed);
+  }
+};
+
 
   const startRace = () => {
     setIsStarted(true);
