@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, RotateCcw, Keyboard } from 'lucide-react';
+import { ArrowLeft, RotateCcw } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
 import confetti from '@/lib/confetti';
 
@@ -29,8 +29,8 @@ const generateQuestion = (isHard: boolean): MathQuestion => {
   const ops = isHard ? ['+', '-', '×', '÷'] : ['+', '-', '×'];
   const op = ops[Math.floor(Math.random() * ops.length)];
 
-  let answer: number;
-  let question: string;
+  let answer = 0;
+  let question = '';
 
   switch (op) {
     case '+':
@@ -45,14 +45,12 @@ const generateQuestion = (isHard: boolean): MathQuestion => {
       answer = a * b;
       question = `${a} × ${b}`;
       break;
-    case '÷':
+    case '÷': {
       const product = a * b;
       answer = a;
       question = `${product} ÷ ${b}`;
       break;
-    default:
-      answer = a + b;
-      question = `${a} + ${b}`;
+    }
   }
 
   const options = [answer];
@@ -70,7 +68,7 @@ const createEmptyBoard = (): Board =>
   Array.from({ length: ROWS }, () => Array(COLS).fill('empty'));
 
 const checkWinner = (board: Board, player: Cell): boolean => {
-  const directions = [
+  const dirs = [
     [0, 1],
     [1, 0],
     [1, 1],
@@ -81,7 +79,7 @@ const checkWinner = (board: Board, player: Cell): boolean => {
     for (let c = 0; c < COLS; c++) {
       if (board[r][c] !== player) continue;
 
-      for (const [dr, dc] of directions) {
+      for (const [dr, dc] of dirs) {
         let count = 1;
         for (let k = 1; k < 4; k++) {
           const nr = r + dr * k;
@@ -108,33 +106,19 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
 
   const team1 = isTeamMode
     ? gameState.teams[0]
-    : { id: '1', name: isSoloMode ? 'You' : 'Player 1', score: 0, color: 'team-1' };
+    : { id: '1', name: isSoloMode ? 'You' : 'Player 1', score: 0 };
 
   const team2 = isTeamMode
     ? gameState.teams[1]
-    : { id: '2', name: isSoloMode ? 'AI' : 'Player 2', score: 0, color: 'team-2' };
+    : { id: '2', name: isSoloMode ? 'AI' : 'Player 2', score: 0 };
 
   const [board, setBoard] = useState<Board>(createEmptyBoard());
   const [currentPlayer, setCurrentPlayer] = useState<'team1' | 'team2'>('team1');
   const [currentQuestion, setCurrentQuestion] = useState<MathQuestion | null>(null);
   const [selectedCol, setSelectedCol] = useState<number | null>(null);
   const [winner, setWinner] = useState<'team1' | 'team2' | 'draw' | null>(null);
-  const [isHardMode, setIsHardMode] = useState(false);
-  const [typedAnswer, setTypedAnswer] = useState('');
+  const [isHardMode] = useState(false);
   const [isAIThinking, setIsAIThinking] = useState(false);
-
-  const dropPiece = useCallback((col: number, player: Cell) => {
-    setBoard(prev => {
-      const copy = prev.map(r => [...r]);
-      for (let r = ROWS - 1; r >= 0; r--) {
-        if (copy[r][col] === 'empty') {
-          copy[r][col] = player;
-          return copy;
-        }
-      }
-      return prev;
-    });
-  }, []);
 
   /* ---------- AI TURN ---------- */
   useEffect(() => {
@@ -144,11 +128,21 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
     const col = Math.floor(Math.random() * COLS);
 
     setTimeout(() => {
-      dropPiece(col, 'team2');
+      setBoard(prev => {
+        const next = prev.map(r => [...r]);
+        for (let r = ROWS - 1; r >= 0; r--) {
+          if (next[r][col] === 'empty') {
+            next[r][col] = 'team2';
+            break;
+          }
+        }
+        return next;
+      });
+
       setIsAIThinking(false);
       setCurrentPlayer('team1');
     }, 800);
-  }, [currentPlayer, isSoloMode, winner, dropPiece]);
+  }, [currentPlayer, isSoloMode, winner]);
 
   const handleColumnClick = (col: number) => {
     if (winner || isAIThinking || board[0][col] !== 'empty') return;
@@ -156,39 +150,43 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
     setCurrentQuestion(generateQuestion(isHardMode));
   };
 
+  /* ---------- FIXED ANSWER HANDLER ---------- */
   const handleAnswer = (value: number) => {
     if (!currentQuestion || selectedCol === null) return;
 
-    if (value === currentQuestion.answer) {
-      dropPiece(selectedCol, currentPlayer);
-
-      const nextBoard = board.map(r => [...r]);
-      for (let r = ROWS - 1; r >= 0; r--) {
-        if (nextBoard[r][selectedCol] === 'empty') {
-          nextBoard[r][selectedCol] = currentPlayer;
-          break;
-        }
-      }
-
-      if (checkWinner(nextBoard, currentPlayer)) {
-        setWinner(currentPlayer);
-        confetti();
-        if (isTeamMode) {
-          updateTeamScore(
-            currentPlayer === 'team1' ? team1.id : team2.id,
-            isHardMode ? 30 : 15
-          );
-        }
-      } else if (!isBoardFull(nextBoard)) {
-        setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
-      }
-    } else {
+    if (value !== currentQuestion.answer) {
       setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
+    } else {
+      setBoard(prev => {
+        const nextBoard = prev.map(r => [...r]);
+
+        for (let r = ROWS - 1; r >= 0; r--) {
+          if (nextBoard[r][selectedCol] === 'empty') {
+            nextBoard[r][selectedCol] = currentPlayer;
+            break;
+          }
+        }
+
+        if (checkWinner(nextBoard, currentPlayer)) {
+          setWinner(currentPlayer);
+          confetti();
+
+          if (isTeamMode) {
+            updateTeamScore(
+              currentPlayer === 'team1' ? team1.id : team2.id,
+              isHardMode ? 30 : 15
+            );
+          }
+        } else if (!isBoardFull(nextBoard)) {
+          setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
+        }
+
+        return nextBoard;
+      });
     }
 
     setCurrentQuestion(null);
     setSelectedCol(null);
-    setTypedAnswer('');
   };
 
   const resetGame = () => {
@@ -203,7 +201,6 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
 
   return (
     <div className="space-y-4">
-      {/* header */}
       <div className="flex justify-between items-center">
         <Button variant="ghost" onClick={onBack}>
           <ArrowLeft />
@@ -213,7 +210,6 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
         </Button>
       </div>
 
-      {/* board */}
       <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${COLS}, 1fr)` }}>
         {board.map((row, r) =>
           row.map((cell, c) => (
@@ -221,14 +217,17 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
               key={`${r}-${c}`}
               onClick={() => handleColumnClick(c)}
               className={`w-10 h-10 rounded-full ${
-                cell === 'team1' ? 'bg-secondary' : cell === 'team2' ? 'bg-destructive' : 'bg-muted'
+                cell === 'team1'
+                  ? 'bg-secondary'
+                  : cell === 'team2'
+                  ? 'bg-destructive'
+                  : 'bg-muted'
               }`}
             />
           ))
         )}
       </div>
 
-      {/* QUESTION MODAL */}
       {currentQuestion && isHumanTurn && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-card p-6 rounded-xl w-full max-w-sm">
