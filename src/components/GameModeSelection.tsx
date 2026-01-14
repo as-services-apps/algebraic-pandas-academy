@@ -1,14 +1,15 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/context/GameContext';
-import { User, Users } from 'lucide-react';
+import { User, Users, ArrowLeft } from 'lucide-react';
 import pandaMascot from '@/assets/panda-mascot.png';
 
 interface GameModeSelectionProps {
   onSelect: () => void;
+  onBack?: () => void;
 }
 
-const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect }) => {
+const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect, onBack }) => {
   const { setGameMode, gameState } = useGame();
 
   const handleSelect = (mode: 'solo' | 'team') => {
@@ -18,6 +19,17 @@ const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect }) => {
 
   return (
     <div className="min-h-[120vh] bg-background flex flex-col">
+      {/* Back Button - Mobile */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="fixed top-4 left-4 z-50 p-2 rounded-full bg-card/80 backdrop-blur-sm panda-shadow hover:bg-card transition-colors md:hidden"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-5 h-5 text-foreground" />
+        </button>
+      )}
+      
       {/* Main content - fits in viewport */}
       <div className="h-screen flex flex-col items-center justify-center p-4 sm:p-6">
         <div className="max-w-2xl w-full text-center">

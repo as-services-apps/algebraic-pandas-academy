@@ -3,13 +3,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useGame } from '@/context/GameContext';
 import { Player } from '@/types/game';
+import { ArrowLeft } from 'lucide-react';
 import pandaMascot from '@/assets/panda-mascot.png';
 
 interface NameInputProps {
   onComplete: () => void;
+  onBack?: () => void;
 }
 
-const NameInput: React.FC<NameInputProps> = ({ onComplete }) => {
+const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
   const { gameState, setPlayer } = useGame();
   const [title, setTitle] = useState('');
   const [name, setName] = useState('');
@@ -38,6 +40,17 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete }) => {
 
   return (
     <div className="min-h-[120vh] bg-background flex flex-col">
+      {/* Back Button - Mobile */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="fixed top-4 left-4 z-50 p-2 rounded-full bg-card/80 backdrop-blur-sm panda-shadow hover:bg-card transition-colors md:hidden"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-5 h-5 text-foreground" />
+        </button>
+      )}
+      
       {/* Main content - fits in viewport */}
       <div className="h-screen flex flex-col items-center justify-center p-4 sm:p-6">
         <div className="max-w-md w-full">

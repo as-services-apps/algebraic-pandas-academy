@@ -3,11 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useGame } from '@/context/GameContext';
 import { Team } from '@/types/game';
-import { Plus, Trash2, Check } from 'lucide-react';
+import { Plus, Trash2, Check, ArrowLeft } from 'lucide-react';
 import pandaMascot from '@/assets/panda-mascot.png';
 
 interface TeamSetupProps {
   onComplete: () => void;
+  onBack?: () => void;
 }
 
 const teamColors = [
@@ -17,7 +18,7 @@ const teamColors = [
   { name: 'Pink', class: 'bg-team-4', value: 'team-4' },
 ];
 
-const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
+const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete, onBack }) => {
   const { setTeams, setAIOpponent } = useGame();
   const [teams, setLocalTeams] = useState<{ name: string; color: string }[]>([
     { name: 'Team Alpha', color: 'team-1' },
@@ -69,6 +70,17 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete }) => {
 
   return (
     <div className="min-h-[120vh] bg-background flex flex-col">
+      {/* Back Button - Mobile */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          className="fixed top-4 left-4 z-50 p-2 rounded-full bg-card/80 backdrop-blur-sm panda-shadow hover:bg-card transition-colors md:hidden"
+          aria-label="Go back"
+        >
+          <ArrowLeft className="w-5 h-5 text-foreground" />
+        </button>
+      )}
+      
       {/* Main content - fits in viewport */}
       <div className="h-screen flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto">
         <div className="max-w-xl w-full">
