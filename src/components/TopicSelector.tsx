@@ -14,7 +14,7 @@ interface TopicSelectorProps {
 const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic, onBack }) => {
   const { gameState, setYearGroup, setHardMode } = useGame();
 
-  const yearGroups: YearGroup[] = [7, 8, 9, 10, 11, 12];
+  const yearGroups: YearGroup[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
   // Get topics based on selected subject
   const getTopicsForSubject = () => {
@@ -31,7 +31,7 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic, onBack }) 
         name: t.name,
         icon: t.icon,
         description: t.description,
-        yearGroups: [7, 8, 9, 10, 11, 12] as YearGroup[],
+        yearGroups: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as YearGroup[],
         color: 'primary',
       }));
     }

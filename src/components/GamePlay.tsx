@@ -117,9 +117,9 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
 
     if (isCorrect) {
       setCorrectCount(prev => prev + 1);
-      setTotalScore(prev => prev + currentQuestion.points);
+      setTotalScore(prev => prev + 1); // Always 1 point per correct answer
       if (gameState.gameMode === 'team' && currentTeam) {
-        updateTeamScore(currentTeam.id, currentQuestion.points);
+        updateTeamScore(currentTeam.id, 1);
       }
       confetti();
     }
@@ -135,10 +135,9 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
 
     if (isCorrect) {
       setCorrectCount(prev => prev + 1);
-      const earnedPoints = currentQuestion.points * 2;
-      setTotalScore(prev => prev + earnedPoints);
+      setTotalScore(prev => prev + 1); // Always 1 point per correct answer
       if (gameState.gameMode === 'team' && currentTeam) {
-        updateTeamScore(currentTeam.id, earnedPoints);
+        updateTeamScore(currentTeam.id, 1);
       }
       confetti();
     }
@@ -311,7 +310,7 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
             {currentQuestion.difficulty.toUpperCase()}
           </span>
           <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-primary/20 text-primary">
-            +{gameState.isHardMode ? currentQuestion.points * 2 : currentQuestion.points} pts
+            +1 pt
           </span>
         </div>
 
