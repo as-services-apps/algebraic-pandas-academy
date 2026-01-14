@@ -8,6 +8,7 @@ import GamePlay from './GamePlay';
 import CustomGameCreator from './CustomGameCreator';
 import MathRacing from './games/MathRacing';
 import ConnectFourMath from './games/ConnectFourMath';
+import AISuggestions from './AISuggestions';
 import { Button } from '@/components/ui/button';
 import { Home, PlusCircle, RotateCcw, Car, Grid3X3, BookOpen } from 'lucide-react';
 import pandaMascot from '@/assets/panda-mascot.png';
@@ -213,6 +214,9 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
           <div className="space-y-4">
             <Scoreboard />
 
+            {/* AI Suggestions */}
+            <AISuggestions />
+
             {/* Quick Stats */}
             <div className="bg-card rounded-2xl p-4 panda-shadow">
               <h3 className="font-bold text-foreground mb-3">Quick Tips 💡</h3>
@@ -227,7 +231,7 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span>🔥</span>
-                  <span>Try Hard Mode for double points!</span>
+                  <span>Try Hard Mode for a challenge!</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span>🎮</span>
