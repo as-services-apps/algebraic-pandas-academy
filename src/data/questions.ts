@@ -1,6 +1,80 @@
 import { Question, GameTopic, YearGroup } from '@/types/game';
 
 export const gameTopics: GameTopic[] = [
+  // Primary School Topics (Year 1-6)
+  {
+    id: 'counting',
+    name: 'Counting & Numbers',
+    icon: '🔢',
+    description: 'Learn to count and recognize numbers!',
+    yearGroups: [1, 2, 3],
+    color: 'primary',
+  },
+  {
+    id: 'addition',
+    name: 'Addition',
+    icon: '➕',
+    description: 'Add numbers together to find the total!',
+    yearGroups: [1, 2, 3, 4, 5, 6],
+    color: 'secondary',
+  },
+  {
+    id: 'subtraction',
+    name: 'Subtraction',
+    icon: '➖',
+    description: 'Take away numbers and find the difference!',
+    yearGroups: [1, 2, 3, 4, 5, 6],
+    color: 'accent',
+  },
+  {
+    id: 'multiplication',
+    name: 'Multiplication',
+    icon: '✖️',
+    description: 'Times tables and multiplying numbers!',
+    yearGroups: [2, 3, 4, 5, 6],
+    color: 'success',
+  },
+  {
+    id: 'division',
+    name: 'Division',
+    icon: '➗',
+    description: 'Share and divide numbers equally!',
+    yearGroups: [2, 3, 4, 5, 6],
+    color: 'primary',
+  },
+  {
+    id: 'shapes',
+    name: 'Shapes & Patterns',
+    icon: '🔷',
+    description: 'Learn about 2D and 3D shapes!',
+    yearGroups: [1, 2, 3, 4, 5, 6],
+    color: 'secondary',
+  },
+  {
+    id: 'telling-time',
+    name: 'Telling Time',
+    icon: '🕐',
+    description: 'Read clocks and understand time!',
+    yearGroups: [1, 2, 3, 4],
+    color: 'accent',
+  },
+  {
+    id: 'money',
+    name: 'Money & Coins',
+    icon: '💷',
+    description: 'Count coins and work with money!',
+    yearGroups: [1, 2, 3, 4, 5, 6],
+    color: 'success',
+  },
+  {
+    id: 'place-value',
+    name: 'Place Value',
+    icon: '🔟',
+    description: 'Understand ones, tens, hundreds and more!',
+    yearGroups: [2, 3, 4, 5, 6],
+    color: 'primary',
+  },
+  // Secondary School Topics (Year 7+)
   {
     id: 'algebra',
     name: 'Algebraic Expressions',

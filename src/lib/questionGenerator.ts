@@ -589,8 +589,334 @@ const generateMeasurementQuestion = (yearGroup: YearGroup): Question => {
 };
 
 // ============= MAIN GENERATOR =============
+// ============= PRIMARY SCHOOL: COUNTING =============
+const generateCountingQuestion = (yearGroup: YearGroup): Question => {
+  const topic = 'counting';
+  
+  if (yearGroup <= 1) {
+    const type = getRandomInt(0, 2);
+    switch (type) {
+      case 0: {
+        const num = getRandomInt(1, 10);
+        return createQuestion(topic, `What number comes after ${num}?`, [`${num + 1}`, `${num}`, `${num + 2}`, `${num - 1}`], 0, 'easy', yearGroup, 1);
+      }
+      case 1: {
+        const num = getRandomInt(2, 10);
+        return createQuestion(topic, `What number comes before ${num}?`, [`${num - 1}`, `${num}`, `${num + 1}`, `${num - 2}`], 0, 'easy', yearGroup, 1);
+      }
+      default: {
+        const num = getRandomInt(1, 5);
+        const emoji = ['🍎', '⭐', '🎈', '🌟', '🍪'][getRandomInt(0, 4)];
+        return createQuestion(topic, `Count: ${emoji.repeat(num)}`, [`${num}`, `${num + 1}`, `${num - 1}`, `${num + 2}`], 0, 'easy', yearGroup, 1);
+      }
+    }
+  }
+  
+  if (yearGroup <= 2) {
+    const type = getRandomInt(0, 2);
+    switch (type) {
+      case 0: {
+        const num = getRandomInt(10, 50);
+        return createQuestion(topic, `What number comes after ${num}?`, [`${num + 1}`, `${num}`, `${num + 10}`, `${num - 1}`], 0, 'easy', yearGroup, 1);
+      }
+      case 1: {
+        const num = getRandomInt(2, 10) * 2;
+        return createQuestion(topic, `Count by 2s: 2, 4, 6, 8, __`, [`${10}`, `${9}`, `${12}`, `${11}`], 0, 'easy', yearGroup, 1);
+      }
+      default: {
+        const num = getRandomInt(5, 20) * 5;
+        return createQuestion(topic, `Count by 5s: 5, 10, 15, 20, __`, [`${25}`, `${21}`, `${30}`, `${24}`], 0, 'easy', yearGroup, 1);
+      }
+    }
+  }
+  
+  const num = getRandomInt(100, 500);
+  return createQuestion(topic, `What number comes after ${num}?`, [`${num + 1}`, `${num + 10}`, `${num}`, `${num + 100}`], 0, 'easy', yearGroup, 1);
+};
+
+// ============= PRIMARY SCHOOL: ADDITION =============
+const generateAdditionQuestion = (yearGroup: YearGroup): Question => {
+  const topic = 'addition';
+  
+  if (yearGroup <= 1) {
+    const a = getRandomInt(1, 5);
+    const b = getRandomInt(1, 5);
+    return createQuestion(topic, `${a} + ${b} = ?`, [`${a + b}`, `${a + b + 1}`, `${a + b - 1}`, `${a + b + 2}`], 0, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 2) {
+    const a = getRandomInt(5, 15);
+    const b = getRandomInt(1, 10);
+    return createQuestion(topic, `${a} + ${b} = ?`, [`${a + b}`, `${a + b + 1}`, `${a + b - 1}`, `${a + b + 2}`], 0, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 3) {
+    const a = getRandomInt(10, 50);
+    const b = getRandomInt(10, 50);
+    return createQuestion(topic, `${a} + ${b} = ?`, [`${a + b}`, `${a + b + 10}`, `${a + b - 10}`, `${a + b + 1}`], 0, 'medium', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 4) {
+    const a = getRandomInt(100, 500);
+    const b = getRandomInt(100, 500);
+    return createQuestion(topic, `${a} + ${b} = ?`, [`${a + b}`, `${a + b + 10}`, `${a + b - 10}`, `${a + b + 100}`], 0, 'medium', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 5) {
+    const a = getRandomInt(1000, 5000);
+    const b = getRandomInt(1000, 5000);
+    return createQuestion(topic, `${a} + ${b} = ?`, [`${a + b}`, `${a + b + 100}`, `${a + b - 100}`, `${a + b + 1000}`], 0, 'medium', yearGroup, 1);
+  }
+  
+  const a = getRandomInt(10000, 50000);
+  const b = getRandomInt(10000, 50000);
+  return createQuestion(topic, `${a} + ${b} = ?`, [`${a + b}`, `${a + b + 1000}`, `${a + b - 1000}`, `${a + b + 100}`], 0, 'hard', yearGroup, 1);
+};
+
+// ============= PRIMARY SCHOOL: SUBTRACTION =============
+const generateSubtractionQuestion = (yearGroup: YearGroup): Question => {
+  const topic = 'subtraction';
+  
+  if (yearGroup <= 1) {
+    const a = getRandomInt(5, 10);
+    const b = getRandomInt(1, a - 1);
+    return createQuestion(topic, `${a} - ${b} = ?`, [`${a - b}`, `${a - b + 1}`, `${a - b - 1}`, `${a + b}`], 0, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 2) {
+    const a = getRandomInt(10, 20);
+    const b = getRandomInt(1, 10);
+    return createQuestion(topic, `${a} - ${b} = ?`, [`${a - b}`, `${a - b + 1}`, `${a - b - 1}`, `${a + b}`], 0, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 3) {
+    const a = getRandomInt(50, 100);
+    const b = getRandomInt(10, 50);
+    return createQuestion(topic, `${a} - ${b} = ?`, [`${a - b}`, `${a - b + 10}`, `${a - b - 10}`, `${a + b}`], 0, 'medium', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 4) {
+    const a = getRandomInt(500, 1000);
+    const b = getRandomInt(100, 500);
+    return createQuestion(topic, `${a} - ${b} = ?`, [`${a - b}`, `${a - b + 10}`, `${a - b - 10}`, `${a + b}`], 0, 'medium', yearGroup, 1);
+  }
+  
+  const a = getRandomInt(5000, 10000);
+  const b = getRandomInt(1000, 5000);
+  return createQuestion(topic, `${a} - ${b} = ?`, [`${a - b}`, `${a - b + 100}`, `${a - b - 100}`, `${a + b}`], 0, 'hard', yearGroup, 1);
+};
+
+// ============= PRIMARY SCHOOL: MULTIPLICATION =============
+const generateMultiplicationQuestion = (yearGroup: YearGroup): Question => {
+  const topic = 'multiplication';
+  
+  if (yearGroup <= 2) {
+    const a = getRandomInt(1, 5);
+    const b = getRandomInt(1, 5);
+    return createQuestion(topic, `${a} × ${b} = ?`, [`${a * b}`, `${a * b + 1}`, `${a + b}`, `${a * b - 1}`], 0, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 3) {
+    const a = getRandomInt(2, 10);
+    const b = getRandomInt(2, 5);
+    return createQuestion(topic, `${a} × ${b} = ?`, [`${a * b}`, `${a * b + a}`, `${a + b}`, `${a * b - b}`], 0, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 4) {
+    const a = getRandomInt(2, 12);
+    const b = getRandomInt(2, 12);
+    return createQuestion(topic, `${a} × ${b} = ?`, [`${a * b}`, `${a * b + a}`, `${a * b - b}`, `${a + b}`], 0, 'medium', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 5) {
+    const a = getRandomInt(10, 50);
+    const b = getRandomInt(2, 10);
+    return createQuestion(topic, `${a} × ${b} = ?`, [`${a * b}`, `${a * b + 10}`, `${a * b - 10}`, `${a + b}`], 0, 'medium', yearGroup, 1);
+  }
+  
+  const a = getRandomInt(50, 100);
+  const b = getRandomInt(10, 50);
+  return createQuestion(topic, `${a} × ${b} = ?`, [`${a * b}`, `${a * b + 100}`, `${a * b - 100}`, `${a * b + 50}`], 0, 'hard', yearGroup, 1);
+};
+
+// ============= PRIMARY SCHOOL: DIVISION =============
+const generateDivisionQuestion = (yearGroup: YearGroup): Question => {
+  const topic = 'division';
+  
+  if (yearGroup <= 2) {
+    const b = getRandomInt(1, 5);
+    const a = b * getRandomInt(1, 5);
+    return createQuestion(topic, `${a} ÷ ${b} = ?`, [`${a / b}`, `${a / b + 1}`, `${a - b}`, `${b}`], 0, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 3) {
+    const b = getRandomInt(2, 5);
+    const a = b * getRandomInt(2, 10);
+    return createQuestion(topic, `${a} ÷ ${b} = ?`, [`${a / b}`, `${a / b + 1}`, `${a / b - 1}`, `${b}`], 0, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 4) {
+    const b = getRandomInt(2, 10);
+    const a = b * getRandomInt(2, 12);
+    return createQuestion(topic, `${a} ÷ ${b} = ?`, [`${a / b}`, `${a / b + 1}`, `${a / b - 1}`, `${a - b}`], 0, 'medium', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 5) {
+    const b = getRandomInt(5, 12);
+    const a = b * getRandomInt(10, 20);
+    return createQuestion(topic, `${a} ÷ ${b} = ?`, [`${a / b}`, `${a / b + 1}`, `${a / b - 1}`, `${b}`], 0, 'medium', yearGroup, 1);
+  }
+  
+  const b = getRandomInt(10, 25);
+  const a = b * getRandomInt(10, 50);
+  return createQuestion(topic, `${a} ÷ ${b} = ?`, [`${a / b}`, `${a / b + 5}`, `${a / b - 5}`, `${b}`], 0, 'hard', yearGroup, 1);
+};
+
+// ============= PRIMARY SCHOOL: SHAPES =============
+const generateShapesQuestion = (yearGroup: YearGroup): Question => {
+  const topic = 'shapes';
+  
+  if (yearGroup <= 2) {
+    const questions = [
+      { q: 'How many sides does a triangle have?', opts: ['3', '4', '5', '2'], correct: 0 },
+      { q: 'How many sides does a square have?', opts: ['4', '3', '5', '6'], correct: 0 },
+      { q: 'What shape is a ball?', opts: ['Sphere', 'Circle', 'Square', 'Cube'], correct: 0 },
+      { q: 'How many corners does a rectangle have?', opts: ['4', '2', '3', '6'], correct: 0 },
+      { q: 'What shape has no corners?', opts: ['Circle', 'Square', 'Triangle', 'Rectangle'], correct: 0 },
+    ];
+    const selected = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion(topic, selected.q, selected.opts, selected.correct, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 4) {
+    const questions = [
+      { q: 'How many sides does a pentagon have?', opts: ['5', '6', '4', '8'], correct: 0 },
+      { q: 'How many sides does a hexagon have?', opts: ['6', '5', '7', '8'], correct: 0 },
+      { q: 'What shape has 8 sides?', opts: ['Octagon', 'Hexagon', 'Pentagon', 'Heptagon'], correct: 0 },
+      { q: 'How many faces does a cube have?', opts: ['6', '4', '8', '12'], correct: 0 },
+      { q: 'A 3D rectangle shape is called a...', opts: ['Cuboid', 'Square', 'Prism', 'Cube'], correct: 0 },
+    ];
+    const selected = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion(topic, selected.q, selected.opts, selected.correct, 'medium', yearGroup, 1);
+  }
+  
+  const questions = [
+    { q: 'How many edges does a cube have?', opts: ['12', '6', '8', '10'], correct: 0 },
+    { q: 'How many vertices does a cube have?', opts: ['8', '6', '12', '4'], correct: 0 },
+    { q: 'What is the sum of angles in a triangle?', opts: ['180°', '360°', '90°', '270°'], correct: 0 },
+    { q: 'How many lines of symmetry does a square have?', opts: ['4', '2', '1', '8'], correct: 0 },
+  ];
+  const selected = questions[getRandomInt(0, questions.length - 1)];
+  return createQuestion(topic, selected.q, selected.opts, selected.correct, 'medium', yearGroup, 1);
+};
+
+// ============= PRIMARY SCHOOL: TELLING TIME =============
+const generateTellingTimeQuestion = (yearGroup: YearGroup): Question => {
+  const topic = 'telling-time';
+  
+  if (yearGroup <= 1) {
+    const questions = [
+      { q: 'How many hours in a day?', opts: ['24', '12', '60', '100'], correct: 0 },
+      { q: 'The short hand shows...', opts: ['Hours', 'Minutes', 'Seconds', 'Days'], correct: 0 },
+      { q: 'If the short hand is on 3, what time is it?', opts: ['3 o\'clock', '12 o\'clock', '6 o\'clock', '9 o\'clock'], correct: 0 },
+    ];
+    const selected = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion(topic, selected.q, selected.opts, selected.correct, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 2) {
+    const questions = [
+      { q: 'How many minutes in an hour?', opts: ['60', '30', '100', '24'], correct: 0 },
+      { q: 'Half past 2 is the same as...', opts: ['2:30', '2:00', '2:15', '2:45'], correct: 0 },
+      { q: 'Quarter past 5 is the same as...', opts: ['5:15', '5:30', '5:45', '5:00'], correct: 0 },
+    ];
+    const selected = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion(topic, selected.q, selected.opts, selected.correct, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 3) {
+    const questions = [
+      { q: 'What is 25 minutes after 3:00?', opts: ['3:25', '3:35', '3:15', '3:30'], correct: 0 },
+      { q: 'How many seconds in a minute?', opts: ['60', '100', '30', '120'], correct: 0 },
+      { q: 'What time is 15 minutes before 4:00?', opts: ['3:45', '4:15', '3:30', '3:55'], correct: 0 },
+    ];
+    const selected = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion(topic, selected.q, selected.opts, selected.correct, 'medium', yearGroup, 1);
+  }
+  
+  const hour = getRandomInt(1, 12);
+  const min = getRandomInt(1, 11) * 5;
+  const answer = min >= 60 ? `${hour + 1}:${(min - 60).toString().padStart(2, '0')}` : `${hour}:${min.toString().padStart(2, '0')}`;
+  return createQuestion(topic, `What is ${20} minutes after ${hour}:${min.toString().padStart(2, '0')}?`, 
+    [`${hour}:${(min + 20).toString().padStart(2, '0')}`, `${hour + 1}:${min.toString().padStart(2, '0')}`, `${hour}:${(min + 10).toString().padStart(2, '0')}`, `${hour}:${(min + 30).toString().padStart(2, '0')}`], 
+    0, 'medium', yearGroup, 1);
+};
+
+// ============= PRIMARY SCHOOL: MONEY =============
+const generateMoneyQuestion = (yearGroup: YearGroup): Question => {
+  const topic = 'money';
+  
+  if (yearGroup <= 2) {
+    const questions = [
+      { q: 'How many pennies make 10p?', opts: ['10', '5', '100', '1'], correct: 0 },
+      { q: 'What coins make 5p?', opts: ['5 × 1p', '1 × 10p', '2 × 5p', '5 × 10p'], correct: 0 },
+      { q: 'How many 10p coins make £1?', opts: ['10', '5', '100', '20'], correct: 0 },
+    ];
+    const selected = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion(topic, selected.q, selected.opts, selected.correct, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 4) {
+    const a = getRandomInt(1, 5);
+    const b = getRandomInt(1, 5);
+    return createQuestion(topic, `£${a}.50 + £${b}.50 = ?`, [`£${a + b + 1}.00`, `£${a + b}.00`, `£${a + b}.50`, `£${a + b + 2}.00`], 0, 'medium', yearGroup, 1);
+  }
+  
+  const price = getRandomInt(2, 9);
+  const paid = 10;
+  return createQuestion(topic, `You buy something for £${price}. You pay with £10. What is your change?`, 
+    [`£${paid - price}`, `£${paid - price + 1}`, `£${paid - price - 1}`, `£${price}`], 0, 'medium', yearGroup, 1);
+};
+
+// ============= PRIMARY SCHOOL: PLACE VALUE =============
+const generatePlaceValueQuestion = (yearGroup: YearGroup): Question => {
+  const topic = 'place-value';
+  
+  if (yearGroup <= 3) {
+    const num = getRandomInt(10, 99);
+    const tens = Math.floor(num / 10);
+    const ones = num % 10;
+    const type = getRandomInt(0, 1);
+    if (type === 0) {
+      return createQuestion(topic, `What is the tens digit in ${num}?`, [`${tens}`, `${ones}`, `${num}`, `${tens + ones}`], 0, 'easy', yearGroup, 1);
+    }
+    return createQuestion(topic, `What is the ones digit in ${num}?`, [`${ones}`, `${tens}`, `${num}`, `${tens + ones}`], 0, 'easy', yearGroup, 1);
+  }
+  
+  if (yearGroup <= 4) {
+    const num = getRandomInt(100, 999);
+    const hundreds = Math.floor(num / 100);
+    return createQuestion(topic, `What is the hundreds digit in ${num}?`, [`${hundreds}`, `${Math.floor((num % 100) / 10)}`, `${num % 10}`, `${num}`], 0, 'medium', yearGroup, 1);
+  }
+  
+  const num = getRandomInt(1000, 9999);
+  const thousands = Math.floor(num / 1000);
+  return createQuestion(topic, `What is the thousands digit in ${num}?`, [`${thousands}`, `${Math.floor((num % 1000) / 100)}`, `${num % 10}`, `${num}`], 0, 'medium', yearGroup, 1);
+};
+
 export const generateRandomQuestion = (topic: string, yearGroup: YearGroup): Question => {
   switch (topic) {
+    // Primary school topics
+    case 'counting': return generateCountingQuestion(yearGroup);
+    case 'addition': return generateAdditionQuestion(yearGroup);
+    case 'subtraction': return generateSubtractionQuestion(yearGroup);
+    case 'multiplication': return generateMultiplicationQuestion(yearGroup);
+    case 'division': return generateDivisionQuestion(yearGroup);
+    case 'shapes': return generateShapesQuestion(yearGroup);
+    case 'telling-time': return generateTellingTimeQuestion(yearGroup);
+    case 'money': return generateMoneyQuestion(yearGroup);
+    case 'place-value': return generatePlaceValueQuestion(yearGroup);
+    // Secondary school topics
     case 'algebra': return generateAlgebraQuestion(yearGroup);
     case 'equations': return generateEquationsQuestion(yearGroup);
     case 'fractions': return generateFractionsQuestion(yearGroup);
@@ -605,7 +931,7 @@ export const generateRandomQuestion = (topic: string, yearGroup: YearGroup): Que
     case 'graphs': return generateGraphsQuestion(yearGroup);
     case 'wordproblems': return generateWordProblemsQuestion(yearGroup);
     case 'measurement': return generateMeasurementQuestion(yearGroup);
-    default: return generateMentalQuestion(yearGroup); // Fallback to mental maths
+    default: return generateMentalQuestion(yearGroup);
   }
 };
 
