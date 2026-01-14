@@ -12,8 +12,8 @@ interface ConnectFourMathProps {
 
 interface MathQuestion {
   question: string;
-  answer: number;
-  options: number[];
+  correctAnswer: string;
+  options: string[];
 }
 
 type Cell = 'empty' | 'team1' | 'team2';
@@ -25,29 +25,18 @@ const COLS = 7;
 /* ---------------- QUESTION GENERATOR (uses topic-specific generator) ---------------- */
 const generateQuestion = (isHard: boolean, yearGroup: number): MathQuestion => {
   // Use the topic-specific generator - default to mental maths for quick games
-  const topics = ['mental', 'algebra', 'equations', 'fractions'];
+  const topics = ['mental', 'algebra', 'equations', 'fractions', 'percentages'];
   const topic = topics[Math.floor(Math.random() * topics.length)];
   const q = generateRandomQuestion(topic, yearGroup as any);
   
-  const answer = parseFloat(q.options[q.correctAnswer].replace(/[^\d.-]/g, '')) || 0;
-  
-  // For normal mode, generate numeric options
-  let options: number[] = [];
-  if (!isHard) {
-    options = q.options.map(opt => {
-      const num = parseFloat(opt.replace(/[^\d.-]/g, ''));
-      return isNaN(num) ? 0 : num;
-    }).filter((v, i, a) => a.indexOf(v) === i); // unique
-    
-    // Ensure we have 4 options
-    while (options.length < 4) {
-      const wrong = answer + (Math.floor(Math.random() * 10) - 5);
-      if (!options.includes(wrong)) options.push(wrong);
-    }
-    options = options.slice(0, 4).sort(() => Math.random() - 0.5);
-  }
+  // Keep formatted answer string
+  const correctAnswer = q.options[q.correctAnswer];
 
-  return { question: q.question, answer, options };
+  return { 
+    question: q.question, 
+    correctAnswer, 
+    options: q.options 
+  };
 };
 
 
@@ -152,7 +141,7 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
         setIsAIThinking(false);
       }, 1000);
     }, 500);
-  }, [board, currentPlayer, winner, currentQuestion, isAIThinking, isHardMode, dropPiece, isSoloMode]);
+  }, [board, currentPlayer, winner, currentQuestion, isAIThinking, isHardMode, dropPiece, isSoloMode, gameState.selectedYearGroup]);
 
   const handleColumnClick = (col: number) => {
     if (winner || currentQuestion || isAIThinking || board[0][col] !== 'empty') return;
@@ -161,10 +150,10 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
     setCurrentQuestion(generateQuestion(isHardMode, gameState.selectedYearGroup));
   };
 
-  const handleAnswer = (value: number) => {
+  const handleAnswer = (selectedOption: string) => {
     if (!currentQuestion || selectedCol === null) return;
 
-    if (value !== currentQuestion.answer) {
+    if (selectedOption !== currentQuestion.correctAnswer) {
       setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
     } else {
       const newBoard = dropPiece(selectedCol, currentPlayer, board);
@@ -187,8 +176,17 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
 
   const handleTypedSubmit = () => {
     if (!currentQuestion || !typedAnswer.trim()) return;
-    const parsed = parseFloat(typedAnswer);
-    if (!isNaN(parsed)) handleAnswer(parsed);
+    
+    // Normalize both answers for comparison
+    const normalizeAnswer = (str: string) => str.toLowerCase().replace(/\s+/g, '').trim();
+    const userAnswer = normalizeAnswer(typedAnswer);
+    const correct = normalizeAnswer(currentQuestion.correctAnswer);
+    
+    if (userAnswer === correct) {
+      handleAnswer(currentQuestion.correctAnswer);
+    } else {
+      handleAnswer(typedAnswer); // Will trigger wrong answer logic
+    }
   };
 
   const resetGame = () => {
@@ -272,8 +270,8 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in p-4">
             <div className="bg-card rounded-xl p-4 md:p-6 max-w-sm w-full panda-shadow scale-in">
               <h3 className="text-lg font-bold text-center mb-1 text-foreground">{getCurrentTeamName()}'s Question</h3>
-              {isHardMode && <p className="text-xs text-center text-muted-foreground mb-2">Use * for × and / for ÷</p>}
-              <div className="text-3xl font-bold text-center text-primary mb-4">{currentQuestion.question} = ?</div>
+              {isHardMode && <p className="text-xs text-center text-muted-foreground mb-2">Type the answer exactly (e.g., 50%, 3/4, x = 5)</p>}
+              <div className="text-3xl font-bold text-center text-primary mb-4">{currentQuestion.question}</div>
               {isHardMode ? (
                 <div className="space-y-3">
                   <Input
