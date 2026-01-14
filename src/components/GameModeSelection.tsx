@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/context/GameContext';
 import { User, Users, ArrowLeft } from 'lucide-react';
-import pandaMascot from '@/assets/panda-mascot.png';
+import pandaLogo from '@/assets/panda-logo.png';
 
 interface GameModeSelectionProps {
   onSelect: () => void;
@@ -36,9 +36,9 @@ const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect, onBack 
           {/* Header */}
           <div className="mb-4 sm:mb-6 bounce-in">
             <img 
-              src={pandaMascot} 
-              alt="Panda Mascot" 
-              className="w-14 h-14 sm:w-18 sm:h-18 md:w-20 md:h-20 mx-auto mb-2 sm:mb-3 float"
+              src={pandaLogo} 
+              alt="Panda Logo" 
+              className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 mx-auto mb-2 sm:mb-3 float"
             />
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gradient mb-1">
               How do you want to play?
