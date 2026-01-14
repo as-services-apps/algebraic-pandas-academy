@@ -1,6 +1,7 @@
 export type UserType = 'student' | 'teacher';
 export type GameMode = 'solo' | 'team';
 export type YearGroup = 7 | 8 | 9 | 10 | 11 | 12;
+export type Subject = 'maths' | 'science' | 'english' | 'history' | 'geography' | 'general';
 
 export interface Team {
   id: string;
@@ -25,6 +26,7 @@ export interface GameState {
   teams: Team[];
   currentRound: number;
   selectedYearGroup: YearGroup;
+  selectedSubject: Subject;
   isAIOpponent: boolean;
   gameStarted: boolean;
   isHardMode: boolean;

@@ -3,23 +3,69 @@ import { Button } from '@/components/ui/button';
 import { GameTopic, YearGroup } from '@/types/game';
 import { gameTopics } from '@/data/questions';
 import { useGame } from '@/context/GameContext';
-import { ChevronRight, Zap } from 'lucide-react';
+import { ChevronRight, Zap, ArrowLeft } from 'lucide-react';
+import { getSubjectTopics } from '@/lib/subjectQuestionGenerator';
 
 interface TopicSelectorProps {
   onSelectTopic: (topic: GameTopic) => void;
+  onBack?: () => void;
 }
 
-const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic }) => {
+const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic, onBack }) => {
   const { gameState, setYearGroup, setHardMode } = useGame();
 
   const yearGroups: YearGroup[] = [7, 8, 9, 10, 11, 12];
 
-  const filteredTopics = gameTopics.filter(topic => 
-    topic.yearGroups.includes(gameState.selectedYearGroup)
-  );
+  // Get topics based on selected subject
+  const getTopicsForSubject = () => {
+    if (gameState.selectedSubject === 'maths') {
+      // Use existing maths topics
+      return gameTopics.filter(topic => 
+        topic.yearGroups.includes(gameState.selectedYearGroup)
+      );
+    } else {
+      // Use subject-specific topics
+      const subjectTopics = getSubjectTopics(gameState.selectedSubject);
+      return subjectTopics.map(t => ({
+        id: t.id,
+        name: t.name,
+        icon: t.icon,
+        description: t.description,
+        yearGroups: [7, 8, 9, 10, 11, 12] as YearGroup[],
+        color: 'primary',
+      }));
+    }
+  };
+
+  const filteredTopics = getTopicsForSubject();
+
+  const subjectNames: Record<string, string> = {
+    maths: '🔢 Maths',
+    science: '🔬 Science',
+    english: '📚 English',
+    history: '🏛️ History',
+    geography: '🌍 Geography',
+    general: '💡 General Knowledge',
+  };
 
   return (
     <div className="space-y-6">
+      {/* Back to Subject Selection */}
+      {onBack && (
+        <Button variant="ghost" onClick={onBack} className="mb-2">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Change Subject
+        </Button>
+      )}
+
+      {/* Current Subject */}
+      <div className="bg-primary/10 rounded-2xl p-4 text-center">
+        <p className="text-sm text-muted-foreground">Current Subject</p>
+        <h2 className="text-2xl font-bold text-primary">
+          {subjectNames[gameState.selectedSubject] || gameState.selectedSubject}
+        </h2>
+      </div>
+
       {/* Year Group Selector */}
       <div className="bg-card rounded-2xl p-4 panda-shadow">
         <h3 className="font-bold text-foreground mb-3">Select Year Group</h3>
