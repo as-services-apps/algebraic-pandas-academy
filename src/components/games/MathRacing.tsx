@@ -12,8 +12,8 @@ interface MathRacingProps {
 
 interface RaceQuestion {
   question: string;
-  answer: number;
-  options: number[];
+  correctAnswer: string;
+  options: string[];
 }
 
 const generateQuestion = (difficulty: number, isHard: boolean, yearGroup: number): RaceQuestion => {
@@ -22,24 +22,14 @@ const generateQuestion = (difficulty: number, isHard: boolean, yearGroup: number
   const topic = topics[Math.floor(Math.random() * topics.length)];
   const q = generateRandomQuestion(topic, yearGroup as any);
   
-  const answer = parseFloat(q.options[q.correctAnswer].replace(/[^\d.-]/g, '')) || 0;
+  // Keep the formatted answer string
+  const correctAnswer = q.options[q.correctAnswer];
   
-  // For normal mode, generate numeric options
-  let options: number[] = [];
-  if (!isHard) {
-    options = q.options.map(opt => {
-      const num = parseFloat(opt.replace(/[^\d.-]/g, ''));
-      return isNaN(num) ? 0 : num;
-    }).filter((v, i, a) => a.indexOf(v) === i);
-    
-    while (options.length < 4) {
-      const wrong = answer + (Math.floor(Math.random() * 10) - 5);
-      if (!options.includes(wrong)) options.push(wrong);
-    }
-    options = options.slice(0, 4).sort(() => Math.random() - 0.5);
-  }
-
-  return { question: q.question, answer, options };
+  return { 
+    question: q.question, 
+    correctAnswer, 
+    options: q.options 
+  };
 };
 
 
@@ -115,10 +105,10 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
     }
   }, [team1Position, team2Position, gameOver, isTeamMode, isHardMode, team1.id, team2.id, updateTeamScore]);
 
-  const handleAnswer = (option: number) => {
+  const handleAnswer = (selectedOption: string) => {
     if (!currentQuestion || gameOver || isAITurn) return;
 
-    if (option === currentQuestion.answer) {
+    if (selectedOption === currentQuestion.correctAnswer) {
       const boost = isHardMode ? 15 + streak * 3 : 10 + streak * 2;
       if (currentPlayer === 'team1') {
         setTeam1Position(prev => Math.min(prev + boost, finishLine));
@@ -149,10 +139,17 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
   };
 
   const handleTypedSubmit = () => {
-    if (!typedAnswer.trim() || isAITurn) return;
-    const parsed = parseFloat(typedAnswer);
-    if (!isNaN(parsed)) {
-      handleAnswer(parsed);
+    if (!typedAnswer.trim() || isAITurn || !currentQuestion) return;
+    
+    // Normalize both answers for comparison (handle spaces, case, etc.)
+    const normalizeAnswer = (str: string) => str.toLowerCase().replace(/\s+/g, '').trim();
+    const userAnswer = normalizeAnswer(typedAnswer);
+    const correct = normalizeAnswer(currentQuestion.correctAnswer);
+    
+    if (userAnswer === correct) {
+      handleAnswer(currentQuestion.correctAnswer);
+    } else {
+      handleAnswer(typedAnswer); // Will trigger wrong answer logic
     }
   };
 
@@ -297,10 +294,10 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
           <div className="space-y-3">
             <div className="text-center">
               <div className="text-2xl font-bold text-foreground mb-2">
-                {currentQuestion.question} = ?
+                {currentQuestion.question}
               </div>
               {isHardMode && (
-                <p className="text-xs text-muted-foreground">Use * for × and / for ÷</p>
+                <p className="text-xs text-muted-foreground">Type the answer exactly (e.g., 50%, 3/4, x = 5)</p>
               )}
             </div>
             
