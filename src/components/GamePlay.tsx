@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useGame } from '@/context/GameContext';
 import { Question, GameTopic, Team } from '@/types/game';
-import { generateQuestions } from '@/data/questions';
+import { generateRandomQuestion } from '@/lib/questionGenerator';
 import { Check, X, Clock, Zap, Trophy, ArrowRight, RotateCcw } from 'lucide-react';
 import confetti from '@/lib/confetti';
 
@@ -15,8 +15,8 @@ interface GamePlayProps {
 
 const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions }) => {
   const { gameState, updateTeamScore, nextRound } = useGame();
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [questionCount, setQuestionCount] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
   const [timeLeft, setTimeLeft] = useState(gameState.isHardMode ? 30 : 20);
@@ -26,18 +26,31 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
   const [isAnswerLocked, setIsAnswerLocked] = useState(false);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [isTypedCorrect, setIsTypedCorrect] = useState<boolean | null>(null);
+  const [customQuestionIndex, setCustomQuestionIndex] = useState(0);
+  const [totalScore, setTotalScore] = useState(0);
 
-  useEffect(() => {
+  const generateNextQuestion = useCallback(() => {
     if (customQuestions && customQuestions.length > 0) {
-      setQuestions(customQuestions);
+      if (customQuestionIndex < customQuestions.length) {
+        setCurrentQuestion(customQuestions[customQuestionIndex]);
+      } else {
+        // Custom questions exhausted, end game
+        setGameComplete(true);
+        return;
+      }
     } else {
-      const qs = generateQuestions(topic.id, gameState.selectedYearGroup);
-      setQuestions(qs.length > 0 ? qs : []);
+      // Generate infinite random questions
+      const newQuestion = generateRandomQuestion(topic.id, gameState.selectedYearGroup);
+      setCurrentQuestion(newQuestion);
     }
-  }, [topic.id, gameState.selectedYearGroup, customQuestions]);
+  }, [customQuestions, customQuestionIndex, topic.id, gameState.selectedYearGroup]);
 
   useEffect(() => {
-    if (showResult || gameComplete || questions.length === 0) return;
+    generateNextQuestion();
+  }, []);
+
+  useEffect(() => {
+    if (showResult || gameComplete || !currentQuestion) return;
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -50,7 +63,7 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [currentQuestionIndex, showResult, gameComplete, questions.length]);
+  }, [questionCount, showResult, gameComplete, currentQuestion]);
 
   const handleTimeUp = () => {
     if (!isAnswerLocked) {
@@ -62,7 +75,6 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
     }
   };
 
-  const currentQuestion = questions[currentQuestionIndex];
   const currentTeam = gameState.teams[currentTeamIndex];
 
   const normalizeAnswer = (answer: string): string => {
@@ -90,7 +102,7 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
   };
 
   const handleAnswerSelect = (answerIndex: number) => {
-    if (isAnswerLocked) return;
+    if (isAnswerLocked || !currentQuestion) return;
     
     setSelectedAnswer(answerIndex);
     setIsAnswerLocked(true);
@@ -100,6 +112,7 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
 
     if (isCorrect) {
       setCorrectCount(prev => prev + 1);
+      setTotalScore(prev => prev + currentQuestion.points);
       if (gameState.gameMode === 'team' && currentTeam) {
         updateTeamScore(currentTeam.id, currentQuestion.points);
       }
@@ -108,7 +121,7 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
   };
 
   const handleTypedSubmit = () => {
-    if (isAnswerLocked || !typedAnswer.trim()) return;
+    if (isAnswerLocked || !typedAnswer.trim() || !currentQuestion) return;
     
     const isCorrect = checkTypedAnswer(typedAnswer, currentQuestion);
     setIsTypedCorrect(isCorrect);
@@ -117,40 +130,53 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
 
     if (isCorrect) {
       setCorrectCount(prev => prev + 1);
+      const earnedPoints = currentQuestion.points * 2;
+      setTotalScore(prev => prev + earnedPoints);
       if (gameState.gameMode === 'team' && currentTeam) {
-        // Double points in hard mode
-        updateTeamScore(currentTeam.id, currentQuestion.points * 2);
+        updateTeamScore(currentTeam.id, earnedPoints);
       }
       confetti();
     }
   };
 
   const handleNext = () => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
-      setSelectedAnswer(null);
-      setShowResult(false);
-      setTimeLeft(gameState.isHardMode ? 30 : 20);
-      setIsAnswerLocked(false);
-      setTypedAnswer('');
-      setIsTypedCorrect(null);
-      
-      if (gameState.gameMode === 'team') {
-        setCurrentTeamIndex(prev => (prev + 1) % gameState.teams.length);
+    setQuestionCount(prev => prev + 1);
+    setSelectedAnswer(null);
+    setShowResult(false);
+    setTimeLeft(gameState.isHardMode ? 30 : 20);
+    setIsAnswerLocked(false);
+    setTypedAnswer('');
+    setIsTypedCorrect(null);
+    
+    if (gameState.gameMode === 'team') {
+      setCurrentTeamIndex(prev => (prev + 1) % gameState.teams.length);
+    }
+
+    if (customQuestions && customQuestions.length > 0) {
+      const nextIndex = customQuestionIndex + 1;
+      if (nextIndex >= customQuestions.length) {
+        setGameComplete(true);
+        nextRound();
+        return;
       }
+      setCustomQuestionIndex(nextIndex);
+      setCurrentQuestion(customQuestions[nextIndex]);
     } else {
-      setGameComplete(true);
-      nextRound();
+      // Generate a new random question
+      const newQuestion = generateRandomQuestion(topic.id, gameState.selectedYearGroup);
+      setCurrentQuestion(newQuestion);
     }
   };
 
-  if (questions.length === 0) {
+  const handleEndGame = () => {
+    setGameComplete(true);
+    nextRound();
+  };
+
+  if (!currentQuestion) {
     return (
       <div className="text-center py-12">
-        <p className="text-xl text-muted-foreground mb-4">
-          No questions available for Year {gameState.selectedYearGroup} in {topic.name}
-        </p>
-        <Button onClick={onComplete}>Go Back</Button>
+        <p className="text-xl text-muted-foreground mb-4">Loading question...</p>
       </div>
     );
   }
@@ -164,7 +190,7 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
       <div className="text-center py-12 bounce-in">
         <div className="text-6xl mb-6">🎉</div>
         <h2 className="text-3xl font-bold text-foreground mb-4">
-          Round Complete!
+          Game Complete!
         </h2>
         
         <div className="bg-card rounded-2xl p-6 panda-shadow max-w-md mx-auto mb-6">
@@ -175,8 +201,13 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
             </div>
             <div className="w-px h-12 bg-border" />
             <div className="text-center">
-              <p className="text-4xl font-bold text-foreground">{questions.length}</p>
+              <p className="text-4xl font-bold text-foreground">{questionCount + 1}</p>
               <p className="text-sm text-muted-foreground">Questions</p>
+            </div>
+            <div className="w-px h-12 bg-border" />
+            <div className="text-center">
+              <p className="text-4xl font-bold text-primary">{totalScore}</p>
+              <p className="text-sm text-muted-foreground">Points</p>
             </div>
           </div>
 
@@ -225,19 +256,28 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
               )}
             </h3>
             <p className="text-xs text-muted-foreground">
-              Q{currentQuestionIndex + 1}/{questions.length}
+              Q{questionCount + 1} • Score: {totalScore}
             </p>
           </div>
         </div>
 
-        {/* Timer */}
-        <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full font-bold text-sm ${
-          timeLeft <= 5 
-            ? 'bg-destructive text-destructive-foreground animate-pulse' 
-            : 'bg-muted text-foreground'
-        }`}>
-          <Clock className="w-4 h-4" />
-          {timeLeft}s
+        <div className="flex items-center gap-2">
+          {/* End Game Button - only for infinite mode */}
+          {(!customQuestions || customQuestions.length === 0) && (
+            <Button variant="outline" size="sm" onClick={handleEndGame} className="text-xs">
+              End Game
+            </Button>
+          )}
+          
+          {/* Timer */}
+          <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full font-bold text-sm ${
+            timeLeft <= 5 
+              ? 'bg-destructive text-destructive-foreground animate-pulse' 
+              : 'bg-muted text-foreground'
+          }`}>
+            <Clock className="w-4 h-4" />
+            {timeLeft}s
+          </div>
         </div>
       </div>
 
@@ -369,21 +409,17 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
               </p>
             )}
             <Button variant="game" size="default" onClick={handleNext}>
-              {currentQuestionIndex < questions.length - 1 ? 'Next' : 'Results'}
+              Next Question
               <ArrowRight className="w-4 h-4 ml-1" />
             </Button>
           </div>
         )}
       </div>
 
-      {/* Progress Bar - compact */}
-      <div className="mt-3">
-        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-          <div 
-            className="h-full bg-primary rounded-full transition-all duration-300"
-            style={{ width: `${((currentQuestionIndex + 1) / questions.length) * 100}%` }}
-          />
-        </div>
+      {/* Stats Bar */}
+      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+        <span>✓ {correctCount} correct</span>
+        <span className="text-primary font-medium">{totalScore} points</span>
       </div>
     </div>
   );
