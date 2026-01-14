@@ -70,10 +70,13 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
     return () => clearInterval(timer);
   }, [questionCount, showResult, gameComplete, currentQuestion]);
 
+  const [timeRanOut, setTimeRanOut] = useState(false);
+
   const handleTimeUp = () => {
     if (!isAnswerLocked) {
       setIsAnswerLocked(true);
       setShowResult(true);
+      setTimeRanOut(true);
       if (gameState.isHardMode) {
         setIsTypedCorrect(false);
       }
@@ -151,6 +154,7 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
     setIsAnswerLocked(false);
     setTypedAnswer('');
     setIsTypedCorrect(null);
+    setTimeRanOut(false);
     
     if (gameState.gameMode === 'team') {
       setCurrentTeamIndex(prev => (prev + 1) % gameState.teams.length);
@@ -398,7 +402,11 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
         {/* Result & Next Button - inside card */}
         {showResult && (
           <div className="text-center slide-up mt-3">
-            {gameState.isHardMode ? (
+            {timeRanOut ? (
+              <p className="text-base font-bold mb-2 text-destructive">
+                ⏱️ Time ran out! Answer: {currentQuestion.options[currentQuestion.correctAnswer]}
+              </p>
+            ) : gameState.isHardMode ? (
               <p className={`text-base font-bold mb-2 ${isTypedCorrect ? 'text-success' : 'text-destructive'}`}>
                 {isTypedCorrect 
                   ? '🎉 Correct!' 

@@ -49,93 +49,93 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic, onBack }) 
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Back to Subject Selection */}
       {onBack && (
-        <Button variant="ghost" onClick={onBack} className="mb-2">
+        <Button variant="ghost" onClick={onBack} className="mb-2" size="sm">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Change Subject
         </Button>
       )}
 
       {/* Current Subject */}
-      <div className="bg-primary/10 rounded-2xl p-4 text-center">
-        <p className="text-sm text-muted-foreground">Current Subject</p>
-        <h2 className="text-2xl font-bold text-primary">
+      <div className="bg-primary/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center">
+        <p className="text-xs sm:text-sm text-muted-foreground">Current Subject</p>
+        <h2 className="text-lg sm:text-2xl font-bold text-primary">
           {subjectNames[gameState.selectedSubject] || gameState.selectedSubject}
         </h2>
       </div>
 
       {/* Year Group Selector */}
-      <div className="bg-card rounded-2xl p-4 panda-shadow">
-        <h3 className="font-bold text-foreground mb-3">Select Year Group</h3>
-        <div className="flex flex-wrap gap-2">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-3 sm:p-4 panda-shadow">
+        <h3 className="font-bold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Select Year Group</h3>
+        <div className="grid grid-cols-6 sm:flex sm:flex-wrap gap-1.5 sm:gap-2">
           {yearGroups.map((year) => (
             <button
               key={year}
               onClick={() => setYearGroup(year)}
-              className={`px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+              className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl font-medium transition-all duration-200 text-xs sm:text-sm ${
                 gameState.selectedYearGroup === year
                   ? 'bg-primary text-primary-foreground scale-105'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
-              Year {year}
+              Y{year}
             </button>
           ))}
         </div>
       </div>
 
       {/* Hard Mode Toggle */}
-      <div className="bg-card rounded-2xl p-4 panda-shadow">
+      <div className="bg-card rounded-xl sm:rounded-2xl p-3 sm:p-4 panda-shadow">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Zap className={`w-5 h-5 ${gameState.isHardMode ? 'text-destructive' : 'text-muted-foreground'}`} />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Zap className={`w-4 h-4 sm:w-5 sm:h-5 ${gameState.isHardMode ? 'text-destructive' : 'text-muted-foreground'}`} />
             <div>
-              <h3 className="font-bold text-foreground">Hard Mode</h3>
-              <p className="text-sm text-muted-foreground">Type your answers - no multiple choice!</p>
+              <h3 className="font-bold text-foreground text-sm sm:text-base">Hard Mode</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Type your answers!</p>
             </div>
           </div>
           <button
             onClick={() => setHardMode(!gameState.isHardMode)}
-            className={`relative w-14 h-8 rounded-full transition-colors duration-200 ${
+            className={`relative w-12 h-6 sm:w-14 sm:h-8 rounded-full transition-colors duration-200 ${
               gameState.isHardMode ? 'bg-destructive' : 'bg-muted'
             }`}
           >
             <div
-              className={`absolute top-1 w-6 h-6 rounded-full bg-white shadow transition-transform duration-200 ${
-                gameState.isHardMode ? 'translate-x-7' : 'translate-x-1'
+              className={`absolute top-0.5 sm:top-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white shadow transition-transform duration-200 ${
+                gameState.isHardMode ? 'translate-x-6 sm:translate-x-7' : 'translate-x-0.5 sm:translate-x-1'
               }`}
             />
           </button>
         </div>
         {gameState.isHardMode && (
-          <div className="mt-3 p-3 bg-destructive/10 rounded-xl text-sm text-destructive">
-            <strong>⚠️ Hard Mode Active:</strong> Questions are harder and you must type your answer exactly!
+          <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-destructive/10 rounded-lg sm:rounded-xl text-xs sm:text-sm text-destructive">
+            <strong>⚠️ Hard Mode:</strong> Type your answer exactly!
           </div>
         )}
       </div>
 
       {/* Topics Grid */}
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {filteredTopics.map((topic) => (
           <button
             key={topic.id}
             onClick={() => onSelectTopic(topic)}
-            className="group bg-card p-5 rounded-2xl panda-shadow hover:scale-[1.02] transition-all duration-300 text-left border-2 border-transparent hover:border-primary"
+            className="group bg-card p-3 sm:p-5 rounded-xl sm:rounded-2xl panda-shadow hover:scale-[1.02] transition-all duration-300 text-left border-2 border-transparent hover:border-primary"
           >
-            <div className="flex items-start gap-4">
-              <span className="text-4xl">{topic.icon}</span>
+            <div className="flex items-start gap-3 sm:gap-4">
+              <span className="text-2xl sm:text-4xl">{topic.icon}</span>
               <div className="flex-1">
-                <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                <h3 className="text-sm sm:text-lg font-bold text-foreground group-hover:text-primary transition-colors">
                   {topic.name}
                 </h3>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1 line-clamp-2">
                   {topic.description}
                 </p>
-                <div className="flex items-center gap-1 mt-3 text-primary">
-                  <span className="text-sm font-medium">Play Now</span>
-                  <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                <div className="flex items-center gap-1 mt-2 sm:mt-3 text-primary">
+                  <span className="text-xs sm:text-sm font-medium">Play Now</span>
+                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>
             </div>

@@ -35,9 +35,9 @@ const GameApp: React.FC = () => {
     <>
       {step === 'loading' && <LoadingScreen onComplete={() => setStep('userType')} />}
       {step === 'userType' && <UserTypeSelection onSelect={() => setStep('gameMode')} />}
-      {step === 'gameMode' && <GameModeSelection onSelect={handleModeSelect} />}
-      {step === 'name' && <NameInput onComplete={handleNameComplete} />}
-      {step === 'teamSetup' && <TeamSetup onComplete={() => setStep('dashboard')} />}
+      {step === 'gameMode' && <GameModeSelection onSelect={handleModeSelect} onBack={() => setStep('userType')} />}
+      {step === 'name' && <NameInput onComplete={handleNameComplete} onBack={() => setStep('gameMode')} />}
+      {step === 'teamSetup' && <TeamSetup onComplete={() => setStep('dashboard')} onBack={() => setStep('name')} />}
       {step === 'dashboard' && <GameDashboard onReset={handleReset} />}
     </>
   );
