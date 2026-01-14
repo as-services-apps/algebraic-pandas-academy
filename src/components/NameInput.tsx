@@ -139,10 +139,11 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
         </div>
       </div>
 
-      {/* Footer - scroll to see */}
-      <footer className="py-6 text-center">
-        <p className="text-muted-foreground text-sm">
-          Made by <span className="font-semibold text-foreground">Angad</span>
+      {/* Footer */}
+      <footer className="py-4 sm:py-6 text-center border-t border-border">
+        <p className="text-muted-foreground text-xs sm:text-sm">
+          Made by <span className="font-semibold text-foreground">Angad Singh</span> from{' '}
+          <span className="font-semibold text-foreground">AS Services</span>
         </p>
       </footer>
     </div>
