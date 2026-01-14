@@ -26,7 +26,7 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({ onSelect }) => {
             <img 
               src={pandaLogo} 
               alt="Panda Logo" 
-              className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 mx-auto mb-2 sm:mb-3 float"
+              className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 mx-auto mb-2 sm:mb-3 float"
             />
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient mb-1">
               Welcome! <span className="emoji">👋</span>
