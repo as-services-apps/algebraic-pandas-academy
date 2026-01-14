@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useGame } from '@/context/GameContext';
 import { Question, GameTopic, Team } from '@/types/game';
 import { generateRandomQuestion } from '@/lib/questionGenerator';
+import { generateSubjectQuestion } from '@/lib/subjectQuestionGenerator';
 import { Check, X, Clock, Zap, Trophy, ArrowRight, RotateCcw } from 'lucide-react';
 import confetti from '@/lib/confetti';
 
@@ -34,16 +35,20 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
       if (customQuestionIndex < customQuestions.length) {
         setCurrentQuestion(customQuestions[customQuestionIndex]);
       } else {
-        // Custom questions exhausted, end game
         setGameComplete(true);
         return;
       }
     } else {
-      // Generate infinite random questions
-      const newQuestion = generateRandomQuestion(topic.id, gameState.selectedYearGroup);
-      setCurrentQuestion(newQuestion);
+      // Use subject-specific generator
+      if (gameState.selectedSubject === 'maths') {
+        const newQuestion = generateRandomQuestion(topic.id, gameState.selectedYearGroup);
+        setCurrentQuestion(newQuestion);
+      } else {
+        const newQuestion = generateSubjectQuestion(gameState.selectedSubject, topic.id, gameState.selectedYearGroup);
+        setCurrentQuestion(newQuestion);
+      }
     }
-  }, [customQuestions, customQuestionIndex, topic.id, gameState.selectedYearGroup]);
+  }, [customQuestions, customQuestionIndex, topic.id, gameState.selectedYearGroup, gameState.selectedSubject]);
 
   useEffect(() => {
     generateNextQuestion();
@@ -162,9 +167,14 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
       setCustomQuestionIndex(nextIndex);
       setCurrentQuestion(customQuestions[nextIndex]);
     } else {
-      // Generate a new random question
-      const newQuestion = generateRandomQuestion(topic.id, gameState.selectedYearGroup);
-      setCurrentQuestion(newQuestion);
+      // Generate a new random question based on subject
+      if (gameState.selectedSubject === 'maths') {
+        const newQuestion = generateRandomQuestion(topic.id, gameState.selectedYearGroup);
+        setCurrentQuestion(newQuestion);
+      } else {
+        const newQuestion = generateSubjectQuestion(gameState.selectedSubject, topic.id, gameState.selectedYearGroup);
+        setCurrentQuestion(newQuestion);
+      }
     }
   };
 
