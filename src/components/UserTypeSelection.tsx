@@ -2,7 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/context/GameContext';
 import { GraduationCap, Users } from 'lucide-react';
-import pandaMascot from '@/assets/panda-mascot.png';
+import pandaLogo from '@/assets/panda-logo.png';
 
 interface UserTypeSelectionProps {
   onSelect: () => void;
@@ -24,9 +24,9 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({ onSelect }) => {
           {/* Header */}
           <div className="mb-4 sm:mb-6 bounce-in">
             <img 
-              src={pandaMascot} 
-              alt="Panda Mascot" 
-              className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-2 sm:mb-3 float"
+              src={pandaLogo} 
+              alt="Panda Logo" 
+              className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 mx-auto mb-2 sm:mb-3 float"
             />
             <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gradient mb-1">
               Welcome! <span className="emoji">👋</span>

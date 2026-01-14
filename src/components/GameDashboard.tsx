@@ -11,7 +11,7 @@ import ConnectFourMath from './games/ConnectFourMath';
 import AISuggestions from './AISuggestions';
 import { Button } from '@/components/ui/button';
 import { Home, PlusCircle, RotateCcw, Car, Grid3X3, BookOpen } from 'lucide-react';
-import pandaMascot from '@/assets/panda-mascot.png';
+import pandaLogo from '@/assets/panda-logo.png';
 
 interface GameDashboardProps {
   onReset: () => void;
@@ -72,8 +72,8 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
               <img 
-                src={pandaMascot} 
-                alt="Panda" 
+                src={pandaLogo} 
+                alt="Panda Logo" 
                 className="w-8 h-8 sm:w-10 sm:h-10 object-contain"
               />
               <div>

@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { useGame } from '@/context/GameContext';
 import { Team } from '@/types/game';
 import { Plus, Trash2, Check, ArrowLeft } from 'lucide-react';
-import pandaMascot from '@/assets/panda-mascot.png';
+import pandaLogo from '@/assets/panda-logo.png';
 
 interface TeamSetupProps {
   onComplete: () => void;
@@ -87,9 +87,9 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete, onBack }) => {
           {/* Header */}
           <div className="text-center mb-3 sm:mb-4 bounce-in">
             <img 
-              src={pandaMascot} 
-              alt="Panda Mascot" 
-              className="w-12 h-12 sm:w-14 sm:h-14 mx-auto mb-2 float"
+              src={pandaLogo} 
+              alt="Panda Logo" 
+              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto mb-2 float"
             />
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gradient mb-1">
               Set Up Your Teams! 🏆

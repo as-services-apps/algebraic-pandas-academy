@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import pandaLogo from '@/assets/panda-logo.png';
 
 interface LoadingScreenProps {
   onComplete: () => void;
@@ -34,13 +35,18 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
     >
       <div className="flex-1 flex items-center justify-center">
         <div className="flex flex-col items-center gap-3 px-4">
-          {/* Title */}
+          {/* Logo & Title */}
           <div className="text-center bounce-in">
+            <img 
+              src={pandaLogo} 
+              alt="Algebraic Pandas Logo" 
+              className="w-28 h-28 sm:w-36 sm:h-36 md:w-44 md:h-44 mx-auto mb-3 float"
+            />
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white drop-shadow-lg">
               The Algebraic
             </h1>
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white drop-shadow-lg">
-              Pandas 🐼
+              Pandas
             </h1>
           </div>
 
