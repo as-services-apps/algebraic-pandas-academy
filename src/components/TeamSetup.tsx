@@ -89,7 +89,7 @@ const TeamSetup: React.FC<TeamSetupProps> = ({ onComplete, onBack }) => {
             <img 
               src={pandaLogo} 
               alt="Panda Logo" 
-              className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto mb-2 float"
+              className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 mx-auto mb-2 float"
             />
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gradient mb-1">
               Set Up Your Teams! 🏆

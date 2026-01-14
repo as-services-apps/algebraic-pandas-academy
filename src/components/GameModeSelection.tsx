@@ -38,7 +38,7 @@ const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect, onBack 
             <img 
               src={pandaLogo} 
               alt="Panda Logo" 
-              className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 mx-auto mb-2 sm:mb-3 float"
+              className="w-28 h-28 sm:w-36 sm:h-36 md:w-40 md:h-40 mx-auto mb-2 sm:mb-3 float"
             />
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gradient mb-1">
               How do you want to play?
