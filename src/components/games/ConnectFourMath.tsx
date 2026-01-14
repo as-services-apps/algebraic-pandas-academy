@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, RotateCcw, Keyboard } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
+import { generateRandomQuestion } from '@/lib/questionGenerator';
 import confetti from '@/lib/confetti';
 
 interface ConnectFourMathProps {
@@ -21,53 +22,32 @@ type Board = Cell[][];
 const ROWS = 6;
 const COLS = 7;
 
-/* ---------------- HARD & NORMAL MATH GENERATOR ---------------- */
-const generateQuestion = (isHard: boolean): MathQuestion => {
-  // Pick a type: 0 = simple linear, 1 = substitution, 2 = one-step mult/div
-  const type = Math.floor(Math.random() * 3);
-  let question = '';
-  let answer = 0;
+/* ---------------- QUESTION GENERATOR (uses topic-specific generator) ---------------- */
+const generateQuestion = (isHard: boolean, yearGroup: number): MathQuestion => {
+  // Use the topic-specific generator - default to mental maths for quick games
+  const topics = ['mental', 'algebra', 'equations', 'fractions'];
+  const topic = topics[Math.floor(Math.random() * topics.length)];
+  const q = generateRandomQuestion(topic, yearGroup as any);
+  
+  const answer = parseFloat(q.options[q.correctAnswer].replace(/[^\d.-]/g, '')) || 0;
+  
+  // For normal mode, generate numeric options
   let options: number[] = [];
-
-  switch(type) {
-    case 0: { // simple linear ax + b = c
-      const a = Math.floor(Math.random() * 5) + 1;
-      const x = Math.floor(Math.random() * 10);
-      const b = Math.floor(Math.random() * 10);
-      const c = a*x + b;
-      question = `${a}x + ${b} = ${c}, solve for x`;
-      answer = x;
-      break;
-    }
-    case 1: { // substitution
-      const x = Math.floor(Math.random() * 10);
-      const y = Math.floor(Math.random() * 10);
-      const expression = Math.random() < 0.5 ? `2x + y` : `x + 3y`;
-      question = `If x=${x} and y=${y}, evaluate ${expression}`;
-      answer = expression === '2x + y' ? 2*x + y : x + 3*y;
-      break;
-    }
-    case 2: { // one-step multiplication or division
-      const a = Math.floor(Math.random() * 10) + 1;
-      const x = Math.floor(Math.random() * 10) + 1;
-      const op = Math.random() < 0.5 ? '×' : '÷';
-      question = op === '×' ? `${x} × ? = ${x*a}, solve for ?` : `${x*a} ÷ ? = ${x}, solve for ?`;
-      answer = a;
-      break;
-    }
-  }
-
-  // For normal mode, generate multiple choice options
   if (!isHard) {
-    options = [answer];
-    while(options.length < 4){
-      const wrong = answer + (Math.floor(Math.random() * 7) - 3); // small offset
-      if (wrong !== answer && wrong >= 0 && !options.includes(wrong)) options.push(wrong);
+    options = q.options.map(opt => {
+      const num = parseFloat(opt.replace(/[^\d.-]/g, ''));
+      return isNaN(num) ? 0 : num;
+    }).filter((v, i, a) => a.indexOf(v) === i); // unique
+    
+    // Ensure we have 4 options
+    while (options.length < 4) {
+      const wrong = answer + (Math.floor(Math.random() * 10) - 5);
+      if (!options.includes(wrong)) options.push(wrong);
     }
-    options = options.sort(() => Math.random() - 0.5);
+    options = options.slice(0, 4).sort(() => Math.random() - 0.5);
   }
 
-  return { question, answer, options };
+  return { question: q.question, answer, options };
 };
 
 
@@ -154,7 +134,7 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
     const aiCol = getAIMove(board);
     setTimeout(() => {
       setSelectedCol(aiCol);
-      setCurrentQuestion(generateQuestion(isHardMode));
+      setCurrentQuestion(generateQuestion(isHardMode, gameState.selectedYearGroup));
 
       // Simulate AI answering correctly
       setTimeout(() => {
@@ -178,7 +158,7 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
     if (winner || currentQuestion || isAIThinking || board[0][col] !== 'empty') return;
     if (isSoloMode && currentPlayer === 'team2') return;
     setSelectedCol(col);
-    setCurrentQuestion(generateQuestion(isHardMode));
+    setCurrentQuestion(generateQuestion(isHardMode, gameState.selectedYearGroup));
   };
 
   const handleAnswer = (value: number) => {
