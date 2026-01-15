@@ -610,6 +610,222 @@ const generalQuestions = {
   },
 };
 
+// ============= FRENCH QUESTIONS =============
+const frenchQuestions = {
+  vocabulary: (yearGroup: YearGroup): Question => {
+    if (yearGroup <= 3) {
+      const questions = [
+        { q: 'How do you say "hello" in French?', opts: ['Bonjour', 'Hola', 'Ciao', 'Guten Tag'], correct: 0 },
+        { q: 'What is "cat" in French?', opts: ['Chat', 'Chien', 'Oiseau', 'Poisson'], correct: 0 },
+        { q: 'How do you say "thank you" in French?', opts: ['Merci', 'Gracias', 'Danke', 'Grazie'], correct: 0 },
+        { q: 'What is "dog" in French?', opts: ['Chien', 'Chat', 'Lapin', 'Souris'], correct: 0 },
+        { q: 'How do you say "yes" in French?', opts: ['Oui', 'Non', 'Peut-être', 'Jamais'], correct: 0 },
+        { q: 'What colour is "rouge"?', opts: ['Red', 'Blue', 'Green', 'Yellow'], correct: 0 },
+      ];
+      const q = questions[getRandomInt(0, questions.length - 1)];
+      return createQuestion('vocabulary', q.q, q.opts, q.correct, 'easy', yearGroup, 1);
+    }
+    if (yearGroup <= 6) {
+      const questions = [
+        { q: 'What does "Je m\'appelle" mean?', opts: ['My name is', 'I am hungry', 'I like', 'I live in'], correct: 0 },
+        { q: 'How do you say "I am 10 years old" in French?', opts: ['J\'ai dix ans', 'Je suis dix', 'J\'aime dix', 'Je vais dix'], correct: 0 },
+        { q: 'What is "apple" in French?', opts: ['Pomme', 'Banane', 'Orange', 'Poire'], correct: 0 },
+        { q: 'How do you say "school" in French?', opts: ['École', 'Maison', 'Magasin', 'Hôpital'], correct: 0 },
+        { q: 'What does "Quel âge as-tu?" mean?', opts: ['How old are you?', 'Where do you live?', 'What is your name?', 'How are you?'], correct: 0 },
+        { q: 'What is "book" in French?', opts: ['Livre', 'Cahier', 'Stylo', 'Crayon'], correct: 0 },
+      ];
+      const q = questions[getRandomInt(0, questions.length - 1)];
+      return createQuestion('vocabulary', q.q, q.opts, q.correct, 'medium', yearGroup, 1);
+    }
+    const questions = [
+      { q: 'What does "Je voudrais" mean?', opts: ['I would like', 'I must', 'I can', 'I will'], correct: 0 },
+      { q: 'How do you say "I went to the cinema" in French?', opts: ['Je suis allé au cinéma', 'J\'aime le cinéma', 'Je vais au cinéma', 'Je voudrais aller au cinéma'], correct: 0 },
+      { q: 'What is the French word for "weather"?', opts: ['Le temps', 'Le jour', 'La nuit', 'Le soleil'], correct: 0 },
+      { q: 'What does "Qu\'est-ce que tu fais?" mean?', opts: ['What are you doing?', 'Where are you going?', 'Who are you?', 'When are you leaving?'], correct: 0 },
+    ];
+    const q = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion('vocabulary', q.q, q.opts, q.correct, 'medium', yearGroup, 1);
+  },
+  numbers: (yearGroup: YearGroup): Question => {
+    if (yearGroup <= 3) {
+      const questions = [
+        { q: 'What is "un" in English?', opts: ['One', 'Two', 'Three', 'Four'], correct: 0 },
+        { q: 'How do you say "three" in French?', opts: ['Trois', 'Deux', 'Quatre', 'Cinq'], correct: 0 },
+        { q: 'What number is "cinq"?', opts: ['5', '4', '6', '3'], correct: 0 },
+        { q: 'What is "dix" in English?', opts: ['Ten', 'Five', 'Twenty', 'Twelve'], correct: 0 },
+      ];
+      const q = questions[getRandomInt(0, questions.length - 1)];
+      return createQuestion('numbers', q.q, q.opts, q.correct, 'easy', yearGroup, 1);
+    }
+    const questions = [
+      { q: 'What is "vingt" in English?', opts: ['Twenty', 'Twelve', 'Thirty', 'Forty'], correct: 0 },
+      { q: 'How do you say "fifty" in French?', opts: ['Cinquante', 'Quarante', 'Soixante', 'Trente'], correct: 0 },
+      { q: 'What number is "quatre-vingt"?', opts: ['80', '40', '60', '100'], correct: 0 },
+      { q: 'What is "cent" in English?', opts: ['One hundred', 'Ten', 'Fifty', 'Thousand'], correct: 0 },
+    ];
+    const q = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion('numbers', q.q, q.opts, q.correct, 'medium', yearGroup, 1);
+  },
+  phrases: (yearGroup: YearGroup): Question => {
+    if (yearGroup <= 3) {
+      const questions = [
+        { q: 'What does "Au revoir" mean?', opts: ['Goodbye', 'Hello', 'Please', 'Sorry'], correct: 0 },
+        { q: 'How do you say "please" in French?', opts: ['S\'il vous plaît', 'Merci', 'Pardon', 'Bonjour'], correct: 0 },
+        { q: 'What does "Comment ça va?" mean?', opts: ['How are you?', 'What is your name?', 'Where are you?', 'Goodbye'], correct: 0 },
+      ];
+      const q = questions[getRandomInt(0, questions.length - 1)];
+      return createQuestion('phrases', q.q, q.opts, q.correct, 'easy', yearGroup, 1);
+    }
+    const questions = [
+      { q: 'What does "Je ne comprends pas" mean?', opts: ['I don\'t understand', 'I don\'t know', 'I don\'t like', 'I don\'t want'], correct: 0 },
+      { q: 'How do you say "Excuse me" in French?', opts: ['Excusez-moi', 'Pardon', 'S\'il vous plaît', 'Merci'], correct: 0 },
+      { q: 'What does "Où est la gare?" mean?', opts: ['Where is the station?', 'Where is the school?', 'Where is the shop?', 'Where is the hotel?'], correct: 0 },
+      { q: 'How do you say "I am hungry" in French?', opts: ['J\'ai faim', 'J\'ai soif', 'J\'ai froid', 'J\'ai chaud'], correct: 0 },
+    ];
+    const q = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion('phrases', q.q, q.opts, q.correct, 'medium', yearGroup, 1);
+  },
+};
+
+// ============= IT & COMPUTING QUESTIONS =============
+const itQuestions = {
+  coding: (yearGroup: YearGroup): Question => {
+    if (yearGroup <= 3) {
+      const questions = [
+        { q: 'What is a computer program?', opts: ['Instructions for a computer', 'A type of game', 'A keyboard', 'A screen'], correct: 0 },
+        { q: 'What do we call a mistake in code?', opts: ['Bug', 'Feature', 'Update', 'File'], correct: 0 },
+        { q: 'What does a programmer do?', opts: ['Writes code', 'Fixes cars', 'Cooks food', 'Draws pictures'], correct: 0 },
+        { q: 'What shape is used in coding to make decisions?', opts: ['Diamond', 'Circle', 'Square', 'Star'], correct: 0 },
+      ];
+      const q = questions[getRandomInt(0, questions.length - 1)];
+      return createQuestion('coding', q.q, q.opts, q.correct, 'easy', yearGroup, 1);
+    }
+    if (yearGroup <= 6) {
+      const questions = [
+        { q: 'What is a loop in coding?', opts: ['Repeating instructions', 'A mistake', 'A variable', 'A function'], correct: 0 },
+        { q: 'What is a variable?', opts: ['A container for data', 'A type of loop', 'A bug', 'A website'], correct: 0 },
+        { q: 'What programming language is Scratch based on?', opts: ['Block-based visual coding', 'Python', 'JavaScript', 'HTML'], correct: 0 },
+        { q: 'What does "if-then" do in coding?', opts: ['Makes decisions', 'Creates loops', 'Stores data', 'Draws graphics'], correct: 0 },
+      ];
+      const q = questions[getRandomInt(0, questions.length - 1)];
+      return createQuestion('coding', q.q, q.opts, q.correct, 'medium', yearGroup, 1);
+    }
+    const questions = [
+      { q: 'What is an algorithm?', opts: ['Step-by-step instructions', 'A programming language', 'A type of computer', 'A website'], correct: 0 },
+      { q: 'What does HTML stand for?', opts: ['HyperText Markup Language', 'High Tech Modern Language', 'Home Tool Markup Language', 'Hyper Transfer Markup Language'], correct: 0 },
+      { q: 'What is Python?', opts: ['A programming language', 'A type of snake game', 'An operating system', 'A web browser'], correct: 0 },
+      { q: 'What is debugging?', opts: ['Finding and fixing errors', 'Writing new code', 'Creating graphics', 'Testing websites'], correct: 0 },
+    ];
+    const q = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion('coding', q.q, q.opts, q.correct, 'medium', yearGroup, 1);
+  },
+  internet: (yearGroup: YearGroup): Question => {
+    if (yearGroup <= 3) {
+      const questions = [
+        { q: 'What is the internet?', opts: ['A network connecting computers', 'A type of computer', 'A game', 'A phone'], correct: 0 },
+        { q: 'What do we use to search the internet?', opts: ['Search engine', 'Calculator', 'Camera', 'Printer'], correct: 0 },
+        { q: 'What is an email?', opts: ['Electronic message', 'A website', 'A game', 'A file'], correct: 0 },
+      ];
+      const q = questions[getRandomInt(0, questions.length - 1)];
+      return createQuestion('internet', q.q, q.opts, q.correct, 'easy', yearGroup, 1);
+    }
+    if (yearGroup <= 6) {
+      const questions = [
+        { q: 'What does www stand for?', opts: ['World Wide Web', 'Wide World Web', 'Web Wide World', 'World Web Wide'], correct: 0 },
+        { q: 'What is a browser?', opts: ['Software to view websites', 'A type of virus', 'A search engine', 'An email program'], correct: 0 },
+        { q: 'What is a URL?', opts: ['Web address', 'Password', 'Username', 'File type'], correct: 0 },
+        { q: 'What should you never share online?', opts: ['Passwords and personal info', 'Funny videos', 'School projects', 'Book recommendations'], correct: 0 },
+      ];
+      const q = questions[getRandomInt(0, questions.length - 1)];
+      return createQuestion('internet', q.q, q.opts, q.correct, 'medium', yearGroup, 1);
+    }
+    const questions = [
+      { q: 'What is cybersecurity?', opts: ['Protecting computers and data', 'A type of game', 'Social media', 'Web design'], correct: 0 },
+      { q: 'What is phishing?', opts: ['A scam to steal information', 'A type of fishing game', 'Sharing photos', 'Downloading music'], correct: 0 },
+      { q: 'What does HTTPS mean?', opts: ['Secure web connection', 'High speed internet', 'Hosting service', 'Transfer protocol'], correct: 0 },
+    ];
+    const q = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion('internet', q.q, q.opts, q.correct, 'medium', yearGroup, 1);
+  },
+  hardware: (yearGroup: YearGroup): Question => {
+    if (yearGroup <= 3) {
+      const questions = [
+        { q: 'What do you type on?', opts: ['Keyboard', 'Mouse', 'Screen', 'Speaker'], correct: 0 },
+        { q: 'What is a mouse used for?', opts: ['Moving the cursor', 'Typing', 'Taking photos', 'Playing music'], correct: 0 },
+        { q: 'What do we see things on?', opts: ['Monitor/Screen', 'Keyboard', 'Printer', 'Speaker'], correct: 0 },
+      ];
+      const q = questions[getRandomInt(0, questions.length - 1)];
+      return createQuestion('hardware', q.q, q.opts, q.correct, 'easy', yearGroup, 1);
+    }
+    if (yearGroup <= 6) {
+      const questions = [
+        { q: 'What is the "brain" of a computer called?', opts: ['CPU (Processor)', 'RAM', 'Hard Drive', 'Graphics Card'], correct: 0 },
+        { q: 'What does RAM stand for?', opts: ['Random Access Memory', 'Read All Memory', 'Run All Memory', 'Ready Access Mode'], correct: 0 },
+        { q: 'What is a hard drive used for?', opts: ['Storing files', 'Displaying images', 'Playing sound', 'Connecting to internet'], correct: 0 },
+        { q: 'What type of device is a printer?', opts: ['Output device', 'Input device', 'Storage device', 'Processing device'], correct: 0 },
+      ];
+      const q = questions[getRandomInt(0, questions.length - 1)];
+      return createQuestion('hardware', q.q, q.opts, q.correct, 'medium', yearGroup, 1);
+    }
+    const questions = [
+      { q: 'What is an SSD?', opts: ['Solid State Drive', 'Super Speed Disk', 'System Storage Device', 'Serial Speed Drive'], correct: 0 },
+      { q: 'What does GPU stand for?', opts: ['Graphics Processing Unit', 'General Processing Unit', 'Gaming Power Unit', 'Graphic Power Usage'], correct: 0 },
+      { q: 'What connects your computer to the internet?', opts: ['Network card/WiFi adapter', 'Sound card', 'Graphics card', 'Power supply'], correct: 0 },
+    ];
+    const q = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion('hardware', q.q, q.opts, q.correct, 'medium', yearGroup, 1);
+  },
+};
+
+// ============= QUICK LEARN QUESTIONS =============
+const quickLearnQuestions = {
+  funfacts: (yearGroup: YearGroup): Question => {
+    const questions = [
+      { q: 'What animal is known as man\'s best friend?', opts: ['Dog', 'Cat', 'Horse', 'Rabbit'], correct: 0 },
+      { q: 'What is the fastest land animal?', opts: ['Cheetah', 'Lion', 'Horse', 'Elephant'], correct: 0 },
+      { q: 'How many colours are in a rainbow?', opts: ['7', '5', '6', '8'], correct: 0 },
+      { q: 'What is the largest ocean?', opts: ['Pacific', 'Atlantic', 'Indian', 'Arctic'], correct: 0 },
+      { q: 'What do bees make?', opts: ['Honey', 'Milk', 'Sugar', 'Bread'], correct: 0 },
+      { q: 'How many continents are there?', opts: ['7', '5', '6', '8'], correct: 0 },
+      { q: 'What is the tallest animal?', opts: ['Giraffe', 'Elephant', 'Horse', 'Camel'], correct: 0 },
+      { q: 'What planet is known as the Red Planet?', opts: ['Mars', 'Venus', 'Jupiter', 'Saturn'], correct: 0 },
+    ];
+    const q = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion('funfacts', q.q, q.opts, q.correct, 'easy', yearGroup, 1);
+  },
+  brainteasers: (yearGroup: YearGroup): Question => {
+    const questions = [
+      { q: 'What has hands but can\'t clap?', opts: ['A clock', 'A tree', 'A river', 'A mountain'], correct: 0 },
+      { q: 'What has a head and a tail but no body?', opts: ['A coin', 'A snake', 'A fish', 'A bird'], correct: 0 },
+      { q: 'What gets wetter the more it dries?', opts: ['A towel', 'A sponge', 'Water', 'Soap'], correct: 0 },
+      { q: 'What can you catch but not throw?', opts: ['A cold', 'A ball', 'A fish', 'A bird'], correct: 0 },
+      { q: 'What has keys but no locks?', opts: ['A piano', 'A door', 'A car', 'A safe'], correct: 0 },
+      { q: 'What goes up but never comes down?', opts: ['Your age', 'A balloon', 'A rocket', 'Temperature'], correct: 0 },
+    ];
+    const q = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion('brainteasers', q.q, q.opts, q.correct, 'easy', yearGroup, 1);
+  },
+  lifeskills: (yearGroup: YearGroup): Question => {
+    if (yearGroup <= 3) {
+      const questions = [
+        { q: 'What should you say when someone helps you?', opts: ['Thank you', 'Goodbye', 'Hello', 'Sorry'], correct: 0 },
+        { q: 'What do you do before crossing the road?', opts: ['Look both ways', 'Run across', 'Close your eyes', 'Jump'], correct: 0 },
+        { q: 'How many hours of sleep do children need?', opts: ['9-11 hours', '5-6 hours', '3-4 hours', '12-15 hours'], correct: 0 },
+      ];
+      const q = questions[getRandomInt(0, questions.length - 1)];
+      return createQuestion('lifeskills', q.q, q.opts, q.correct, 'easy', yearGroup, 1);
+    }
+    const questions = [
+      { q: 'What is a healthy breakfast food?', opts: ['Porridge/Oatmeal', 'Chocolate cake', 'Ice cream', 'Crisps'], correct: 0 },
+      { q: 'Why is exercise important?', opts: ['Keeps you healthy and strong', 'Makes you tired', 'Wastes time', 'Is only for athletes'], correct: 0 },
+      { q: 'What should you do if you see a fire?', opts: ['Tell an adult and leave safely', 'Try to put it out yourself', 'Ignore it', 'Take a photo'], correct: 0 },
+      { q: 'How often should you brush your teeth?', opts: ['Twice a day', 'Once a week', 'Once a month', 'Never'], correct: 0 },
+    ];
+    const q = questions[getRandomInt(0, questions.length - 1)];
+    return createQuestion('lifeskills', q.q, q.opts, q.correct, 'easy', yearGroup, 1);
+  },
+};
+
 // Main generator function
 export const generateSubjectQuestion = (subject: Subject, topic: string, yearGroup: YearGroup): Question => {
   switch (subject) {
@@ -617,7 +833,6 @@ export const generateSubjectQuestion = (subject: Subject, topic: string, yearGro
       if (topic === 'biology' || topic === 'cells' || topic === 'body') return scienceQuestions.biology(yearGroup);
       if (topic === 'chemistry' || topic === 'atoms' || topic === 'reactions') return scienceQuestions.chemistry(yearGroup);
       if (topic === 'physics' || topic === 'forces' || topic === 'energy') return scienceQuestions.physics(yearGroup);
-      // Default to random science topic
       const sciTopics = [scienceQuestions.biology, scienceQuestions.chemistry, scienceQuestions.physics];
       return sciTopics[getRandomInt(0, 2)](yearGroup);
       
@@ -648,6 +863,27 @@ export const generateSubjectQuestion = (subject: Subject, topic: string, yearGro
       if (topic === 'nature' || topic === 'animals') return generalQuestions.nature(yearGroup);
       const genTopics = [generalQuestions.trivia, generalQuestions.sports, generalQuestions.nature];
       return genTopics[getRandomInt(0, 2)](yearGroup);
+      
+    case 'french':
+      if (topic === 'vocabulary' || topic === 'words') return frenchQuestions.vocabulary(yearGroup);
+      if (topic === 'numbers' || topic === 'counting') return frenchQuestions.numbers(yearGroup);
+      if (topic === 'phrases' || topic === 'speaking') return frenchQuestions.phrases(yearGroup);
+      const frTopics = [frenchQuestions.vocabulary, frenchQuestions.numbers, frenchQuestions.phrases];
+      return frTopics[getRandomInt(0, 2)](yearGroup);
+      
+    case 'it':
+      if (topic === 'coding' || topic === 'programming') return itQuestions.coding(yearGroup);
+      if (topic === 'internet' || topic === 'safety') return itQuestions.internet(yearGroup);
+      if (topic === 'hardware' || topic === 'computers') return itQuestions.hardware(yearGroup);
+      const itTopics = [itQuestions.coding, itQuestions.internet, itQuestions.hardware];
+      return itTopics[getRandomInt(0, 2)](yearGroup);
+      
+    case 'quicklearn':
+      if (topic === 'funfacts' || topic === 'facts') return quickLearnQuestions.funfacts(yearGroup);
+      if (topic === 'brainteasers' || topic === 'riddles') return quickLearnQuestions.brainteasers(yearGroup);
+      if (topic === 'lifeskills' || topic === 'life') return quickLearnQuestions.lifeskills(yearGroup);
+      const qlTopics = [quickLearnQuestions.funfacts, quickLearnQuestions.brainteasers, quickLearnQuestions.lifeskills];
+      return qlTopics[getRandomInt(0, 2)](yearGroup);
       
     default:
       return generalQuestions.trivia(yearGroup);
@@ -695,6 +931,24 @@ export const getSubjectTopics = (subject: Subject): { id: string; name: string; 
         { id: 'trivia', name: 'General Trivia', icon: '❓', description: 'Random fun facts and knowledge!' },
         { id: 'sports', name: 'Sports', icon: '⚽', description: 'Test your sports knowledge!' },
         { id: 'nature', name: 'Nature & Animals', icon: '🦁', description: 'Learn about wildlife and nature!' },
+      ];
+    case 'french':
+      return [
+        { id: 'vocabulary', name: 'French Vocabulary', icon: '🗣️', description: 'Learn essential French words!' },
+        { id: 'numbers', name: 'French Numbers', icon: '🔢', description: 'Count and do maths in French!' },
+        { id: 'phrases', name: 'French Phrases', icon: '💬', description: 'Useful phrases for conversation!' },
+      ];
+    case 'it':
+      return [
+        { id: 'coding', name: 'Coding & Programming', icon: '👨‍💻', description: 'Learn the basics of programming!' },
+        { id: 'internet', name: 'Internet & Safety', icon: '🌐', description: 'Stay safe online and understand the web!' },
+        { id: 'hardware', name: 'Computer Hardware', icon: '🖥️', description: 'Learn about computer components!' },
+      ];
+    case 'quicklearn':
+      return [
+        { id: 'funfacts', name: 'Fun Facts', icon: '🎯', description: 'Quick interesting facts to learn!' },
+        { id: 'brainteasers', name: 'Brain Teasers', icon: '🧩', description: 'Riddles and puzzles to solve!' },
+        { id: 'lifeskills', name: 'Life Skills', icon: '🌟', description: 'Practical skills for everyday life!' },
       ];
     default:
       return [];
