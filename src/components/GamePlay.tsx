@@ -14,6 +14,8 @@ interface GamePlayProps {
   customQuestions?: Question[];
 }
 
+const QUESTIONS_PER_TOPIC = 10;
+
 const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions }) => {
   const { gameState, updateTeamScore, nextRound } = useGame();
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
@@ -147,7 +149,24 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
   };
 
   const handleNext = () => {
-    setQuestionCount(prev => prev + 1);
+    const nextQuestionNumber = questionCount + 1;
+    
+    // Check if we've completed all questions for this topic
+    if (customQuestions && customQuestions.length > 0) {
+      const nextIndex = customQuestionIndex + 1;
+      if (nextIndex >= customQuestions.length) {
+        setGameComplete(true);
+        nextRound();
+        return;
+      }
+    } else if (nextQuestionNumber >= QUESTIONS_PER_TOPIC) {
+      // End game after 10 questions for random mode
+      setGameComplete(true);
+      nextRound();
+      return;
+    }
+    
+    setQuestionCount(nextQuestionNumber);
     setSelectedAnswer(null);
     setShowResult(false);
     setTimeLeft(gameState.isHardMode ? 30 : 20);
@@ -162,15 +181,10 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
 
     if (customQuestions && customQuestions.length > 0) {
       const nextIndex = customQuestionIndex + 1;
-      if (nextIndex >= customQuestions.length) {
-        setGameComplete(true);
-        nextRound();
-        return;
-      }
       setCustomQuestionIndex(nextIndex);
       setCurrentQuestion(customQuestions[nextIndex]);
     } else {
-      // Generate a new random question based on subject
+      // Generate a fresh random question based on subject
       if (gameState.selectedSubject === 'maths') {
         const newQuestion = generateRandomQuestion(topic.id, gameState.selectedYearGroup);
         setCurrentQuestion(newQuestion);
@@ -269,18 +283,12 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
               )}
             </h3>
             <p className="text-xs text-muted-foreground">
-              Q{questionCount + 1} • Score: {totalScore}
+              Q{questionCount + 1}/{customQuestions && customQuestions.length > 0 ? customQuestions.length : QUESTIONS_PER_TOPIC} • Score: {totalScore}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          {/* End Game Button - only for infinite mode */}
-          {(!customQuestions || customQuestions.length === 0) && (
-            <Button variant="outline" size="sm" onClick={handleEndGame} className="text-xs">
-              End Game
-            </Button>
-          )}
           
           {/* Timer */}
           <div className={`flex items-center gap-1 px-3 py-1.5 rounded-full font-bold text-sm ${
