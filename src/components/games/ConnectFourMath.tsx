@@ -103,6 +103,8 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
   const [isHardMode, setIsHardMode] = useState(false);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [isAIThinking, setIsAIThinking] = useState(false);
+  const [showFeedback, setShowFeedback] = useState<'correct' | 'wrong' | null>(null);
+  const [lastCorrectAnswer, setLastCorrectAnswer] = useState<string>('');
 
   const dropPiece = useCallback((col: number, player: Cell, board: Board) => {
     const newBoard = board.map(r => [...r]);
@@ -151,27 +153,34 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
   };
 
   const handleAnswer = (selectedOption: string) => {
-    if (!currentQuestion || selectedCol === null) return;
+    if (!currentQuestion || selectedCol === null || showFeedback) return;
 
-    if (selectedOption !== currentQuestion.correctAnswer) {
-      setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
-    } else {
-      const newBoard = dropPiece(selectedCol, currentPlayer, board);
-      if (newBoard) {
-        setBoard(newBoard);
-        if (checkWinner(newBoard, currentPlayer)) {
-          setWinner(currentPlayer);
-          confetti();
-          if (isTeamMode) updateTeamScore(currentPlayer === 'team1' ? team1.id : team2.id, isHardMode ? 30 : 15);
-          currentPlayer === 'team1' ? setTeam1Score(prev => prev + 1) : setTeam2Score(prev => prev + 1);
-        } else if (isBoardFull(newBoard)) setWinner('draw');
-        else setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
+    const isCorrect = selectedOption === currentQuestion.correctAnswer;
+    setLastCorrectAnswer(currentQuestion.correctAnswer);
+    setShowFeedback(isCorrect ? 'correct' : 'wrong');
+
+    setTimeout(() => {
+      if (!isCorrect) {
+        setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
+      } else {
+        const newBoard = dropPiece(selectedCol, currentPlayer, board);
+        if (newBoard) {
+          setBoard(newBoard);
+          if (checkWinner(newBoard, currentPlayer)) {
+            setWinner(currentPlayer);
+            confetti();
+            if (isTeamMode) updateTeamScore(currentPlayer === 'team1' ? team1.id : team2.id, isHardMode ? 30 : 15);
+            currentPlayer === 'team1' ? setTeam1Score(prev => prev + 1) : setTeam2Score(prev => prev + 1);
+          } else if (isBoardFull(newBoard)) setWinner('draw');
+          else setCurrentPlayer(p => (p === 'team1' ? 'team2' : 'team1'));
+        }
       }
-    }
 
-    setCurrentQuestion(null);
-    setSelectedCol(null);
-    setTypedAnswer('');
+      setCurrentQuestion(null);
+      setSelectedCol(null);
+      setTypedAnswer('');
+      setShowFeedback(null);
+    }, 1500);
   };
 
   const handleTypedSubmit = () => {
@@ -269,28 +278,55 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
         {currentQuestion && isHumanTurn && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in p-4">
             <div className="bg-card rounded-xl p-4 md:p-6 max-w-sm w-full panda-shadow scale-in">
-              <h3 className="text-lg font-bold text-center mb-1 text-foreground">{getCurrentTeamName()}'s Question</h3>
-              {isHardMode && <p className="text-xs text-center text-muted-foreground mb-2">Type the answer exactly (e.g., 50%, 3/4, x = 5)</p>}
-              <div className="text-3xl font-bold text-center text-primary mb-4">{currentQuestion.question}</div>
-              {isHardMode ? (
-                <div className="space-y-3">
-                  <Input
-                    type="text"
-                    placeholder="Type answer..."
-                    value={typedAnswer}
-                    onChange={(e) => setTypedAnswer(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleTypedSubmit()}
-                    className="h-12 text-xl text-center"
-                    autoFocus
-                  />
-                  <Button onClick={handleTypedSubmit} className="w-full" disabled={!typedAnswer.trim()}>Submit</Button>
+              {/* Feedback Display */}
+              {showFeedback ? (
+                <div className={`text-center p-6 rounded-xl ${
+                  showFeedback === 'correct' 
+                    ? 'bg-success/20 border-2 border-success' 
+                    : 'bg-destructive/20 border-2 border-destructive'
+                }`}>
+                  <p className={`text-3xl font-bold mb-2 ${
+                    showFeedback === 'correct' ? 'text-success' : 'text-destructive'
+                  }`}>
+                    {showFeedback === 'correct' ? '✅ Correct!' : '❌ Wrong!'}
+                  </p>
+                  {showFeedback === 'correct' ? (
+                    <p className="text-sm text-muted-foreground">Your piece drops!</p>
+                  ) : (
+                    <>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Answer: <span className="font-bold text-foreground">{lastCorrectAnswer}</span>
+                      </p>
+                      <p className="text-xs text-destructive mt-2">Turn passes to opponent!</p>
+                    </>
+                  )}
                 </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2">
-                  {currentQuestion.options.map((option, idx) => (
-                    <Button key={idx} variant="outline" size="lg" onClick={() => handleAnswer(option)} className="text-lg py-4 hover:bg-primary hover:text-primary-foreground">{option}</Button>
-                  ))}
-                </div>
+                <>
+                  <h3 className="text-lg font-bold text-center mb-1 text-foreground">{getCurrentTeamName()}'s Question</h3>
+                  {isHardMode && <p className="text-xs text-center text-muted-foreground mb-2">Type the answer exactly (e.g., 50%, 3/4, x = 5)</p>}
+                  <div className="text-3xl font-bold text-center text-primary mb-4">{currentQuestion.question}</div>
+                  {isHardMode ? (
+                    <div className="space-y-3">
+                      <Input
+                        type="text"
+                        placeholder="Type answer..."
+                        value={typedAnswer}
+                        onChange={(e) => setTypedAnswer(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleTypedSubmit()}
+                        className="h-12 text-xl text-center"
+                        autoFocus
+                      />
+                      <Button onClick={handleTypedSubmit} className="w-full" disabled={!typedAnswer.trim()}>Submit</Button>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                      {currentQuestion.options.map((option, idx) => (
+                        <Button key={idx} variant="outline" size="lg" onClick={() => handleAnswer(option)} className="text-lg py-4 hover:bg-primary hover:text-primary-foreground">{option}</Button>
+                      ))}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
