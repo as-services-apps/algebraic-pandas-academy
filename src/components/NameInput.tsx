@@ -5,6 +5,7 @@ import { useGame } from '@/context/GameContext';
 import { Player } from '@/types/game';
 import { ArrowLeft } from 'lucide-react';
 import pandaLogo from '@/assets/panda-logo.png';
+import { supabase } from '@/integrations/supabase/client';
 
 interface NameInputProps {
   onComplete: () => void;
@@ -21,7 +22,7 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
 
   const titles = ['Mr.', 'Mrs.', 'Ms.', 'Miss', 'Dr.', 'Prof.'];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !school.trim()) return;
 
@@ -33,6 +34,14 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
       type: gameState.userType!,
       score: 0,
     };
+
+    // Save to database for tracking
+    await supabase.from('players').insert({
+      name: player.name,
+      title: player.title || null,
+      school: player.school,
+      user_type: player.type,
+    });
 
     setPlayer(player);
     onComplete();
