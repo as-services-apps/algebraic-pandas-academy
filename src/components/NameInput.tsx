@@ -15,6 +15,7 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
   const { gameState, setPlayer } = useGame();
   const [title, setTitle] = useState('');
   const [name, setName] = useState('');
+  const [school, setSchool] = useState('');
 
   const isTeacher = gameState.userType === 'teacher';
 
@@ -22,12 +23,13 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim() || !school.trim()) return;
 
     const player: Player = {
       id: `player-${Date.now()}`,
       name: name.trim(),
       title: isTeacher ? title : undefined,
+      school: school.trim(),
       type: gameState.userType!,
       score: 0,
     };
@@ -100,6 +102,21 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
                 </div>
               )}
 
+              {/* School Input */}
+              <div className="mb-3 sm:mb-4">
+                <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
+                  School Name
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Enter your school name"
+                  value={school}
+                  onChange={(e) => setSchool(e.target.value)}
+                  className="h-10 sm:h-12 text-base rounded-lg sm:rounded-xl border-2 focus:border-primary"
+                  autoFocus
+                />
+              </div>
+
               {/* Name Input */}
               <div>
                 <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
@@ -111,17 +128,21 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="h-10 sm:h-12 text-base rounded-lg sm:rounded-xl border-2 focus:border-primary"
-                  autoFocus
                 />
               </div>
 
               {/* Preview */}
-              {displayName && (
+              {(displayName || school) && (
                 <div className="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-muted rounded-lg sm:rounded-xl text-center">
                   <p className="text-xs text-muted-foreground mb-0.5">You'll be known as:</p>
                   <p className="text-lg sm:text-xl font-bold text-foreground">
                     {displayName || '...'}
                   </p>
+                  {school && (
+                    <p className="text-sm text-muted-foreground">
+                      from <span className="font-semibold text-foreground">{school}</span>
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -131,7 +152,7 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
               variant="game"
               size="lg"
               className="w-full"
-              disabled={!name.trim() || (isTeacher && !title)}
+              disabled={!name.trim() || !school.trim() || (isTeacher && !title)}
             >
               Continue 🚀
             </Button>

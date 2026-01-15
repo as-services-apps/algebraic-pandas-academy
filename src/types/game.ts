@@ -14,6 +14,7 @@ export interface Player {
   id: string;
   name: string;
   title?: string; // Mr., Mrs., Ms., etc.
+  school: string;
   type: UserType;
   teamId?: string;
   score: number;
