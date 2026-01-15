@@ -8,16 +8,19 @@ import GamePlay from './GamePlay';
 import CustomGameCreator from './CustomGameCreator';
 import MathRacing from './games/MathRacing';
 import ConnectFourMath from './games/ConnectFourMath';
+import SubjectRacing from './games/SubjectRacing';
+import MemoryMatch from './games/MemoryMatch';
+import QuizBattle from './games/QuizBattle';
 import AISuggestions from './AISuggestions';
 import { Button } from '@/components/ui/button';
-import { Home, PlusCircle, RotateCcw, Car, Grid3X3, BookOpen } from 'lucide-react';
+import { Home, PlusCircle, RotateCcw, Car, Grid3X3, BookOpen, Brain, Zap } from 'lucide-react';
 import pandaLogo from '@/assets/panda-logo.png';
 
 interface GameDashboardProps {
   onReset: () => void;
 }
 
-type DashboardView = 'subjects' | 'topics' | 'playing' | 'custom' | 'racing' | 'connect4';
+type DashboardView = 'subjects' | 'topics' | 'playing' | 'custom' | 'racing' | 'connect4' | 'memory' | 'blitz';
 
 const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
   const { gameState, setCustomQuestions } = useGame();
@@ -55,13 +58,16 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
     setView('playing');
   };
 
-  const subjectNames: Record<string, string> = {
+  const subjectNames: Record<Subject, string> = {
     maths: 'Maths',
     science: 'Science',
     english: 'English',
+    french: 'French',
+    it: 'IT & Computing',
     history: 'History',
     geography: 'Geography',
     general: 'General Knowledge',
+    quicklearn: 'Quick Learn',
   };
 
   return (
@@ -132,46 +138,74 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                   )}
                 </div>
 
-                {/* Interactive Games Section - Only for Maths */}
-                {gameState.selectedSubject === 'maths' && (
-                  <div className="space-y-3 sm:space-y-4">
-                    <h3 className="text-base sm:text-xl font-bold text-foreground flex items-center gap-2">
-                      🎮 Interactive Games
-                      {gameState.gameMode === 'team' && (
-                        <span className="text-xs sm:text-sm font-normal text-muted-foreground">(Team vs Team)</span>
-                      )}
-                    </h3>
-                    <div className="grid grid-cols-2 gap-3 sm:gap-4">
-                      <button
-                        onClick={() => setView('racing')}
-                        className="bg-gradient-to-br from-primary to-accent p-4 sm:p-6 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
-                      >
-                        <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                          <Car className="w-5 h-5 sm:w-8 sm:h-8" />
-                          <span className="text-lg sm:text-2xl">🏎️</span>
-                        </div>
-                        <h4 className="text-sm sm:text-xl font-bold">Math Racing</h4>
-                        <p className="text-white/80 text-xs sm:text-sm hidden sm:block">
-                          {gameState.gameMode === 'team' ? 'Team vs Team racing!' : 'Player vs Player racing!'}
-                        </p>
-                      </button>
-                      
+                {/* Interactive Games Section - Now for ALL subjects */}
+                <div className="space-y-3 sm:space-y-4">
+                  <h3 className="text-base sm:text-xl font-bold text-foreground flex items-center gap-2">
+                    🎮 Interactive Games
+                    {gameState.gameMode === 'team' && (
+                      <span className="text-xs sm:text-sm font-normal text-muted-foreground">(Team vs Team)</span>
+                    )}
+                  </h3>
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <button
+                      onClick={() => setView('racing')}
+                      className="bg-gradient-to-br from-primary to-accent p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <Car className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <span className="text-lg">🏎️</span>
+                      </div>
+                      <h4 className="text-sm sm:text-base font-bold">Racing</h4>
+                      <p className="text-white/80 text-xs hidden sm:block">
+                        Race to answer first!
+                      </p>
+                    </button>
+                    
+                    {gameState.selectedSubject === 'maths' && (
                       <button
                         onClick={() => setView('connect4')}
-                        className="bg-gradient-to-br from-secondary to-destructive p-4 sm:p-6 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
+                        className="bg-gradient-to-br from-secondary to-destructive p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
                       >
-                        <div className="flex items-center gap-2 sm:gap-3 mb-1 sm:mb-2">
-                          <Grid3X3 className="w-5 h-5 sm:w-8 sm:h-8" />
-                          <span className="text-lg sm:text-2xl">🔴🟡</span>
+                        <div className="flex items-center gap-2 mb-1">
+                          <Grid3X3 className="w-5 h-5 sm:w-6 sm:h-6" />
+                          <span className="text-lg">🔴🟡</span>
                         </div>
-                        <h4 className="text-sm sm:text-xl font-bold">Connect Four</h4>
-                        <p className="text-white/80 text-xs sm:text-sm hidden sm:block">
-                          {gameState.gameMode === 'team' ? 'Team vs Team battles!' : 'Player vs Player battles!'}
+                        <h4 className="text-sm sm:text-base font-bold">Connect Four</h4>
+                        <p className="text-white/80 text-xs hidden sm:block">
+                          Classic strategy game!
                         </p>
                       </button>
-                    </div>
+                    )}
+
+                    <button
+                      onClick={() => setView('memory')}
+                      className="bg-gradient-to-br from-purple-500 to-pink-500 p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <Brain className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <span className="text-lg">🧠</span>
+                      </div>
+                      <h4 className="text-sm sm:text-base font-bold">Memory Match</h4>
+                      <p className="text-white/80 text-xs hidden sm:block">
+                        Match Q&A pairs!
+                      </p>
+                    </button>
+
+                    <button
+                      onClick={() => setView('blitz')}
+                      className="bg-gradient-to-br from-yellow-500 to-orange-500 p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <span className="text-lg">⚡</span>
+                      </div>
+                      <h4 className="text-sm sm:text-base font-bold">Quiz Blitz</h4>
+                      <p className="text-white/80 text-xs hidden sm:block">
+                        60 second challenge!
+                      </p>
+                    </button>
                   </div>
-                )}
+                </div>
 
                 {/* Topic Selector */}
                 <div className="space-y-3 sm:space-y-4">
@@ -202,11 +236,23 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
             )}
 
             {view === 'racing' && (
-              <MathRacing onBack={() => setView('topics')} />
+              gameState.selectedSubject === 'maths' ? (
+                <MathRacing onBack={() => setView('topics')} />
+              ) : (
+                <SubjectRacing onBack={() => setView('topics')} subject={gameState.selectedSubject} />
+              )
             )}
 
             {view === 'connect4' && (
               <ConnectFourMath onBack={() => setView('topics')} />
+            )}
+
+            {view === 'memory' && (
+              <MemoryMatch onBack={() => setView('topics')} subject={gameState.selectedSubject} />
+            )}
+
+            {view === 'blitz' && (
+              <QuizBattle onBack={() => setView('topics')} subject={gameState.selectedSubject} />
             )}
           </div>
 
