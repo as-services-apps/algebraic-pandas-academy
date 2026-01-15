@@ -86,6 +86,7 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                 <h1 className="text-sm sm:text-xl font-bold text-gradient">The Algebraic Pandas</h1>
                 <p className="text-[10px] sm:text-xs text-muted-foreground truncate max-w-[150px] sm:max-w-none">
                   {gameState.player?.name}
+                  {gameState.player?.school && ` • ${gameState.player.school}`}
                   {' • Y'}{gameState.selectedYearGroup}
                   {gameState.isHardMode && ' • 🔥'}
                 </p>
