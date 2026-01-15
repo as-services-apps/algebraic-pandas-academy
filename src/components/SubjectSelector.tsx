@@ -11,9 +11,12 @@ const subjects: { id: Subject; name: string; icon: string; description: string; 
   { id: 'maths', name: 'Maths', icon: '🔢', description: 'Numbers, algebra, geometry and more!', color: 'from-blue-500 to-indigo-600' },
   { id: 'science', name: 'Science', icon: '🔬', description: 'Biology, chemistry and physics!', color: 'from-green-500 to-emerald-600' },
   { id: 'english', name: 'English', icon: '📚', description: 'Grammar, vocabulary and literature!', color: 'from-purple-500 to-violet-600' },
+  { id: 'french', name: 'French', icon: '🇫🇷', description: 'Bonjour! Learn French vocabulary and phrases!', color: 'from-blue-600 to-red-500' },
+  { id: 'it', name: 'IT & Computing', icon: '💻', description: 'Coding, technology and digital skills!', color: 'from-slate-600 to-zinc-700' },
   { id: 'history', name: 'History', icon: '🏛️', description: 'Ancient, medieval and modern history!', color: 'from-amber-500 to-orange-600' },
   { id: 'geography', name: 'Geography', icon: '🌍', description: 'Physical and human geography!', color: 'from-cyan-500 to-teal-600' },
   { id: 'general', name: 'General Knowledge', icon: '💡', description: 'Trivia, sports and nature!', color: 'from-pink-500 to-rose-600' },
+  { id: 'quicklearn', name: 'Quick Learn', icon: '⚡', description: 'Fast fun facts for free time!', color: 'from-yellow-500 to-orange-500' },
 ];
 
 const SubjectSelector: React.FC<SubjectSelectorProps> = ({ onSelectSubject }) => {
