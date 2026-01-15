@@ -54,6 +54,8 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
   const [isHardMode, setIsHardMode] = useState(false);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [isAITurn, setIsAITurn] = useState(false);
+  const [showFeedback, setShowFeedback] = useState<'correct' | 'wrong' | null>(null);
+  const [lastCorrectAnswer, setLastCorrectAnswer] = useState<string>('');
   
   const finishLine = 100;
 
@@ -106,36 +108,39 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
   }, [team1Position, team2Position, gameOver, isTeamMode, isHardMode, team1.id, team2.id, updateTeamScore]);
 
   const handleAnswer = (selectedOption: string) => {
-    if (!currentQuestion || gameOver || isAITurn) return;
+    if (!currentQuestion || gameOver || isAITurn || showFeedback) return;
 
-    if (selectedOption === currentQuestion.correctAnswer) {
-      const boost = isHardMode ? 15 + streak * 3 : 10 + streak * 2;
-      if (currentPlayer === 'team1') {
-        setTeam1Position(prev => Math.min(prev + boost, finishLine));
+    const isCorrect = selectedOption === currentQuestion.correctAnswer;
+    setLastCorrectAnswer(currentQuestion.correctAnswer);
+    setShowFeedback(isCorrect ? 'correct' : 'wrong');
+
+    setTimeout(() => {
+      if (isCorrect) {
+        const boost = isHardMode ? 15 + streak * 3 : 10 + streak * 2;
+        if (currentPlayer === 'team1') {
+          setTeam1Position(prev => Math.min(prev + boost, finishLine));
+        } else {
+          setTeam2Position(prev => Math.min(prev + boost, finishLine));
+        }
+        setStreak(prev => prev + 1);
+        if (difficulty < 5) setDifficulty(prev => prev + 0.2);
       } else {
-        setTeam2Position(prev => Math.min(prev + boost, finishLine));
+        // Wrong answer: opponent gets a push!
+        const opponentBoost = 8;
+        if (currentPlayer === 'team1') {
+          setTeam2Position(prev => Math.min(prev + opponentBoost, finishLine));
+        } else {
+          setTeam1Position(prev => Math.min(prev + opponentBoost, finishLine));
+        }
+        setStreak(0);
       }
-      setStreak(prev => prev + 1);
-      if (difficulty < 5) setDifficulty(prev => prev + 0.2);
-
-      // Switch player after correct answer
+      
+      // Switch player
       setCurrentPlayer(currentPlayer === 'team1' ? 'team2' : 'team1');
       setTypedAnswer('');
+      setShowFeedback(null);
       nextQuestion();
-    } else {
-      // Wrong answer: opponent gets a push!
-      const opponentBoost = 8;
-      if (currentPlayer === 'team1') {
-        setTeam2Position(prev => Math.min(prev + opponentBoost, finishLine));
-      } else {
-        setTeam1Position(prev => Math.min(prev + opponentBoost, finishLine));
-      }
-      setStreak(0);
-      // Switch to opponent's turn
-      setCurrentPlayer(currentPlayer === 'team1' ? 'team2' : 'team1');
-      setTypedAnswer('');
-      nextQuestion();
-    }
+    }, 1200);
   };
 
   const handleTypedSubmit = () => {
@@ -292,44 +297,71 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
           </div>
         ) : currentQuestion && !isAITurn && (
           <div className="space-y-3">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-foreground mb-2">
-                {currentQuestion.question}
+            {/* Feedback Display */}
+            {showFeedback && (
+              <div className={`text-center p-4 rounded-xl mb-2 ${
+                showFeedback === 'correct' 
+                  ? 'bg-success/20 border-2 border-success' 
+                  : 'bg-destructive/20 border-2 border-destructive'
+              }`}>
+                <p className={`text-xl font-bold ${
+                  showFeedback === 'correct' ? 'text-success' : 'text-destructive'
+                }`}>
+                  {showFeedback === 'correct' ? '✅ Correct!' : '❌ Wrong!'}
+                </p>
+                {showFeedback === 'wrong' && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Answer: <span className="font-bold text-foreground">{lastCorrectAnswer}</span>
+                  </p>
+                )}
+                {showFeedback === 'wrong' && (
+                  <p className="text-xs text-destructive mt-1">Opponent gets +8% boost!</p>
+                )}
               </div>
-              {isHardMode && (
-                <p className="text-xs text-muted-foreground">Type the answer exactly (e.g., 50%, 3/4, x = 5)</p>
-              )}
-            </div>
-            
-            {isHardMode ? (
-              <div className="space-y-2 max-w-xs mx-auto">
-                <Input
-                  type="text"
-                  placeholder="Type answer..."
-                  value={typedAnswer}
-                  onChange={(e) => setTypedAnswer(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleTypedSubmit()}
-                  className="h-12 text-xl text-center"
-                  autoFocus
-                />
-                <Button onClick={handleTypedSubmit} className="w-full" disabled={!typedAnswer.trim()}>
-                  Submit
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2">
-                {currentQuestion.options.map((option, idx) => (
-                  <Button
-                    key={idx}
-                    variant="outline"
-                    size="lg"
-                    onClick={() => handleAnswer(option)}
-                    className="text-lg py-4 hover:bg-primary hover:text-primary-foreground transition-all"
-                  >
-                    {option}
-                  </Button>
-                ))}
-              </div>
+            )}
+
+            {!showFeedback && (
+              <>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-foreground mb-2">
+                    {currentQuestion.question}
+                  </div>
+                  {isHardMode && (
+                    <p className="text-xs text-muted-foreground">Type the answer exactly (e.g., 50%, 3/4, x = 5)</p>
+                  )}
+                </div>
+                
+                {isHardMode ? (
+                  <div className="space-y-2 max-w-xs mx-auto">
+                    <Input
+                      type="text"
+                      placeholder="Type answer..."
+                      value={typedAnswer}
+                      onChange={(e) => setTypedAnswer(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleTypedSubmit()}
+                      className="h-12 text-xl text-center"
+                      autoFocus
+                    />
+                    <Button onClick={handleTypedSubmit} className="w-full" disabled={!typedAnswer.trim()}>
+                      Submit
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2">
+                    {currentQuestion.options.map((option, idx) => (
+                      <Button
+                        key={idx}
+                        variant="outline"
+                        size="lg"
+                        onClick={() => handleAnswer(option)}
+                        className="text-lg py-4 hover:bg-primary hover:text-primary-foreground transition-all"
+                      >
+                        {option}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
