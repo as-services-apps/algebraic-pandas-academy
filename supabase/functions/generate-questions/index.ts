@@ -58,7 +58,11 @@ Rules:
 5. Vary the position of correct answers (don't always put correct answer first)
 6. Make questions interesting and educational
 7. Ensure factual accuracy - verify all facts
-8. Each question must be UNIQUE and not repeat common questions`;
+8. Each question must be UNIQUE and not repeat common questions
+9. Questions should be specifically about the topic provided - be detailed and specific to that topic`;
+
+    // The topic is now a free-form string entered by the user
+    // Use it directly for question generation
 
     const topicPrompts: Record<string, Record<string, string>> = {
       maths: {
@@ -135,9 +139,13 @@ Rules:
       },
     };
 
+    // Use topic directly - it's now a free-form user input like "Henry VIII" or "algebra substitution"
+    // Fall back to the predefined topic descriptions only if needed
     const topicDescription = topicPrompts[subject]?.[topic] || topic;
 
-    const userPrompt = `Generate ${count} unique multiple-choice questions about ${topicDescription} for ${subject}.
+    const userPrompt = `Generate ${count} unique multiple-choice questions specifically about "${topic}" for ${subject}.
+    
+The topic context: ${topicDescription}
     
 Year Group: ${yearGroup} (UK curriculum)
 Difficulty: ${difficulty}
