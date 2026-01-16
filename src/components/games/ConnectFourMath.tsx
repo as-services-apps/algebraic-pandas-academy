@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, RotateCcw, Keyboard } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { generateRandomQuestion } from '@/lib/questionGenerator';
+import { getUniqueQuestion, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
 
 interface ConnectFourMathProps {
@@ -22,19 +22,13 @@ type Board = Cell[][];
 const ROWS = 6;
 const COLS = 7;
 
-/* ---------------- QUESTION GENERATOR (uses topic-specific generator) ---------------- */
-const generateQuestion = (isHard: boolean, yearGroup: number): MathQuestion => {
-  // Use the topic-specific generator - default to mental maths for quick games
-  const topics = ['mental', 'algebra', 'equations', 'fractions', 'percentages'];
-  const topic = topics[Math.floor(Math.random() * topics.length)];
-  const q = generateRandomQuestion(topic, yearGroup as any);
-  
-  // Keep formatted answer string
-  const correctAnswer = q.options[q.correctAnswer];
+/* ---------------- QUESTION GENERATOR (uses session-based unique questions) ---------------- */
+const generateQuestion = (yearGroup: number): MathQuestion => {
+  const q = getUniqueQuestion('maths', yearGroup as any);
 
   return { 
     question: q.question, 
-    correctAnswer, 
+    correctAnswer: q.options[q.correctAnswer], 
     options: q.options 
   };
 };
@@ -125,7 +119,7 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
     const aiCol = getAIMove(board);
     setTimeout(() => {
       setSelectedCol(aiCol);
-      setCurrentQuestion(generateQuestion(isHardMode, gameState.selectedYearGroup));
+      setCurrentQuestion(generateQuestion(gameState.selectedYearGroup));
 
       // Simulate AI answering correctly
       setTimeout(() => {
@@ -143,13 +137,13 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
         setIsAIThinking(false);
       }, 1000);
     }, 500);
-  }, [board, currentPlayer, winner, currentQuestion, isAIThinking, isHardMode, dropPiece, isSoloMode, gameState.selectedYearGroup]);
+  }, [board, currentPlayer, winner, currentQuestion, isAIThinking, dropPiece, isSoloMode, gameState.selectedYearGroup]);
 
   const handleColumnClick = (col: number) => {
     if (winner || currentQuestion || isAIThinking || board[0][col] !== 'empty') return;
     if (isSoloMode && currentPlayer === 'team2') return;
     setSelectedCol(col);
-    setCurrentQuestion(generateQuestion(isHardMode, gameState.selectedYearGroup));
+    setCurrentQuestion(generateQuestion(gameState.selectedYearGroup));
   };
 
   const handleAnswer = (selectedOption: string) => {
@@ -199,6 +193,7 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
   };
 
   const resetGame = () => {
+    startNewQuestionSession(); // Clear question history for new game
     setBoard(createEmptyBoard());
     setWinner(null);
     setCurrentPlayer('team1');
