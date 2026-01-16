@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Car, Trophy, Zap, Keyboard } from 'lucide-react';
+import { ArrowLeft, Car, Trophy, Zap, Keyboard, Sparkles } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { getUniqueQuestion, startNewQuestionSession } from '@/lib/questionPool';
+import { getUniqueQuestion, getUniqueQuestionAsync, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
-import { Subject } from '@/types/game';
+import { Subject, Question } from '@/types/game';
 
 interface SubjectRacingProps {
   onBack: () => void;
@@ -42,14 +42,15 @@ const subjectNames: Record<Subject, string> = {
   quicklearn: 'Quick Learn',
 };
 
-const generateQuestion = (subject: Subject, yearGroup: number): RaceQuestion => {
+const convertToRaceQuestion = (q: Question): RaceQuestion => ({
+  question: q.question, 
+  correctAnswer: q.options[q.correctAnswer], 
+  options: q.options 
+});
+
+const generateQuestionSync = (subject: Subject, yearGroup: number): RaceQuestion => {
   const q = getUniqueQuestion(subject, yearGroup as any);
-  
-  return { 
-    question: q.question, 
-    correctAnswer: q.options[q.correctAnswer], 
-    options: q.options 
-  };
+  return convertToRaceQuestion(q);
 };
 
 const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
@@ -71,12 +72,35 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
   const [isHardMode, setIsHardMode] = useState(false);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [isAITurn, setIsAITurn] = useState(false);
+  const [isAIGenerated, setIsAIGenerated] = useState(false);
+  const questionBufferRef = useRef<Question[]>([]);
   
   const finishLine = 100;
 
-  const nextQuestion = useCallback(() => {
-    setCurrentQuestion(generateQuestion(subject, gameState.selectedYearGroup));
+  const loadAIQuestion = useCallback(async () => {
+    try {
+      const q = await getUniqueQuestionAsync(subject, gameState.selectedYearGroup);
+      questionBufferRef.current.push(q);
+    } catch (error) {
+      console.log('Using static questions');
+    }
   }, [subject, gameState.selectedYearGroup]);
+
+  const nextQuestion = useCallback(() => {
+    if (questionBufferRef.current.length > 0) {
+      const aiQ = questionBufferRef.current.shift()!;
+      setCurrentQuestion(convertToRaceQuestion(aiQ));
+      setIsAIGenerated(true);
+    } else {
+      setCurrentQuestion(generateQuestionSync(subject, gameState.selectedYearGroup));
+      setIsAIGenerated(false);
+    }
+    
+    // Pre-load more
+    if (questionBufferRef.current.length < 3) {
+      loadAIQuestion();
+    }
+  }, [subject, gameState.selectedYearGroup, loadAIQuestion]);
 
   useEffect(() => {
     if (isStarted && !currentQuestion && !gameOver) {
@@ -163,8 +187,9 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
     }
   };
 
-  const startRace = () => {
-    startNewQuestionSession(); // Clear question history for new game
+  const startRace = async () => {
+    startNewQuestionSession();
+    questionBufferRef.current = [];
     setIsStarted(true);
     setTeam1Position(0);
     setTeam2Position(0);
@@ -174,6 +199,9 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
     setCurrentPlayer('team1');
     setTypedAnswer('');
     setIsAITurn(false);
+    
+    // Pre-load AI questions
+    loadAIQuestion();
     nextQuestion();
   };
 
@@ -190,6 +218,7 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
             <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
               <Car className="w-5 h-5 text-primary" />
               {subjectNames[subject]} Racing {subjectEmojis[subject]}
+              {isAIGenerated && <Sparkles className="w-4 h-4 text-secondary" />}
             </h2>
             <p className="text-xs text-muted-foreground">
               {isSoloMode ? 'You vs AI' : isTeamMode ? 'Team vs Team' : 'Player vs Player'}

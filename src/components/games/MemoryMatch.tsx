@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, RotateCcw, Brain, Trophy } from 'lucide-react';
+import { ArrowLeft, RotateCcw, Brain, Trophy, Sparkles, Loader2 } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { getUniqueQuestion, startNewQuestionSession } from '@/lib/questionPool';
+import { getUniqueQuestion, getUniqueQuestionBatchAsync, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
-import { Subject } from '@/types/game';
+import { Subject, Question } from '@/types/game';
 
 interface MemoryMatchProps {
   onBack: () => void;
@@ -56,17 +56,15 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
   const [teamScores, setTeamScores] = useState<number[]>([0, 0]);
   const [gameComplete, setGameComplete] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAIGenerated, setIsAIGenerated] = useState(false);
 
   const totalPairs = 6;
 
-  const generateCards = useCallback(() => {
-    startNewQuestionSession(); // Clear question history for new game
+  const generateCardsFromQuestions = useCallback((questions: Question[]): MemoryCard[] => {
     const newCards: MemoryCard[] = [];
     
-    for (let i = 0; i < totalPairs; i++) {
-      const q = getUniqueQuestion(subject, gameState.selectedYearGroup);
-
-      // Create question card
+    questions.slice(0, totalPairs).forEach((q, i) => {
       newCards.push({
         id: i * 2,
         content: q.question,
@@ -75,8 +73,6 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
         isFlipped: false,
         isMatched: false,
       });
-
-      // Create answer card
       newCards.push({
         id: i * 2 + 1,
         content: q.options[q.correctAnswer],
@@ -85,7 +81,7 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
         isFlipped: false,
         isMatched: false,
       });
-    }
+    });
 
     // Shuffle cards
     for (let i = newCards.length - 1; i > 0; i--) {
@@ -94,10 +90,32 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
     }
 
     return newCards;
-  }, [subject, gameState.selectedYearGroup]);
+  }, []);
+
+  const generateCards = useCallback(async () => {
+    startNewQuestionSession();
+    setIsLoading(true);
+    
+    try {
+      // Try AI questions first
+      const aiQuestions = await getUniqueQuestionBatchAsync(subject, gameState.selectedYearGroup, totalPairs);
+      setIsAIGenerated(aiQuestions.length > 0);
+      setCards(generateCardsFromQuestions(aiQuestions));
+    } catch (error) {
+      // Fallback to static
+      const staticQuestions: Question[] = [];
+      for (let i = 0; i < totalPairs; i++) {
+        staticQuestions.push(getUniqueQuestion(subject, gameState.selectedYearGroup));
+      }
+      setIsAIGenerated(false);
+      setCards(generateCardsFromQuestions(staticQuestions));
+    }
+    
+    setIsLoading(false);
+  }, [subject, gameState.selectedYearGroup, generateCardsFromQuestions]);
 
   useEffect(() => {
-    setCards(generateCards());
+    generateCards();
   }, [generateCards]);
 
   const handleCardClick = (cardId: number) => {
@@ -157,8 +175,7 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
     }
   };
 
-  const resetGame = () => {
-    setCards(generateCards());
+  const resetGame = async () => {
     setFlippedCards([]);
     setMoves(0);
     setMatches(0);
@@ -166,6 +183,7 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
     setTeamScores([0, 0]);
     setGameComplete(false);
     setIsChecking(false);
+    await generateCards();
   };
 
   return (
@@ -179,6 +197,7 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
             <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
               <Brain className="w-5 h-5 text-primary" />
               {subjectNames[subject]} Memory {subjectEmojis[subject]}
+              {isAIGenerated && <Sparkles className="w-4 h-4 text-secondary" />}
             </h2>
             <p className="text-xs text-muted-foreground">
               Match questions with their answers!
@@ -241,7 +260,12 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
       )}
 
       {/* Card Grid */}
-      {!gameComplete && (
+      {isLoading ? (
+        <div className="bg-card rounded-xl p-8 panda-shadow flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="ml-2 text-muted-foreground">Loading AI questions...</span>
+        </div>
+      ) : !gameComplete && (
         <div className="bg-card rounded-xl p-4 panda-shadow">
           <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-3">
             {cards.map(card => (

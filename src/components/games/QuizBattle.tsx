@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Zap, Trophy, Clock, Target } from 'lucide-react';
+import { ArrowLeft, Zap, Trophy, Clock, Target, Sparkles } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { getUniqueQuestion, startNewQuestionSession } from '@/lib/questionPool';
+import { getUniqueQuestion, getUniqueQuestionAsync, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
-import { Subject } from '@/types/game';
+import { Subject, Question } from '@/types/game';
 
 interface QuizBattleProps {
   onBack: () => void;
@@ -57,20 +57,47 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
   const [showFeedback, setShowFeedback] = useState<'correct' | 'wrong' | null>(null);
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
   const [teamScores, setTeamScores] = useState<number[]>([0, 0]);
+  const [isAIGenerated, setIsAIGenerated] = useState(false);
+  const questionBufferRef = useRef<Question[]>([]);
+
+  const convertToQuestion = (q: Question): BattleQuestion => ({
+    question: q.question,
+    correctAnswer: q.options[q.correctAnswer],
+    options: q.options,
+  });
 
   const generateQuestion = useCallback((): BattleQuestion => {
     const q = getUniqueQuestion(subject, gameState.selectedYearGroup);
-    return {
-      question: q.question,
-      correctAnswer: q.options[q.correctAnswer],
-      options: q.options,
-    };
+    return convertToQuestion(q);
+  }, [subject, gameState.selectedYearGroup]);
+
+  const loadAIQuestions = useCallback(async () => {
+    try {
+      const q = await getUniqueQuestionAsync(subject, gameState.selectedYearGroup);
+      questionBufferRef.current.push(q);
+      setIsAIGenerated(true);
+    } catch (error) {
+      console.log('Using static questions as fallback');
+    }
   }, [subject, gameState.selectedYearGroup]);
 
   const nextQuestion = useCallback(() => {
-    setCurrentQuestion(generateQuestion());
+    // Try to use buffered AI question first
+    if (questionBufferRef.current.length > 0) {
+      const aiQ = questionBufferRef.current.shift()!;
+      setCurrentQuestion(convertToQuestion(aiQ));
+      setIsAIGenerated(true);
+    } else {
+      setCurrentQuestion(generateQuestion());
+      setIsAIGenerated(false);
+    }
     setShowFeedback(null);
-  }, [generateQuestion]);
+    
+    // Pre-load more AI questions in background
+    if (questionBufferRef.current.length < 3) {
+      loadAIQuestions();
+    }
+  }, [generateQuestion, loadAIQuestions]);
 
   // Timer
   useEffect(() => {
@@ -123,8 +150,9 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
     }, 500);
   };
 
-  const startGame = () => {
+  const startGame = async () => {
     startNewQuestionSession(); // Clear question history for new game
+    questionBufferRef.current = [];
     setIsStarted(true);
     setGameOver(false);
     setTimeLeft(60);
@@ -134,6 +162,11 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
     setQuestionsAnswered(0);
     setTeamScores([0, 0]);
     setCurrentTeamIndex(0);
+    
+    // Pre-load AI questions
+    loadAIQuestions();
+    
+    // Start with a static question immediately for responsiveness
     nextQuestion();
   };
 
@@ -148,6 +181,7 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
             <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
               <Zap className="w-5 h-5 text-primary" />
               {subjectNames[subject]} Blitz {subjectEmojis[subject]}
+              {isAIGenerated && <Sparkles className="w-4 h-4 text-secondary" />}
             </h2>
             <p className="text-xs text-muted-foreground">
               Answer as many as you can in 60 seconds!
