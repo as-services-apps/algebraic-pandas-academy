@@ -57,7 +57,6 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
   const isSoloMode = gameState.gameMode === 'solo';
-  const customTopic = gameState.customTopic;
   
   const team1 = isTeamMode ? gameState.teams[0] : { id: '1', name: isSoloMode ? 'You' : 'Player 1', score: 0, color: 'team-1' };
   const team2 = isTeamMode ? gameState.teams[1] : { id: '2', name: isSoloMode ? 'AI' : 'Player 2', score: 0, color: 'team-2' };
@@ -80,12 +79,12 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
 
   const loadAIQuestion = useCallback(async () => {
     try {
-      const q = await getUniqueQuestionAsync(subject, gameState.selectedYearGroup, customTopic || undefined);
+      const q = await getUniqueQuestionAsync(subject, gameState.selectedYearGroup);
       questionBufferRef.current.push(q);
     } catch (error) {
       console.log('Using static questions');
     }
-  }, [subject, gameState.selectedYearGroup, customTopic]);
+  }, [subject, gameState.selectedYearGroup]);
 
   const nextQuestion = useCallback(() => {
     if (questionBufferRef.current.length > 0) {
@@ -218,11 +217,10 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
           <div>
             <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
               <Car className="w-5 h-5 text-primary" />
-              {customTopic || subjectNames[subject]} Racing {subjectEmojis[subject]}
+              {subjectNames[subject]} Racing {subjectEmojis[subject]}
               {isAIGenerated && <Sparkles className="w-4 h-4 text-secondary" />}
             </h2>
             <p className="text-xs text-muted-foreground">
-              {customTopic && <span className="text-secondary">Topic: {customTopic} • </span>}
               {isSoloMode ? 'You vs AI' : isTeamMode ? 'Team vs Team' : 'Player vs Player'}
             </p>
           </div>

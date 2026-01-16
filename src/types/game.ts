@@ -32,7 +32,6 @@ export interface GameState {
   gameStarted: boolean;
   isHardMode: boolean;
   customQuestions: Question[];
-  customTopic: string;
 }
 
 export interface Question {

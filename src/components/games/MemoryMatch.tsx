@@ -47,7 +47,6 @@ const subjectNames: Record<Subject, string> = {
 const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
-  const customTopic = gameState.customTopic;
   
   const [cards, setCards] = useState<MemoryCard[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
@@ -98,8 +97,8 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
     setIsLoading(true);
     
     try {
-      // Try AI questions first with custom topic
-      const aiQuestions = await getUniqueQuestionBatchAsync(subject, gameState.selectedYearGroup, totalPairs, customTopic || undefined);
+      // Try AI questions first
+      const aiQuestions = await getUniqueQuestionBatchAsync(subject, gameState.selectedYearGroup, totalPairs);
       setIsAIGenerated(aiQuestions.length > 0);
       setCards(generateCardsFromQuestions(aiQuestions));
     } catch (error) {
@@ -113,7 +112,7 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
     }
     
     setIsLoading(false);
-  }, [subject, gameState.selectedYearGroup, customTopic, generateCardsFromQuestions]);
+  }, [subject, gameState.selectedYearGroup, generateCardsFromQuestions]);
 
   useEffect(() => {
     generateCards();
@@ -197,11 +196,10 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
           <div>
             <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
               <Brain className="w-5 h-5 text-primary" />
-              {customTopic || subjectNames[subject]} Memory {subjectEmojis[subject]}
+              {subjectNames[subject]} Memory {subjectEmojis[subject]}
               {isAIGenerated && <Sparkles className="w-4 h-4 text-secondary" />}
             </h2>
             <p className="text-xs text-muted-foreground">
-              {customTopic && <span className="text-secondary">Topic: {customTopic} • </span>}
               Match questions with their answers!
             </p>
           </div>
