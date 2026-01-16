@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, RotateCcw, Brain, Trophy } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { generateRandomQuestion } from '@/lib/questionGenerator';
-import { generateSubjectQuestion } from '@/lib/subjectQuestionGenerator';
+import { getUniqueQuestion, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
 import { Subject } from '@/types/game';
 
@@ -45,22 +44,6 @@ const subjectNames: Record<Subject, string> = {
   quicklearn: 'Quick Learn',
 };
 
-const getRandomTopic = (subject: Subject): string => {
-  const topicMap: Record<Subject, string[]> = {
-    maths: ['mental', 'algebra', 'fractions'],
-    science: ['biology', 'chemistry', 'physics'],
-    english: ['grammar', 'vocabulary', 'literature'],
-    french: ['vocabulary', 'numbers', 'phrases'],
-    it: ['coding', 'internet', 'hardware'],
-    history: ['ancient', 'medieval', 'modern'],
-    geography: ['physical', 'human', 'climate'],
-    general: ['trivia', 'sports', 'nature'],
-    quicklearn: ['funfacts', 'brainteasers', 'lifeskills'],
-  };
-  const topics = topicMap[subject] || ['trivia'];
-  return topics[Math.floor(Math.random() * topics.length)];
-};
-
 const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
@@ -77,16 +60,11 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
   const totalPairs = 6;
 
   const generateCards = useCallback(() => {
+    startNewQuestionSession(); // Clear question history for new game
     const newCards: MemoryCard[] = [];
     
     for (let i = 0; i < totalPairs; i++) {
-      const topic = getRandomTopic(subject);
-      let q;
-      if (subject === 'maths') {
-        q = generateRandomQuestion(topic, gameState.selectedYearGroup);
-      } else {
-        q = generateSubjectQuestion(subject, topic, gameState.selectedYearGroup);
-      }
+      const q = getUniqueQuestion(subject, gameState.selectedYearGroup);
 
       // Create question card
       newCards.push({

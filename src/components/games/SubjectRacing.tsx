@@ -3,8 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Car, Trophy, Zap, Keyboard } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { generateRandomQuestion } from '@/lib/questionGenerator';
-import { generateSubjectQuestion } from '@/lib/subjectQuestionGenerator';
+import { getUniqueQuestion, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
 import { Subject } from '@/types/game';
 
@@ -43,31 +42,8 @@ const subjectNames: Record<Subject, string> = {
   quicklearn: 'Quick Learn',
 };
 
-const getRandomTopic = (subject: Subject): string => {
-  const topicMap: Record<Subject, string[]> = {
-    maths: ['mental', 'algebra', 'fractions', 'percentages'],
-    science: ['biology', 'chemistry', 'physics'],
-    english: ['grammar', 'vocabulary', 'literature'],
-    french: ['vocabulary', 'numbers', 'phrases'],
-    it: ['coding', 'internet', 'hardware'],
-    history: ['ancient', 'medieval', 'modern'],
-    geography: ['physical', 'human', 'climate'],
-    general: ['trivia', 'sports', 'nature'],
-    quicklearn: ['funfacts', 'brainteasers', 'lifeskills'],
-  };
-  const topics = topicMap[subject] || ['trivia'];
-  return topics[Math.floor(Math.random() * topics.length)];
-};
-
 const generateQuestion = (subject: Subject, yearGroup: number): RaceQuestion => {
-  const topic = getRandomTopic(subject);
-  
-  let q;
-  if (subject === 'maths') {
-    q = generateRandomQuestion(topic, yearGroup as any);
-  } else {
-    q = generateSubjectQuestion(subject, topic, yearGroup as any);
-  }
+  const q = getUniqueQuestion(subject, yearGroup as any);
   
   return { 
     question: q.question, 
@@ -188,6 +164,7 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
   };
 
   const startRace = () => {
+    startNewQuestionSession(); // Clear question history for new game
     setIsStarted(true);
     setTeam1Position(0);
     setTeam2Position(0);

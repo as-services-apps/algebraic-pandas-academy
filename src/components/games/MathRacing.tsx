@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ArrowLeft, Car, Trophy, Zap, Keyboard } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { generateRandomQuestion } from '@/lib/questionGenerator';
+import { getUniqueQuestion, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
 
 interface MathRacingProps {
@@ -16,18 +16,12 @@ interface RaceQuestion {
   options: string[];
 }
 
-const generateQuestion = (difficulty: number, isHard: boolean, yearGroup: number): RaceQuestion => {
-  // Use topic-specific generator - mix of topics for variety
-  const topics = ['mental', 'algebra', 'equations', 'fractions', 'percentages'];
-  const topic = topics[Math.floor(Math.random() * topics.length)];
-  const q = generateRandomQuestion(topic, yearGroup as any);
-  
-  // Keep the formatted answer string
-  const correctAnswer = q.options[q.correctAnswer];
+const generateQuestion = (yearGroup: number): RaceQuestion => {
+  const q = getUniqueQuestion('maths', yearGroup as any);
   
   return { 
     question: q.question, 
-    correctAnswer, 
+    correctAnswer: q.options[q.correctAnswer], 
     options: q.options 
   };
 };
@@ -60,8 +54,8 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
   const finishLine = 100;
 
   const nextQuestion = useCallback(() => {
-    setCurrentQuestion(generateQuestion(difficulty, isHardMode, gameState.selectedYearGroup));
-  }, [difficulty, isHardMode, gameState.selectedYearGroup]);
+    setCurrentQuestion(generateQuestion(gameState.selectedYearGroup));
+  }, [gameState.selectedYearGroup]);
 
   useEffect(() => {
     if (isStarted && !currentQuestion && !gameOver) {
@@ -160,6 +154,7 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
 
 
   const startRace = () => {
+    startNewQuestionSession(); // Clear question history for new game
     setIsStarted(true);
     setTeam1Position(0);
     setTeam2Position(0);

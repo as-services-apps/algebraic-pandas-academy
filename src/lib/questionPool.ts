@@ -2,102 +2,155 @@ import { Question, YearGroup, Subject } from '@/types/game';
 import { generateRandomQuestion } from './questionGenerator';
 import { generateSubjectQuestion } from './subjectQuestionGenerator';
 
-const QUESTIONS_PER_QUIZ = 10;
-const POOL_SIZE = 50; // Generate a large pool to pick from
-
 /**
- * Generates a pool of unique questions for a quiz session.
- * Uses a set to track question text and ensure no duplicates.
+ * Session-based question manager that prevents ANY question from repeating
+ * within a single game session, across ALL topics.
  */
-export const generateQuestionPool = (
-  subject: Subject,
-  topic: string,
-  yearGroup: YearGroup,
-  count: number = QUESTIONS_PER_QUIZ
-): Question[] => {
-  const questions: Question[] = [];
-  const questionTexts = new Set<string>();
-  
-  let attempts = 0;
-  const maxAttempts = count * 10; // Prevent infinite loops
-  
-  while (questions.length < count && attempts < maxAttempts) {
-    attempts++;
-    
-    let question: Question;
-    if (subject === 'maths') {
-      question = generateRandomQuestion(topic, yearGroup);
-    } else {
-      question = generateSubjectQuestion(subject, topic, yearGroup);
-    }
-    
-    // Only add if we haven't seen this question text before
-    if (!questionTexts.has(question.question)) {
-      questionTexts.add(question.question);
-      questions.push(question);
-    }
+class QuestionSessionManager {
+  private askedQuestions: Set<string> = new Set();
+  private sessionId: string = '';
+
+  /**
+   * Start a new game session - clears all tracked questions
+   */
+  startNewSession(): void {
+    this.askedQuestions.clear();
+    this.sessionId = `session-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }
-  
-  return questions;
+
+  /**
+   * Get the current session ID
+   */
+  getSessionId(): string {
+    return this.sessionId;
+  }
+
+  /**
+   * Check if a question has already been asked in this session
+   */
+  hasBeenAsked(questionText: string): boolean {
+    return this.askedQuestions.has(this.normalizeQuestion(questionText));
+  }
+
+  /**
+   * Mark a question as asked
+   */
+  markAsAsked(questionText: string): void {
+    this.askedQuestions.add(this.normalizeQuestion(questionText));
+  }
+
+  /**
+   * Get the count of questions asked this session
+   */
+  getAskedCount(): number {
+    return this.askedQuestions.size;
+  }
+
+  /**
+   * Normalize question text for comparison
+   */
+  private normalizeQuestion(text: string): string {
+    return text.toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  /**
+   * Generate a unique question that hasn't been asked in this session
+   */
+  getUniqueQuestion(
+    subject: Subject,
+    yearGroup: YearGroup,
+    topic?: string
+  ): Question {
+    const maxAttempts = 100;
+    let attempts = 0;
+
+    while (attempts < maxAttempts) {
+      attempts++;
+      
+      const actualTopic = topic || this.getRandomTopic(subject);
+      let question: Question;
+      
+      if (subject === 'maths') {
+        question = generateRandomQuestion(actualTopic, yearGroup);
+      } else {
+        question = generateSubjectQuestion(subject, actualTopic, yearGroup);
+      }
+
+      if (!this.hasBeenAsked(question.question)) {
+        this.markAsAsked(question.question);
+        return question;
+      }
+    }
+
+    // Fallback: return a question even if it might repeat (very unlikely)
+    const fallbackTopic = topic || this.getRandomTopic(subject);
+    const fallbackQuestion = subject === 'maths'
+      ? generateRandomQuestion(fallbackTopic, yearGroup)
+      : generateSubjectQuestion(subject, fallbackTopic, yearGroup);
+    
+    this.markAsAsked(fallbackQuestion.question);
+    return fallbackQuestion;
+  }
+
+  /**
+   * Get a random topic for a subject
+   */
+  private getRandomTopic(subject: Subject): string {
+    const topicMap: Record<Subject, string[]> = {
+      maths: ['mental', 'algebra', 'fractions', 'percentages', 'geometry', 'ratios', 'equations'],
+      science: ['biology', 'chemistry', 'physics', 'space'],
+      english: ['grammar', 'vocabulary', 'literature', 'reading'],
+      french: ['vocabulary', 'numbers', 'phrases'],
+      it: ['coding', 'internet', 'hardware'],
+      history: ['ancient', 'medieval', 'modern', 'british'],
+      geography: ['physical', 'human', 'climate', 'countries'],
+      general: ['trivia', 'sports', 'nature', 'music'],
+      quicklearn: ['funfacts', 'brainteasers', 'lifeskills'],
+    };
+    const topics = topicMap[subject] || ['trivia'];
+    return topics[Math.floor(Math.random() * topics.length)];
+  }
+
+  /**
+   * Generate multiple unique questions at once
+   */
+  getUniqueQuestionBatch(
+    subject: Subject,
+    yearGroup: YearGroup,
+    count: number,
+    topic?: string
+  ): Question[] {
+    const questions: Question[] = [];
+    for (let i = 0; i < count; i++) {
+      questions.push(this.getUniqueQuestion(subject, yearGroup, topic));
+    }
+    return questions;
+  }
+}
+
+// Global singleton instance for the current game session
+export const questionSession = new QuestionSessionManager();
+
+// Helper function to get a unique question (convenience wrapper)
+export const getUniqueQuestion = (
+  subject: Subject,
+  yearGroup: YearGroup,
+  topic?: string
+): Question => {
+  return questionSession.getUniqueQuestion(subject, yearGroup, topic);
 };
 
-/**
- * Generates a mixed pool of questions from multiple topics
- */
-export const generateMixedQuestionPool = (
-  subject: Subject,
-  yearGroup: YearGroup,
-  count: number = QUESTIONS_PER_QUIZ
-): Question[] => {
-  const topicMap: Record<Subject, string[]> = {
-    maths: ['mental', 'algebra', 'fractions', 'percentages', 'geometry', 'ratios', 'equations'],
-    science: ['biology', 'chemistry', 'physics', 'space'],
-    english: ['grammar', 'vocabulary', 'literature', 'reading'],
-    french: ['vocabulary', 'numbers', 'phrases', 'grammar'],
-    it: ['coding', 'internet', 'hardware', 'software'],
-    history: ['ancient', 'medieval', 'modern', 'british'],
-    geography: ['physical', 'human', 'climate', 'countries'],
-    general: ['trivia', 'sports', 'nature', 'entertainment'],
-    quicklearn: ['funfacts', 'brainteasers', 'lifeskills'],
+// Helper function to start a new session
+export const startNewQuestionSession = (): void => {
+  questionSession.startNewSession();
+};
+
+// Helper function to get session stats
+export const getSessionStats = (): { asked: number; sessionId: string } => {
+  return {
+    asked: questionSession.getAskedCount(),
+    sessionId: questionSession.getSessionId(),
   };
-
-  const topics = topicMap[subject] || ['trivia'];
-  const questions: Question[] = [];
-  const questionTexts = new Set<string>();
-  
-  let attempts = 0;
-  const maxAttempts = count * 15;
-  
-  while (questions.length < count && attempts < maxAttempts) {
-    attempts++;
-    const topic = topics[Math.floor(Math.random() * topics.length)];
-    
-    let question: Question;
-    if (subject === 'maths') {
-      question = generateRandomQuestion(topic, yearGroup);
-    } else {
-      question = generateSubjectQuestion(subject, topic, yearGroup);
-    }
-    
-    if (!questionTexts.has(question.question)) {
-      questionTexts.add(question.question);
-      questions.push(question);
-    }
-  }
-  
-  return shuffleArray(questions);
 };
 
-/**
- * Fisher-Yates shuffle algorithm
- */
-const shuffleArray = <T>(array: T[]): T[] => {
-  const shuffled = [...array];
-  for (let i = shuffled.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-  }
-  return shuffled;
-};
-
-export const QUIZ_QUESTION_COUNT = QUESTIONS_PER_QUIZ;
+export const QUIZ_QUESTION_COUNT = 10;

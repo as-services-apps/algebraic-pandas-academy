@@ -2,8 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Zap, Trophy, Clock, Target } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { generateRandomQuestion } from '@/lib/questionGenerator';
-import { generateSubjectQuestion } from '@/lib/subjectQuestionGenerator';
+import { getUniqueQuestion, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
 import { Subject } from '@/types/game';
 
@@ -42,22 +41,6 @@ const subjectNames: Record<Subject, string> = {
   quicklearn: 'Quick Learn',
 };
 
-const getRandomTopic = (subject: Subject): string => {
-  const topicMap: Record<Subject, string[]> = {
-    maths: ['mental', 'algebra', 'fractions', 'percentages'],
-    science: ['biology', 'chemistry', 'physics'],
-    english: ['grammar', 'vocabulary', 'literature'],
-    french: ['vocabulary', 'numbers', 'phrases'],
-    it: ['coding', 'internet', 'hardware'],
-    history: ['ancient', 'medieval', 'modern'],
-    geography: ['physical', 'human', 'climate'],
-    general: ['trivia', 'sports', 'nature'],
-    quicklearn: ['funfacts', 'brainteasers', 'lifeskills'],
-  };
-  const topics = topicMap[subject] || ['trivia'];
-  return topics[Math.floor(Math.random() * topics.length)];
-};
-
 const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
@@ -76,13 +59,7 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
   const [teamScores, setTeamScores] = useState<number[]>([0, 0]);
 
   const generateQuestion = useCallback((): BattleQuestion => {
-    const topic = getRandomTopic(subject);
-    let q;
-    if (subject === 'maths') {
-      q = generateRandomQuestion(topic, gameState.selectedYearGroup);
-    } else {
-      q = generateSubjectQuestion(subject, topic, gameState.selectedYearGroup);
-    }
+    const q = getUniqueQuestion(subject, gameState.selectedYearGroup);
     return {
       question: q.question,
       correctAnswer: q.options[q.correctAnswer],
@@ -147,6 +124,7 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
   };
 
   const startGame = () => {
+    startNewQuestionSession(); // Clear question history for new game
     setIsStarted(true);
     setGameOver(false);
     setTimeLeft(60);
