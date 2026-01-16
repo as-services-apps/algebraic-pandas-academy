@@ -45,6 +45,7 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
   const isSoloMode = gameState.gameMode === 'solo';
+  const customTopic = gameState.customTopic;
   
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
@@ -73,13 +74,13 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
 
   const loadAIQuestions = useCallback(async () => {
     try {
-      const q = await getUniqueQuestionAsync(subject, gameState.selectedYearGroup);
+      const q = await getUniqueQuestionAsync(subject, gameState.selectedYearGroup, customTopic || undefined);
       questionBufferRef.current.push(q);
       setIsAIGenerated(true);
     } catch (error) {
       console.log('Using static questions as fallback');
     }
-  }, [subject, gameState.selectedYearGroup]);
+  }, [subject, gameState.selectedYearGroup, customTopic]);
 
   const nextQuestion = useCallback(() => {
     // Try to use buffered AI question first
@@ -180,10 +181,11 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
           <div>
             <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
               <Zap className="w-5 h-5 text-primary" />
-              {subjectNames[subject]} Blitz {subjectEmojis[subject]}
+              {customTopic || subjectNames[subject]} Blitz {subjectEmojis[subject]}
               {isAIGenerated && <Sparkles className="w-4 h-4 text-secondary" />}
             </h2>
             <p className="text-xs text-muted-foreground">
+              {customTopic && <span className="text-secondary">Topic: {customTopic} • </span>}
               Answer as many as you can in 60 seconds!
             </p>
           </div>

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
-import { GameTopic, Question, Subject } from '@/types/game';
+import { Subject } from '@/types/game';
 import Scoreboard from './Scoreboard';
-import TopicSelector from './TopicSelector';
 import SubjectSelector from './SubjectSelector';
-import GamePlay from './GamePlay';
+import TopicInput from './TopicInput';
 import CustomGameCreator from './CustomGameCreator';
 import MathRacing from './games/MathRacing';
 import ConnectFourMath from './games/ConnectFourMath';
@@ -13,49 +12,41 @@ import MemoryMatch from './games/MemoryMatch';
 import QuizBattle from './games/QuizBattle';
 import AISuggestions from './AISuggestions';
 import { Button } from '@/components/ui/button';
-import { Home, PlusCircle, RotateCcw, Car, Grid3X3, BookOpen, Brain, Zap } from 'lucide-react';
+import { Home, PlusCircle, RotateCcw, Car, Grid3X3, Brain, Zap, BookOpen, Sparkles } from 'lucide-react';
 import pandaLogo from '@/assets/panda-logo.png';
 
 interface GameDashboardProps {
   onReset: () => void;
 }
 
-type DashboardView = 'subjects' | 'topics' | 'playing' | 'custom' | 'racing' | 'connect4' | 'memory' | 'blitz';
+type DashboardView = 'subjects' | 'games' | 'topicInput' | 'custom' | 'racing' | 'connect4' | 'memory' | 'blitz';
+type PendingGame = 'racing' | 'connect4' | 'memory' | 'blitz';
 
 const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
-  const { gameState, setCustomQuestions } = useGame();
+  const { gameState, setCustomTopic } = useGame();
   const [view, setView] = useState<DashboardView>('subjects');
-  const [selectedTopic, setSelectedTopic] = useState<GameTopic | null>(null);
-  const [customGameName, setCustomGameName] = useState('');
+  const [pendingGame, setPendingGame] = useState<PendingGame | null>(null);
 
   const handleSubjectSelect = (subject: Subject) => {
-    setView('topics');
+    setView('games');
   };
 
-  const handleTopicSelect = (topic: GameTopic) => {
-    setSelectedTopic(topic);
-    setView('playing');
+  const handleGameSelect = (game: PendingGame) => {
+    setPendingGame(game);
+    setView('topicInput');
   };
 
-  const handleGameComplete = () => {
-    setSelectedTopic(null);
-    setCustomQuestions([]);
-    setView('topics');
+  const handleTopicSubmit = (topic: string) => {
+    setCustomTopic(topic);
+    if (pendingGame) {
+      setView(pendingGame);
+    }
   };
 
-  const handleCustomSave = (questions: Question[], gameName: string) => {
-    setCustomQuestions(questions);
-    setCustomGameName(gameName);
-    const customTopic: GameTopic = {
-      id: 'custom',
-      name: gameName,
-      icon: '🎮',
-      description: 'Your custom quiz!',
-      yearGroups: [7, 8, 9, 10, 11, 12],
-      color: 'accent',
-    };
-    setSelectedTopic(customTopic);
-    setView('playing');
+  const handleBackToGames = () => {
+    setView('games');
+    setPendingGame(null);
+    setCustomTopic('');
   };
 
   const subjectNames: Record<Subject, string> = {
@@ -68,6 +59,13 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
     geography: 'Geography',
     general: 'General Knowledge',
     quicklearn: 'Quick Learn',
+  };
+
+  const gameTypeNames: Record<PendingGame, string> = {
+    racing: '🏎️ Racing',
+    connect4: '🔴🟡 Connect Four',
+    memory: '🧠 Memory Match',
+    blitz: '⚡ Quiz Blitz',
   };
 
   return (
@@ -88,7 +86,7 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                   {gameState.player?.name}
                   {gameState.player?.school && ` • ${gameState.player.school}`}
                   {' • Y'}{gameState.selectedYearGroup}
-                  {gameState.isHardMode && ' • 🔥'}
+                  {gameState.customTopic && ` • ${gameState.customTopic}`}
                 </p>
               </div>
             </div>
@@ -100,10 +98,10 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                   <span className="hidden sm:inline ml-1">Subjects</span>
                 </Button>
               )}
-              {view !== 'subjects' && view !== 'topics' && (
-                <Button variant="ghost" size="sm" onClick={() => setView('topics')} className="px-2 sm:px-3">
+              {view !== 'subjects' && view !== 'games' && (
+                <Button variant="ghost" size="sm" onClick={() => setView('games')} className="px-2 sm:px-3">
                   <Home className="w-4 h-4" />
-                  <span className="hidden sm:inline ml-1">Topics</span>
+                  <span className="hidden sm:inline ml-1">Games</span>
                 </Button>
               )}
               <Button variant="outline" size="sm" onClick={onReset} className="px-2 sm:px-3">
@@ -123,12 +121,15 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
               <SubjectSelector onSelectSubject={handleSubjectSelect} />
             )}
 
-            {view === 'topics' && (
+            {view === 'games' && (
               <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center justify-between flex-wrap gap-3 sm:gap-4">
                   <div>
-                    <h2 className="text-lg sm:text-2xl font-bold text-foreground">Choose a Topic</h2>
-                    <p className="text-sm text-muted-foreground">Select a topic to practice</p>
+                    <h2 className="text-lg sm:text-2xl font-bold text-foreground">Choose a Game</h2>
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-secondary" />
+                      AI generates infinite questions for any topic!
+                    </p>
                   </div>
                   {gameState.selectedSubject === 'maths' && (
                     <Button variant="secondary" size="sm" onClick={() => setView('custom')}>
@@ -139,7 +140,15 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                   )}
                 </div>
 
-                {/* Interactive Games Section - Now for ALL subjects */}
+                {/* Current Subject Banner */}
+                <div className="bg-primary/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center">
+                  <p className="text-xs sm:text-sm text-muted-foreground">Current Subject</p>
+                  <h2 className="text-lg sm:text-2xl font-bold text-primary">
+                    {subjectNames[gameState.selectedSubject]}
+                  </h2>
+                </div>
+
+                {/* Interactive Games Grid */}
                 <div className="space-y-3 sm:space-y-4">
                   <h3 className="text-base sm:text-xl font-bold text-foreground flex items-center gap-2">
                     🎮 Interactive Games
@@ -149,7 +158,7 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                   </h3>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <button
-                      onClick={() => setView('racing')}
+                      onClick={() => handleGameSelect('racing')}
                       className="bg-gradient-to-br from-primary to-accent p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
                     >
                       <div className="flex items-center gap-2 mb-1">
@@ -164,7 +173,7 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                     
                     {gameState.selectedSubject === 'maths' && (
                       <button
-                        onClick={() => setView('connect4')}
+                        onClick={() => handleGameSelect('connect4')}
                         className="bg-gradient-to-br from-secondary to-destructive p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
                       >
                         <div className="flex items-center gap-2 mb-1">
@@ -179,7 +188,7 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                     )}
 
                     <button
-                      onClick={() => setView('memory')}
+                      onClick={() => handleGameSelect('memory')}
                       className="bg-gradient-to-br from-purple-500 to-pink-500 p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
                     >
                       <div className="flex items-center gap-2 mb-1">
@@ -193,7 +202,7 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                     </button>
 
                     <button
-                      onClick={() => setView('blitz')}
+                      onClick={() => handleGameSelect('blitz')}
                       className="bg-gradient-to-br from-yellow-500 to-orange-500 p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
                     >
                       <div className="flex items-center gap-2 mb-1">
@@ -208,57 +217,80 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                   </div>
                 </div>
 
-                {/* Topic Selector */}
-                <div className="space-y-3 sm:space-y-4">
-                  <h3 className="text-base sm:text-xl font-bold text-foreground flex items-center gap-2">
-                    📚 Practice Topics
+                {/* How it works */}
+                <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 panda-shadow">
+                  <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-secondary" />
+                    How It Works
                   </h3>
-                  <TopicSelector 
-                    onSelectTopic={handleTopicSelect} 
-                    onBack={() => setView('subjects')}
-                  />
+                  <div className="grid sm:grid-cols-3 gap-4 text-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold flex-shrink-0">1</div>
+                      <div>
+                        <p className="font-medium text-foreground">Pick a game</p>
+                        <p className="text-muted-foreground">Choose your favorite game mode</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-secondary/10 flex items-center justify-center text-secondary font-bold flex-shrink-0">2</div>
+                      <div>
+                        <p className="font-medium text-foreground">Enter any topic</p>
+                        <p className="text-muted-foreground">Like "Henry VIII" or "Quadratics"</p>
+                      </div>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold flex-shrink-0">3</div>
+                      <div>
+                        <p className="font-medium text-foreground">Play infinitely!</p>
+                        <p className="text-muted-foreground">AI creates unique questions</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
 
-            {view === 'playing' && selectedTopic && (
-              <GamePlay 
-                topic={selectedTopic} 
-                onComplete={handleGameComplete}
-                customQuestions={selectedTopic.id === 'custom' ? gameState.customQuestions : undefined}
+            {view === 'topicInput' && pendingGame && (
+              <TopicInput 
+                onSubmit={handleTopicSubmit} 
+                onBack={() => setView('games')}
+                gameType={gameTypeNames[pendingGame]}
               />
             )}
 
             {view === 'custom' && (
               <CustomGameCreator 
-                onBack={() => setView('topics')} 
-                onSave={handleCustomSave}
+                onBack={() => setView('games')} 
+                onSave={(questions, gameName) => {
+                  // Custom game logic - no longer needed for standard flow
+                  setView('games');
+                }}
               />
             )}
 
             {view === 'racing' && (
               gameState.selectedSubject === 'maths' ? (
-                <MathRacing onBack={() => setView('topics')} />
+                <MathRacing onBack={handleBackToGames} />
               ) : (
-                <SubjectRacing onBack={() => setView('topics')} subject={gameState.selectedSubject} />
+                <SubjectRacing onBack={handleBackToGames} subject={gameState.selectedSubject} />
               )
             )}
 
             {view === 'connect4' && (
-              <ConnectFourMath onBack={() => setView('topics')} />
+              <ConnectFourMath onBack={handleBackToGames} />
             )}
 
             {view === 'memory' && (
-              <MemoryMatch onBack={() => setView('topics')} subject={gameState.selectedSubject} />
+              <MemoryMatch onBack={handleBackToGames} subject={gameState.selectedSubject} />
             )}
 
             {view === 'blitz' && (
-              <QuizBattle onBack={() => setView('topics')} subject={gameState.selectedSubject} />
+              <QuizBattle onBack={handleBackToGames} subject={gameState.selectedSubject} />
             )}
           </div>
 
-          {/* Sidebar - Scoreboard - Hidden on mobile when playing */}
-          <div className={`space-y-4 ${view === 'playing' ? 'hidden lg:block' : ''}`}>
+          {/* Sidebar - Scoreboard */}
+          <div className={`space-y-4 ${['racing', 'connect4', 'memory', 'blitz'].includes(view) ? 'hidden lg:block' : ''}`}>
             <Scoreboard />
 
             {/* AI Suggestions */}
@@ -270,15 +302,15 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
               <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
                   <span>📚</span>
-                  <span>Practice different subjects to improve!</span>
+                  <span>Enter ANY topic you're studying!</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span>⏱️</span>
-                  <span>Answer quickly for bonus confidence!</span>
+                  <span>Answer quickly for bonus points!</span>
                 </li>
                 <li className="flex items-start gap-2">
-                  <span>🔥</span>
-                  <span>Try Hard Mode for a challenge!</span>
+                  <span>✨</span>
+                  <span>AI creates infinite unique questions!</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span>🎮</span>
