@@ -389,15 +389,15 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
                   key={index}
                   onClick={() => handleAnswerSelect(index)}
                   disabled={isAnswerLocked}
-                  className={`p-3 md:p-4 rounded-xl font-semibold text-sm md:text-base transition-all duration-200 ${buttonClass} ${
+                  className={`p-3 md:p-4 rounded-xl font-semibold text-sm md:text-base transition-all duration-200 overflow-hidden ${buttonClass} ${
                     !isAnswerLocked ? 'hover:scale-[1.02] active:scale-[0.98]' : ''
                   }`}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 min-w-0">
                     <span className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center text-xs font-bold shrink-0">
                       {String.fromCharCode(65 + index)}
                     </span>
-                    <span className="flex-1 text-left truncate">{option}</span>
+                    <span className="flex-1 text-left break-words line-clamp-2 min-w-0">{option}</span>
                     {showResult && isCorrect && <Check className="w-5 h-5 shrink-0" />}
                     {showResult && isSelected && !isCorrect && <X className="w-5 h-5 shrink-0" />}
                   </div>
