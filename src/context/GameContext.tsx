@@ -14,6 +14,7 @@ interface GameContextType {
   setAIOpponent: (isAI: boolean) => void;
   setHardMode: (isHard: boolean) => void;
   setCustomQuestions: (questions: Question[]) => void;
+  setCustomTopic: (topic: string, context?: string) => void;
   startGame: () => void;
   resetGame: () => void;
   nextRound: () => void;
@@ -90,6 +91,10 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setGameState(prev => ({ ...prev, customQuestions: questions }));
   };
 
+  const setCustomTopic = (topic: string, context?: string) => {
+    setGameState(prev => ({ ...prev, customTopic: topic, customContext: context }));
+  };
+
   const startGame = () => {
     setGameState(prev => ({ ...prev, gameStarted: true }));
   };
@@ -117,6 +122,7 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setAIOpponent,
         setHardMode,
         setCustomQuestions,
+        setCustomTopic,
         startGame,
         resetGame,
         nextRound,
