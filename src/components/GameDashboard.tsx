@@ -77,6 +77,7 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
     geography: 'Geography',
     general: 'General Knowledge',
     quicklearn: 'Quick Learn',
+    custom: 'Create Your Own',
   };
 
   return (

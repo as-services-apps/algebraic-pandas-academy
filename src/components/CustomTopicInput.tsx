@@ -40,6 +40,7 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz, onBack
     it: '💻 IT & Computing',
     general: '💡 General Knowledge',
     quicklearn: '⚡ Quick Learn',
+    custom: '✨ Create Your Own',
   };
 
   const handleGenerateQuiz = async () => {
@@ -123,19 +124,24 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz, onBack
         </Button>
       )}
 
-      {/* Current Subject */}
-      <div className="bg-primary/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center">
-        <p className="text-xs sm:text-sm text-muted-foreground">Current Subject</p>
-        <h2 className="text-lg sm:text-2xl font-bold text-primary">
-          {subjectNames[gameState.selectedSubject] || gameState.selectedSubject}
-        </h2>
-      </div>
+      {/* Current Subject - only show for non-custom subjects */}
+      {gameState.selectedSubject !== 'custom' && (
+        <div className="bg-primary/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center">
+          <p className="text-xs sm:text-sm text-muted-foreground">Current Subject</p>
+          <h2 className="text-lg sm:text-2xl font-bold text-primary">
+            {subjectNames[gameState.selectedSubject] || gameState.selectedSubject}
+          </h2>
+        </div>
+      )}
 
-      {/* Main Input Card */}
       <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 panda-shadow space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <Sparkles className="w-5 h-5 text-secondary" />
-          <h3 className="font-bold text-foreground text-base sm:text-lg">AI-Powered Topic Quiz</h3>
+          <h3 className="font-bold text-foreground text-base sm:text-lg">
+            {gameState.selectedSubject === 'custom' 
+              ? 'Create a Quiz on Anything!' 
+              : 'AI-Powered Topic Quiz'}
+          </h3>
         </div>
 
         {/* Topic Input */}

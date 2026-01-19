@@ -17,6 +17,7 @@ const subjects: { id: Subject; name: string; icon: string; description: string; 
   { id: 'geography', name: 'Geography', icon: '🌍', description: 'Physical and human geography!', color: 'from-cyan-500 to-teal-600' },
   { id: 'general', name: 'General Knowledge', icon: '💡', description: 'Trivia, sports and nature!', color: 'from-pink-500 to-rose-600' },
   { id: 'quicklearn', name: 'Quick Learn', icon: '⚡', description: 'Fast fun facts for free time!', color: 'from-yellow-500 to-orange-500' },
+  { id: 'custom', name: 'Create Your Own', icon: '✨', description: 'Make a quiz on ANYTHING you want!', color: 'from-gradient-start to-gradient-end' },
 ];
 
 const SubjectSelector: React.FC<SubjectSelectorProps> = ({ onSelectSubject }) => {
@@ -39,7 +40,9 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({ onSelectSubject }) =>
           <button
             key={subject.id}
             onClick={() => handleSelect(subject.id)}
-            className="group bg-card p-3 sm:p-5 rounded-xl sm:rounded-2xl panda-shadow hover:scale-[1.02] transition-all duration-300 text-left border-2 border-transparent hover:border-primary"
+            className={`group bg-card p-3 sm:p-5 rounded-xl sm:rounded-2xl panda-shadow hover:scale-[1.02] transition-all duration-300 text-left border-2 border-transparent hover:border-primary ${
+              subject.id === 'custom' ? 'col-span-2 lg:col-span-3 bg-gradient-to-r from-primary/10 to-accent/10' : ''
+            }`}
           >
             <div className="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-4">
               <div className={`text-2xl sm:text-4xl p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-br ${subject.color} text-white`}>
@@ -53,7 +56,9 @@ const SubjectSelector: React.FC<SubjectSelectorProps> = ({ onSelectSubject }) =>
                   {subject.description}
                 </p>
                 <div className="flex items-center justify-center sm:justify-start gap-1 mt-2 sm:mt-3 text-primary">
-                  <span className="text-xs sm:text-sm font-medium">Select</span>
+                  <span className="text-xs sm:text-sm font-medium">
+                    {subject.id === 'custom' ? 'Start Creating' : 'Select'}
+                  </span>
                   <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               </div>

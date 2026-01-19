@@ -1,7 +1,7 @@
 export type UserType = 'student' | 'teacher';
 export type GameMode = 'solo' | 'team';
 export type YearGroup = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
-export type Subject = 'maths' | 'science' | 'english' | 'history' | 'geography' | 'general' | 'french' | 'it' | 'quicklearn';
+export type Subject = 'maths' | 'science' | 'english' | 'history' | 'geography' | 'general' | 'french' | 'it' | 'quicklearn' | 'custom';
 
 export interface Team {
   id: string;

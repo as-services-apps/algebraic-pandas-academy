@@ -27,6 +27,7 @@ const subjectEmojis: Record<Subject, string> = {
   geography: '🌍',
   general: '💡',
   quicklearn: '⚡',
+  custom: '✨',
 };
 
 const subjectNames: Record<Subject, string> = {
@@ -39,6 +40,7 @@ const subjectNames: Record<Subject, string> = {
   geography: 'Geography',
   general: 'Trivia',
   quicklearn: 'Quick Learn',
+  custom: 'Custom',
 };
 
 const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
