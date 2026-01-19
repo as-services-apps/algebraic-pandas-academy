@@ -31,6 +31,9 @@ export const SUBJECT_TOPICS: Record<Subject, string[]> = {
   quicklearn: [
     'funfacts', 'brainteasers', 'lifeskills', 'current'
   ],
+  custom: [
+    'general'
+  ],
 };
 
 // Cache for AI-generated questions to reduce API calls
