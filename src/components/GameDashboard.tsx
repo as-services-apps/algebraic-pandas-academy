@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { GameTopic, Question, Subject } from '@/types/game';
 import Scoreboard from './Scoreboard';
-import TopicSelector from './TopicSelector';
+import CustomTopicInput from './CustomTopicInput';
 import SubjectSelector from './SubjectSelector';
 import GamePlay from './GamePlay';
 import CustomGameCreator from './CustomGameCreator';
@@ -13,7 +13,7 @@ import MemoryMatch from './games/MemoryMatch';
 import QuizBattle from './games/QuizBattle';
 import AISuggestions from './AISuggestions';
 import { Button } from '@/components/ui/button';
-import { Home, PlusCircle, RotateCcw, Car, Grid3X3, BookOpen, Brain, Zap } from 'lucide-react';
+import { Home, PlusCircle, RotateCcw, Car, Grid3X3, Brain, Zap, BookOpen } from 'lucide-react';
 import pandaLogo from '@/assets/panda-logo.png';
 
 interface GameDashboardProps {
@@ -32,8 +32,17 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
     setView('topics');
   };
 
-  const handleTopicSelect = (topic: GameTopic) => {
-    setSelectedTopic(topic);
+  const handleCustomTopicQuiz = (questions: Question[]) => {
+    setCustomQuestions(questions);
+    const customTopic: GameTopic = {
+      id: 'custom-topic',
+      name: gameState.customTopic || 'Custom Quiz',
+      icon: '🎯',
+      description: 'AI-generated quiz on your topic',
+      yearGroups: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+      color: 'primary',
+    };
+    setSelectedTopic(customTopic);
     setView('playing');
   };
 
@@ -127,14 +136,14 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
               <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center justify-between flex-wrap gap-3 sm:gap-4">
                   <div>
-                    <h2 className="text-lg sm:text-2xl font-bold text-foreground">Choose a Topic</h2>
-                    <p className="text-sm text-muted-foreground">Select a topic to practice</p>
+                    <h2 className="text-lg sm:text-2xl font-bold text-foreground">Create Your Quiz</h2>
+                    <p className="text-sm text-muted-foreground">Type any topic and AI will generate questions</p>
                   </div>
                   {gameState.selectedSubject === 'maths' && (
                     <Button variant="secondary" size="sm" onClick={() => setView('custom')}>
                       <PlusCircle className="w-4 h-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Create Game</span>
-                      <span className="sm:hidden">Create</span>
+                      <span className="hidden sm:inline">Manual Quiz</span>
+                      <span className="sm:hidden">Manual</span>
                     </Button>
                   )}
                 </div>
@@ -208,13 +217,13 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                   </div>
                 </div>
 
-                {/* Topic Selector */}
+                {/* Custom Topic Input */}
                 <div className="space-y-3 sm:space-y-4">
                   <h3 className="text-base sm:text-xl font-bold text-foreground flex items-center gap-2">
-                    📚 Practice Topics
+                    📚 Topic Quiz
                   </h3>
-                  <TopicSelector 
-                    onSelectTopic={handleTopicSelect} 
+                  <CustomTopicInput 
+                    onStartQuiz={handleCustomTopicQuiz} 
                     onBack={() => setView('subjects')}
                   />
                 </div>
@@ -225,7 +234,7 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
               <GamePlay 
                 topic={selectedTopic} 
                 onComplete={handleGameComplete}
-                customQuestions={selectedTopic.id === 'custom' ? gameState.customQuestions : undefined}
+                customQuestions={selectedTopic.id === 'custom' || selectedTopic.id === 'custom-topic' ? gameState.customQuestions : undefined}
               />
             )}
 

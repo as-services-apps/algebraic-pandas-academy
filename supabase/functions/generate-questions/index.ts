@@ -6,8 +6,10 @@ const corsHeaders = {
 };
 
 interface QuestionRequest {
-  subject: string;
-  topic: string;
+  subject?: string;
+  topic?: string;
+  customTopic?: string;
+  extraContext?: string;
   yearGroup: number;
   count: number;
 }
@@ -25,9 +27,13 @@ serve(async (req) => {
   }
 
   try {
-    const { subject, topic, yearGroup, count = 5 }: QuestionRequest = await req.json();
+    const requestBody: QuestionRequest = await req.json();
+    const { subject, topic, customTopic, extraContext, yearGroup, count = 10 } = requestBody;
     
-    console.log(`Generating ${count} questions for ${subject}/${topic} (Year ${yearGroup})`);
+    // Determine if this is a custom topic request
+    const isCustomTopic = Boolean(customTopic);
+    
+    console.log(`Generating ${count} questions for ${isCustomTopic ? `custom topic: ${customTopic}` : `${subject}/${topic}`} (Year ${yearGroup})`);
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
@@ -48,7 +54,21 @@ serve(async (req) => {
       ageDescription = 'older teenagers (ages 14-18)';
     }
 
-    const systemPrompt = `You are an expert educational quiz question generator. Generate unique, engaging, and accurate multiple-choice questions for students.
+    const systemPrompt = isCustomTopic 
+      ? `You are an expert educational quiz question generator specializing in creating specific, targeted quiz questions about any topic a student wants to learn.
+
+Rules:
+1. Each question must have EXACTLY 4 options
+2. Options must be plausible but only ONE is correct
+3. Questions must be age-appropriate for ${ageDescription} (Year ${yearGroup} UK curriculum)
+4. Questions should test real knowledge about the specific topic provided
+5. Vary the position of correct answers (don't always put correct answer first)
+6. Make questions interesting, educational, and SPECIFIC to the topic
+7. Ensure factual accuracy - verify all facts carefully
+8. Each question must be UNIQUE - cover different aspects of the topic
+9. Focus on the most important and interesting facts about the topic
+10. If extra context is provided, prioritize questions about those specific areas`
+      : `You are an expert educational quiz question generator. Generate unique, engaging, and accurate multiple-choice questions for students.
 
 Rules:
 1. Each question must have EXACTLY 4 options
@@ -135,9 +155,36 @@ Rules:
       },
     };
 
-    const topicDescription = topicPrompts[subject]?.[topic] || topic;
+    const topicDescription = subject && topic ? (topicPrompts[subject]?.[topic] || topic) : '';
 
-    const userPrompt = `Generate ${count} unique multiple-choice questions about ${topicDescription} for ${subject}.
+    let userPrompt: string;
+    
+    if (isCustomTopic) {
+      const contextInfo = extraContext ? `\n\nSpecific focus areas: ${extraContext}` : '';
+      userPrompt = `Generate ${count} unique multiple-choice questions about: "${customTopic}"${contextInfo}
+
+Year Group: ${yearGroup} (UK curriculum)
+Difficulty: ${difficulty}
+
+IMPORTANT: 
+- Generate questions that test specific knowledge about "${customTopic}"
+- Cover different aspects and facts about this topic
+- Make questions educational and engaging
+- Ensure all facts are accurate and verifiable
+
+Return a JSON array with this exact structure:
+[
+  {
+    "question": "Question text here?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctAnswer": 0,
+    "difficulty": "${difficulty}"
+  }
+]
+
+Make each question unique and interesting. Vary the correct answer position (0-3).`;
+    } else {
+      userPrompt = `Generate ${count} unique multiple-choice questions about ${topicDescription} for ${subject}.
     
 Year Group: ${yearGroup} (UK curriculum)
 Difficulty: ${difficulty}
@@ -153,6 +200,7 @@ Return a JSON array with this exact structure:
 ]
 
 Make each question unique and interesting. Vary the correct answer position (0-3).`;
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
