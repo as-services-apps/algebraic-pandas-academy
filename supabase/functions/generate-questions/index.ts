@@ -19,6 +19,7 @@ interface GeneratedQuestion {
   options: string[];
   correctAnswer: number;
   difficulty: 'easy' | 'medium' | 'hard';
+  explanation: string;
 }
 
 serve(async (req) => {
@@ -67,7 +68,8 @@ Rules:
 7. Ensure factual accuracy - verify all facts carefully
 8. Each question must be UNIQUE - cover different aspects of the topic
 9. Focus on the most important and interesting facts about the topic
-10. If extra context is provided, prioritize questions about those specific areas`
+10. If extra context is provided, prioritize questions about those specific areas
+11. ALWAYS include a brief "explanation" field (1-2 sentences) explaining why the correct answer is right - this helps students learn`
       : `You are an expert educational quiz question generator. Generate unique, engaging, and accurate multiple-choice questions for students.
 
 Rules:
@@ -78,7 +80,8 @@ Rules:
 5. Vary the position of correct answers (don't always put correct answer first)
 6. Make questions interesting and educational
 7. Ensure factual accuracy - verify all facts
-8. Each question must be UNIQUE and not repeat common questions`;
+8. Each question must be UNIQUE and not repeat common questions
+9. ALWAYS include a brief "explanation" field (1-2 sentences) explaining why the correct answer is right - this helps students learn`;
 
     const topicPrompts: Record<string, Record<string, string>> = {
       maths: {
@@ -171,6 +174,7 @@ IMPORTANT:
 - Cover different aspects and facts about this topic
 - Make questions educational and engaging
 - Ensure all facts are accurate and verifiable
+- Include a helpful explanation for each question
 
 Return a JSON array with this exact structure:
 [
@@ -178,7 +182,8 @@ Return a JSON array with this exact structure:
     "question": "Question text here?",
     "options": ["Option A", "Option B", "Option C", "Option D"],
     "correctAnswer": 0,
-    "difficulty": "${difficulty}"
+    "difficulty": "${difficulty}",
+    "explanation": "Brief 1-2 sentence explanation of why the correct answer is right"
   }
 ]
 
@@ -195,7 +200,8 @@ Return a JSON array with this exact structure:
     "question": "Question text here?",
     "options": ["Option A", "Option B", "Option C", "Option D"],
     "correctAnswer": 0,
-    "difficulty": "${difficulty}"
+    "difficulty": "${difficulty}",
+    "explanation": "Brief 1-2 sentence explanation of why the correct answer is right"
   }
 ]
 
@@ -271,6 +277,7 @@ Make each question unique and interesting. Vary the correct answer position (0-3
         options: q.options,
         correctAnswer: q.correctAnswer,
         difficulty: q.difficulty || difficulty,
+        explanation: q.explanation || "The correct answer provides the accurate information based on the topic.",
       }));
 
     console.log(`Generated ${validQuestions.length} valid questions`);
