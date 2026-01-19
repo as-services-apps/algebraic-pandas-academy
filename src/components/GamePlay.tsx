@@ -433,6 +433,20 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
                 }
               </p>
             )}
+            
+            {/* Explanation for incorrect answers */}
+            {((gameState.isHardMode && !isTypedCorrect) || 
+              (!gameState.isHardMode && selectedAnswer !== currentQuestion.correctAnswer) ||
+              timeRanOut) && 
+              currentQuestion.explanation && (
+              <div className="bg-muted/50 rounded-lg p-3 mb-3 text-left border border-border">
+                <p className="text-sm text-muted-foreground flex items-start gap-2">
+                  <span className="text-primary font-medium shrink-0">💡 Why?</span>
+                  <span>{currentQuestion.explanation}</span>
+                </p>
+              </div>
+            )}
+            
             <Button variant="game" size="default" onClick={handleNext}>
               Next Question
               <ArrowRight className="w-4 h-4 ml-1" />

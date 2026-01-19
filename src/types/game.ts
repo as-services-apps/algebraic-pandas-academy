@@ -45,6 +45,7 @@ export interface Question {
   difficulty: 'easy' | 'medium' | 'hard';
   yearGroup: YearGroup;
   points: number;
+  explanation?: string;
 }
 
 export interface GameTopic {
