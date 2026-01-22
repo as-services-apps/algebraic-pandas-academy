@@ -1,15 +1,14 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, Car, Trophy, Zap, Keyboard, Sparkles } from 'lucide-react';
+import { Car, Trophy, Zap, Keyboard, Sparkles } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { getUniqueQuestion, getUniqueQuestionAsync, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
-import { Subject, Question } from '@/types/game';
+import { Question } from '@/types/game';
+import GameTopicInput from './GameTopicInput';
 
 interface SubjectRacingProps {
   onBack: () => void;
-  subject: Subject;
 }
 
 interface RaceQuestion {
@@ -18,44 +17,7 @@ interface RaceQuestion {
   options: string[];
 }
 
-const subjectEmojis: Record<Subject, string> = {
-  maths: '🔢',
-  science: '🔬',
-  english: '📚',
-  french: '🇫🇷',
-  it: '💻',
-  history: '🏛️',
-  geography: '🌍',
-  general: '💡',
-  quicklearn: '⚡',
-  custom: '✨',
-};
-
-const subjectNames: Record<Subject, string> = {
-  maths: 'Math',
-  science: 'Science',
-  english: 'English',
-  french: 'French',
-  it: 'IT',
-  history: 'History',
-  geography: 'Geography',
-  general: 'Trivia',
-  quicklearn: 'Quick Learn',
-  custom: 'Custom',
-};
-
-const convertToRaceQuestion = (q: Question): RaceQuestion => ({
-  question: q.question, 
-  correctAnswer: q.options[q.correctAnswer], 
-  options: q.options 
-});
-
-const generateQuestionSync = (subject: Subject, yearGroup: number): RaceQuestion => {
-  const q = getUniqueQuestion(subject, yearGroup as any);
-  return convertToRaceQuestion(q);
-};
-
-const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
+const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
   const isSoloMode = gameState.gameMode === 'solo';
@@ -63,6 +25,9 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
   const team1 = isTeamMode ? gameState.teams[0] : { id: '1', name: isSoloMode ? 'You' : 'Player 1', score: 0, color: 'team-1' };
   const team2 = isTeamMode ? gameState.teams[1] : { id: '2', name: isSoloMode ? 'AI' : 'Player 2', score: 0, color: 'team-2' };
   
+  const [gameQuestions, setGameQuestions] = useState<Question[]>([]);
+  const [gameTopic, setGameTopic] = useState('');
+  const [questionIndex, setQuestionIndex] = useState(0);
   const [team1Position, setTeam1Position] = useState(0);
   const [team2Position, setTeam2Position] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState<RaceQuestion | null>(null);
@@ -74,41 +39,32 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
   const [isHardMode, setIsHardMode] = useState(false);
   const [typedAnswer, setTypedAnswer] = useState('');
   const [isAITurn, setIsAITurn] = useState(false);
-  const [isAIGenerated, setIsAIGenerated] = useState(false);
-  const questionBufferRef = useRef<Question[]>([]);
+  const [showTopicInput, setShowTopicInput] = useState(true);
   
   const finishLine = 100;
 
-  const loadAIQuestion = useCallback(async () => {
-    try {
-      const q = await getUniqueQuestionAsync(subject, gameState.selectedYearGroup);
-      questionBufferRef.current.push(q);
-    } catch (error) {
-      console.log('Using static questions');
-    }
-  }, [subject, gameState.selectedYearGroup]);
+  const convertToRaceQuestion = (q: Question): RaceQuestion => ({
+    question: q.question, 
+    correctAnswer: q.options[q.correctAnswer], 
+    options: q.options 
+  });
 
   const nextQuestion = useCallback(() => {
-    if (questionBufferRef.current.length > 0) {
-      const aiQ = questionBufferRef.current.shift()!;
-      setCurrentQuestion(convertToRaceQuestion(aiQ));
-      setIsAIGenerated(true);
-    } else {
-      setCurrentQuestion(generateQuestionSync(subject, gameState.selectedYearGroup));
-      setIsAIGenerated(false);
+    if (questionIndex < gameQuestions.length) {
+      setCurrentQuestion(convertToRaceQuestion(gameQuestions[questionIndex]));
+      setQuestionIndex(prev => prev + 1);
+    } else if (gameQuestions.length > 0) {
+      // Loop back to start if we run out
+      setQuestionIndex(0);
+      setCurrentQuestion(convertToRaceQuestion(gameQuestions[0]));
     }
-    
-    // Pre-load more
-    if (questionBufferRef.current.length < 3) {
-      loadAIQuestion();
-    }
-  }, [subject, gameState.selectedYearGroup, loadAIQuestion]);
+  }, [gameQuestions, questionIndex]);
 
   useEffect(() => {
-    if (isStarted && !currentQuestion && !gameOver) {
+    if (isStarted && !currentQuestion && !gameOver && gameQuestions.length > 0) {
       nextQuestion();
     }
-  }, [isStarted, currentQuestion, gameOver, nextQuestion]);
+  }, [isStarted, currentQuestion, gameOver, nextQuestion, gameQuestions.length]);
 
   // AI turn handling
   useEffect(() => {
@@ -189,9 +145,7 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
     }
   };
 
-  const startRace = async () => {
-    startNewQuestionSession();
-    questionBufferRef.current = [];
+  const startRace = () => {
     setIsStarted(true);
     setTeam1Position(0);
     setTeam2Position(0);
@@ -201,26 +155,55 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
     setCurrentPlayer('team1');
     setTypedAnswer('');
     setIsAITurn(false);
+    setQuestionIndex(0);
     
-    // Pre-load AI questions
-    loadAIQuestion();
-    nextQuestion();
+    if (gameQuestions.length > 0) {
+      setCurrentQuestion(convertToRaceQuestion(gameQuestions[0]));
+      setQuestionIndex(1);
+    }
+  };
+
+  const handleStartGame = (questions: Question[], topic: string) => {
+    setGameQuestions(questions);
+    setGameTopic(topic);
+    setShowTopicInput(false);
+  };
+
+  const handleBackToTopic = () => {
+    setShowTopicInput(true);
+    setGameQuestions([]);
+    setGameTopic('');
+    setIsStarted(false);
+    setGameOver(false);
+    setCurrentQuestion(null);
   };
 
   const getCurrentTeamName = () => currentPlayer === 'team1' ? team1.name : team2.name;
+
+  if (showTopicInput) {
+    return (
+      <GameTopicInput
+        onStartGame={handleStartGame}
+        onBack={onBack}
+        gameTitle="Racing 🏎️"
+        gameIcon={<Car className="w-5 h-5 text-primary" />}
+        questionCount={20}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 fade-in">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="w-4 h-4" />
+          <Button variant="ghost" size="sm" onClick={handleBackToTopic}>
+            ← Back
           </Button>
           <div>
             <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
               <Car className="w-5 h-5 text-primary" />
-              {subjectNames[subject]} Racing {subjectEmojis[subject]}
-              {isAIGenerated && <Sparkles className="w-4 h-4 text-secondary" />}
+              Racing: {gameTopic}
+              <Sparkles className="w-4 h-4 text-secondary" />
             </h2>
             <p className="text-xs text-muted-foreground">
               {isSoloMode ? 'You vs AI' : isTeamMode ? 'Team vs Team' : 'Player vs Player'}
@@ -323,7 +306,10 @@ const SubjectRacing: React.FC<SubjectRacingProps> = ({ onBack, subject }) => {
             <div className={`text-xl font-bold ${winner === 'team1' ? 'text-secondary' : 'text-destructive'}`}>
               🎉 {winner === 'team1' ? team1.name : team2.name} Wins!
             </div>
-            <Button onClick={startRace}>Race Again!</Button>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={startRace}>Race Again!</Button>
+              <Button variant="outline" onClick={handleBackToTopic}>New Topic</Button>
+            </div>
           </div>
         ) : currentQuestion && !isAITurn && (
           <div className="space-y-3">

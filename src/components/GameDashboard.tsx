@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
-import { GameTopic, Question, Subject } from '@/types/game';
+import { GameTopic, Question } from '@/types/game';
 import Scoreboard from './Scoreboard';
 import CustomTopicInput from './CustomTopicInput';
-import SubjectSelector from './SubjectSelector';
 import GamePlay from './GamePlay';
 import CustomGameCreator from './CustomGameCreator';
 import MathRacing from './games/MathRacing';
@@ -13,24 +12,19 @@ import MemoryMatch from './games/MemoryMatch';
 import QuizBattle from './games/QuizBattle';
 import AISuggestions from './AISuggestions';
 import { Button } from '@/components/ui/button';
-import { Home, PlusCircle, RotateCcw, Car, Grid3X3, Brain, Zap, BookOpen } from 'lucide-react';
+import { Home, PlusCircle, RotateCcw, Car, Grid3X3, Brain, Zap } from 'lucide-react';
 import pandaLogo from '@/assets/panda-logo.png';
 
 interface GameDashboardProps {
   onReset: () => void;
 }
 
-type DashboardView = 'subjects' | 'topics' | 'playing' | 'custom' | 'racing' | 'connect4' | 'memory' | 'blitz';
+type DashboardView = 'home' | 'playing' | 'custom' | 'racing' | 'connect4' | 'memory' | 'blitz';
 
 const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
   const { gameState, setCustomQuestions } = useGame();
-  const [view, setView] = useState<DashboardView>('subjects');
+  const [view, setView] = useState<DashboardView>('home');
   const [selectedTopic, setSelectedTopic] = useState<GameTopic | null>(null);
-  const [customGameName, setCustomGameName] = useState('');
-
-  const handleSubjectSelect = (subject: Subject) => {
-    setView('topics');
-  };
 
   const handleCustomTopicQuiz = (questions: Question[]) => {
     setCustomQuestions(questions);
@@ -49,12 +43,11 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
   const handleGameComplete = () => {
     setSelectedTopic(null);
     setCustomQuestions([]);
-    setView('topics');
+    setView('home');
   };
 
   const handleCustomSave = (questions: Question[], gameName: string) => {
     setCustomQuestions(questions);
-    setCustomGameName(gameName);
     const customTopic: GameTopic = {
       id: 'custom',
       name: gameName,
@@ -65,19 +58,6 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
     };
     setSelectedTopic(customTopic);
     setView('playing');
-  };
-
-  const subjectNames: Record<Subject, string> = {
-    maths: 'Maths',
-    science: 'Science',
-    english: 'English',
-    french: 'French',
-    it: 'IT & Computing',
-    history: 'History',
-    geography: 'Geography',
-    general: 'General Knowledge',
-    quicklearn: 'Quick Learn',
-    custom: 'Create Your Own',
   };
 
   return (
@@ -104,16 +84,10 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
             </div>
 
             <div className="flex items-center gap-1 sm:gap-2">
-              {view !== 'subjects' && (
-                <Button variant="ghost" size="sm" onClick={() => setView('subjects')} className="px-2 sm:px-3">
-                  <BookOpen className="w-4 h-4" />
-                  <span className="hidden sm:inline ml-1">Subjects</span>
-                </Button>
-              )}
-              {view !== 'subjects' && view !== 'topics' && (
-                <Button variant="ghost" size="sm" onClick={() => setView('topics')} className="px-2 sm:px-3">
+              {view !== 'home' && (
+                <Button variant="ghost" size="sm" onClick={() => setView('home')} className="px-2 sm:px-3">
                   <Home className="w-4 h-4" />
-                  <span className="hidden sm:inline ml-1">Topics</span>
+                  <span className="hidden sm:inline ml-1">Home</span>
                 </Button>
               )}
               <Button variant="outline" size="sm" onClick={onReset} className="px-2 sm:px-3">
@@ -129,27 +103,21 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
         <div className="grid lg:grid-cols-[1fr_300px] gap-4 sm:gap-6">
           {/* Main Content */}
           <div>
-            {view === 'subjects' && (
-              <SubjectSelector onSelectSubject={handleSubjectSelect} />
-            )}
-
-            {view === 'topics' && (
+            {view === 'home' && (
               <div className="space-y-4 sm:space-y-6">
                 <div className="flex items-center justify-between flex-wrap gap-3 sm:gap-4">
                   <div>
                     <h2 className="text-lg sm:text-2xl font-bold text-foreground">Create Your Quiz</h2>
                     <p className="text-sm text-muted-foreground">Type any topic and AI will generate questions</p>
                   </div>
-                  {gameState.selectedSubject === 'maths' && (
-                    <Button variant="secondary" size="sm" onClick={() => setView('custom')}>
-                      <PlusCircle className="w-4 h-4 mr-1 sm:mr-2" />
-                      <span className="hidden sm:inline">Manual Quiz</span>
-                      <span className="sm:hidden">Manual</span>
-                    </Button>
-                  )}
+                  <Button variant="secondary" size="sm" onClick={() => setView('custom')}>
+                    <PlusCircle className="w-4 h-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Manual Quiz</span>
+                    <span className="sm:hidden">Manual</span>
+                  </Button>
                 </div>
 
-                {/* Interactive Games Section - Now for ALL subjects */}
+                {/* Interactive Games Section */}
                 <div className="space-y-3 sm:space-y-4">
                   <h3 className="text-base sm:text-xl font-bold text-foreground flex items-center gap-2">
                     🎮 Interactive Games
@@ -157,6 +125,7 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                       <span className="text-xs sm:text-sm font-normal text-muted-foreground">(Team vs Team)</span>
                     )}
                   </h3>
+                  <p className="text-sm text-muted-foreground">Pick a game, then enter your topic!</p>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                     <button
                       onClick={() => setView('racing')}
@@ -172,21 +141,19 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                       </p>
                     </button>
                     
-                    {gameState.selectedSubject === 'maths' && (
-                      <button
-                        onClick={() => setView('connect4')}
-                        className="bg-gradient-to-br from-secondary to-destructive p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
-                      >
-                        <div className="flex items-center gap-2 mb-1">
-                          <Grid3X3 className="w-5 h-5 sm:w-6 sm:h-6" />
-                          <span className="text-lg">🔴🟡</span>
-                        </div>
-                        <h4 className="text-sm sm:text-base font-bold">Connect Four</h4>
-                        <p className="text-white/80 text-xs hidden sm:block">
-                          Classic strategy game!
-                        </p>
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setView('connect4')}
+                      className="bg-gradient-to-br from-secondary to-destructive p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <Grid3X3 className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <span className="text-lg">🔴🟡</span>
+                      </div>
+                      <h4 className="text-sm sm:text-base font-bold">Connect Four</h4>
+                      <p className="text-white/80 text-xs hidden sm:block">
+                        Classic strategy game!
+                      </p>
+                    </button>
 
                     <button
                       onClick={() => setView('memory')}
@@ -221,11 +188,10 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                 {/* Custom Topic Input */}
                 <div className="space-y-3 sm:space-y-4">
                   <h3 className="text-base sm:text-xl font-bold text-foreground flex items-center gap-2">
-                    📚 Topic Quiz
+                    📚 Classic Quiz Mode
                   </h3>
                   <CustomTopicInput 
                     onStartQuiz={handleCustomTopicQuiz} 
-                    onBack={() => setView('subjects')}
                   />
                 </div>
               </div>
@@ -235,35 +201,31 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
               <GamePlay 
                 topic={selectedTopic} 
                 onComplete={handleGameComplete}
-                customQuestions={selectedTopic.id === 'custom' || selectedTopic.id === 'custom-topic' ? gameState.customQuestions : undefined}
+                customQuestions={gameState.customQuestions}
               />
             )}
 
             {view === 'custom' && (
               <CustomGameCreator 
-                onBack={() => setView('topics')} 
+                onBack={() => setView('home')} 
                 onSave={handleCustomSave}
               />
             )}
 
             {view === 'racing' && (
-              gameState.selectedSubject === 'maths' ? (
-                <MathRacing onBack={() => setView('topics')} />
-              ) : (
-                <SubjectRacing onBack={() => setView('topics')} subject={gameState.selectedSubject} />
-              )
+              <SubjectRacing onBack={() => setView('home')} />
             )}
 
             {view === 'connect4' && (
-              <ConnectFourMath onBack={() => setView('topics')} />
+              <ConnectFourMath onBack={() => setView('home')} />
             )}
 
             {view === 'memory' && (
-              <MemoryMatch onBack={() => setView('topics')} subject={gameState.selectedSubject} />
+              <MemoryMatch onBack={() => setView('home')} />
             )}
 
             {view === 'blitz' && (
-              <QuizBattle onBack={() => setView('topics')} subject={gameState.selectedSubject} />
+              <QuizBattle onBack={() => setView('home')} />
             )}
           </div>
 
@@ -279,8 +241,8 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
               <h3 className="font-bold text-foreground mb-2 sm:mb-3">Quick Tips 💡</h3>
               <ul className="space-y-2 text-xs sm:text-sm text-muted-foreground">
                 <li className="flex items-start gap-2">
-                  <span>📚</span>
-                  <span>Practice different subjects to improve!</span>
+                  <span>🎯</span>
+                  <span>Enter any topic - AI generates questions!</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span>⏱️</span>

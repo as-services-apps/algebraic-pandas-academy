@@ -4,13 +4,12 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useGame } from '@/context/GameContext';
 import { YearGroup, Question } from '@/types/game';
-import { ArrowLeft, Zap, Sparkles, Loader2, BookOpen } from 'lucide-react';
+import { Zap, Sparkles, Loader2, BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 interface CustomTopicInputProps {
   onStartQuiz: (questions: Question[]) => void;
-  onBack?: () => void;
 }
 
 const exampleTopics = [
@@ -22,26 +21,13 @@ const exampleTopics = [
   { topic: 'Shakespeare', context: 'Romeo and Juliet' },
 ];
 
-const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz, onBack }) => {
+const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz }) => {
   const { gameState, setYearGroup, setHardMode, setCustomTopic } = useGame();
   const [topic, setTopic] = useState('');
   const [extraContext, setExtraContext] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const yearGroups: YearGroup[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-
-  const subjectNames: Record<string, string> = {
-    maths: '🔢 Maths',
-    science: '🔬 Science',
-    english: '📚 English',
-    history: '🏛️ History',
-    geography: '🌍 Geography',
-    french: '🇫🇷 French',
-    it: '💻 IT & Computing',
-    general: '💡 General Knowledge',
-    quicklearn: '⚡ Quick Learn',
-    custom: '✨ Create Your Own',
-  };
 
   const handleGenerateQuiz = async () => {
     if (!topic.trim()) {
@@ -79,6 +65,7 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz, onBack
         question: q.question,
         options: q.options,
         correctAnswer: q.correctAnswer,
+        explanation: q.explanation,
         difficulty: q.difficulty || 'medium',
         yearGroup: gameState.selectedYearGroup,
         points: 1,
@@ -116,31 +103,11 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz, onBack
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Back to Subject Selection */}
-      {onBack && (
-        <Button variant="ghost" onClick={onBack} className="mb-2" size="sm">
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Change Subject
-        </Button>
-      )}
-
-      {/* Current Subject - only show for non-custom subjects */}
-      {gameState.selectedSubject !== 'custom' && (
-        <div className="bg-primary/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center">
-          <p className="text-xs sm:text-sm text-muted-foreground">Current Subject</p>
-          <h2 className="text-lg sm:text-2xl font-bold text-primary">
-            {subjectNames[gameState.selectedSubject] || gameState.selectedSubject}
-          </h2>
-        </div>
-      )}
-
       <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 panda-shadow space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <Sparkles className="w-5 h-5 text-secondary" />
           <h3 className="font-bold text-foreground text-base sm:text-lg">
-            {gameState.selectedSubject === 'custom' 
-              ? 'Create a Quiz on Anything!' 
-              : 'AI-Powered Topic Quiz'}
+            AI-Powered Quiz on Any Topic!
           </h3>
         </div>
 
@@ -148,11 +115,11 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz, onBack
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground flex items-center gap-2">
             <BookOpen className="w-4 h-4" />
-            What are you learning about?
+            What do you want to learn about?
           </label>
           <Input
             type="text"
-            placeholder="e.g., Henry VIII, Photosynthesis, French Revolution..."
+            placeholder="e.g., Henry VIII, Photosynthesis, French Revolution, Quadratic equations..."
             value={topic}
             onChange={(e) => setTopic(e.target.value)}
             className="h-12 text-base"
@@ -166,7 +133,7 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz, onBack
             Any specific focus? (optional)
           </label>
           <Textarea
-            placeholder="e.g., his six wives, causes of the war, key dates..."
+            placeholder="e.g., his six wives, causes of the war, key dates, solving by factoring..."
             value={extraContext}
             onChange={(e) => setExtraContext(e.target.value)}
             className="min-h-[80px] resize-none"
@@ -178,7 +145,7 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz, onBack
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">💡 Try these examples:</p>
           <div className="flex flex-wrap gap-2">
-            {exampleTopics.slice(0, 4).map((example, idx) => (
+            {exampleTopics.map((example, idx) => (
               <button
                 key={idx}
                 onClick={() => handleExampleClick(example)}

@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, RotateCcw, Brain, Trophy, Sparkles, Loader2 } from 'lucide-react';
+import { RotateCcw, Brain, Trophy, Sparkles } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { getUniqueQuestion, getUniqueQuestionBatchAsync, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
-import { Subject, Question } from '@/types/game';
+import { Question } from '@/types/game';
+import GameTopicInput from './GameTopicInput';
 
 interface MemoryMatchProps {
   onBack: () => void;
-  subject: Subject;
 }
 
 interface MemoryCard {
@@ -20,36 +19,13 @@ interface MemoryCard {
   isMatched: boolean;
 }
 
-const subjectEmojis: Record<Subject, string> = {
-  maths: '🔢',
-  science: '🔬',
-  english: '📚',
-  french: '🇫🇷',
-  it: '💻',
-  history: '🏛️',
-  geography: '🌍',
-  general: '💡',
-  quicklearn: '⚡',
-  custom: '✨',
-};
-
-const subjectNames: Record<Subject, string> = {
-  maths: 'Math',
-  science: 'Science',
-  english: 'English',
-  french: 'French',
-  it: 'IT',
-  history: 'History',
-  geography: 'Geography',
-  general: 'Trivia',
-  quicklearn: 'Quick Learn',
-  custom: 'Custom',
-};
-
-const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
+const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
   
+  const [gameQuestions, setGameQuestions] = useState<Question[]>([]);
+  const [gameTopic, setGameTopic] = useState('');
+  const [showTopicInput, setShowTopicInput] = useState(true);
   const [cards, setCards] = useState<MemoryCard[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [moves, setMoves] = useState(0);
@@ -58,8 +34,6 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
   const [teamScores, setTeamScores] = useState<number[]>([0, 0]);
   const [gameComplete, setGameComplete] = useState(false);
   const [isChecking, setIsChecking] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isAIGenerated, setIsAIGenerated] = useState(false);
 
   const totalPairs = 6;
 
@@ -93,32 +67,6 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
 
     return newCards;
   }, []);
-
-  const generateCards = useCallback(async () => {
-    startNewQuestionSession();
-    setIsLoading(true);
-    
-    try {
-      // Try AI questions first
-      const aiQuestions = await getUniqueQuestionBatchAsync(subject, gameState.selectedYearGroup, totalPairs);
-      setIsAIGenerated(aiQuestions.length > 0);
-      setCards(generateCardsFromQuestions(aiQuestions));
-    } catch (error) {
-      // Fallback to static
-      const staticQuestions: Question[] = [];
-      for (let i = 0; i < totalPairs; i++) {
-        staticQuestions.push(getUniqueQuestion(subject, gameState.selectedYearGroup));
-      }
-      setIsAIGenerated(false);
-      setCards(generateCardsFromQuestions(staticQuestions));
-    }
-    
-    setIsLoading(false);
-  }, [subject, gameState.selectedYearGroup, generateCardsFromQuestions]);
-
-  useEffect(() => {
-    generateCards();
-  }, [generateCards]);
 
   const handleCardClick = (cardId: number) => {
     if (isChecking) return;
@@ -177,7 +125,7 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
     }
   };
 
-  const resetGame = async () => {
+  const resetGame = () => {
     setFlippedCards([]);
     setMoves(0);
     setMatches(0);
@@ -185,21 +133,48 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
     setTeamScores([0, 0]);
     setGameComplete(false);
     setIsChecking(false);
-    await generateCards();
+    setCards(generateCardsFromQuestions(gameQuestions));
   };
+
+  const handleStartGame = (questions: Question[], topic: string) => {
+    setGameQuestions(questions);
+    setGameTopic(topic);
+    setShowTopicInput(false);
+    setCards(generateCardsFromQuestions(questions));
+  };
+
+  const handleBackToTopic = () => {
+    setShowTopicInput(true);
+    setGameQuestions([]);
+    setGameTopic('');
+    setCards([]);
+    setGameComplete(false);
+  };
+
+  if (showTopicInput) {
+    return (
+      <GameTopicInput
+        onStartGame={handleStartGame}
+        onBack={onBack}
+        gameTitle="Memory Match 🧠"
+        gameIcon={<Brain className="w-5 h-5 text-primary" />}
+        questionCount={8}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 fade-in">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="w-4 h-4" />
+          <Button variant="ghost" size="sm" onClick={handleBackToTopic}>
+            ← Back
           </Button>
           <div>
             <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
               <Brain className="w-5 h-5 text-primary" />
-              {subjectNames[subject]} Memory {subjectEmojis[subject]}
-              {isAIGenerated && <Sparkles className="w-4 h-4 text-secondary" />}
+              Memory: {gameTopic}
+              <Sparkles className="w-4 h-4 text-secondary" />
             </h2>
             <p className="text-xs text-muted-foreground">
               Match questions with their answers!
@@ -257,17 +232,15 @@ const MemoryMatch: React.FC<MemoryMatchProps> = ({ onBack, subject }) => {
               Winner: {gameState.teams[teamScores[0] >= teamScores[1] ? 0 : 1].name}!
             </p>
           )}
-          <Button onClick={resetGame}>Play Again</Button>
+          <div className="flex gap-2 justify-center">
+            <Button onClick={resetGame}>Play Again</Button>
+            <Button variant="outline" onClick={handleBackToTopic}>New Topic</Button>
+          </div>
         </div>
       )}
 
       {/* Card Grid */}
-      {isLoading ? (
-        <div className="bg-card rounded-xl p-8 panda-shadow flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          <span className="ml-2 text-muted-foreground">Loading AI questions...</span>
-        </div>
-      ) : !gameComplete && (
+      {!gameComplete && cards.length > 0 && (
         <div className="bg-card rounded-xl p-4 panda-shadow">
           <div className="grid grid-cols-3 md:grid-cols-4 gap-2 md:gap-3">
             {cards.map(card => (

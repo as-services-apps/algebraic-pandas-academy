@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Zap, Trophy, Clock, Target, Sparkles } from 'lucide-react';
+import { Zap, Trophy, Clock, Target, Sparkles } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { getUniqueQuestion, getUniqueQuestionAsync, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
-import { Subject, Question } from '@/types/game';
+import { Question } from '@/types/game';
+import GameTopicInput from './GameTopicInput';
 
 interface QuizBattleProps {
   onBack: () => void;
-  subject: Subject;
 }
 
 interface BattleQuestion {
@@ -17,37 +16,15 @@ interface BattleQuestion {
   options: string[];
 }
 
-const subjectEmojis: Record<Subject, string> = {
-  maths: '🔢',
-  science: '🔬',
-  english: '📚',
-  french: '🇫🇷',
-  it: '💻',
-  history: '🏛️',
-  geography: '🌍',
-  general: '💡',
-  quicklearn: '⚡',
-  custom: '✨',
-};
-
-const subjectNames: Record<Subject, string> = {
-  maths: 'Math',
-  science: 'Science',
-  english: 'English',
-  french: 'French',
-  it: 'IT',
-  history: 'History',
-  geography: 'Geography',
-  general: 'Trivia',
-  quicklearn: 'Quick Learn',
-  custom: 'Custom',
-};
-
-const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
+const QuizBattle: React.FC<QuizBattleProps> = ({ onBack }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
-  const isSoloMode = gameState.gameMode === 'solo';
   
+  const [showTopicInput, setShowTopicInput] = useState(true);
+  const [gameQuestions, setGameQuestions] = useState<Question[]>([]);
+  const [gameTopic, setGameTopic] = useState('');
+  const [questionIndex, setQuestionIndex] = useState(0);
+
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -59,8 +36,6 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
   const [showFeedback, setShowFeedback] = useState<'correct' | 'wrong' | null>(null);
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
   const [teamScores, setTeamScores] = useState<number[]>([0, 0]);
-  const [isAIGenerated, setIsAIGenerated] = useState(false);
-  const questionBufferRef = useRef<Question[]>([]);
 
   const convertToQuestion = (q: Question): BattleQuestion => ({
     question: q.question,
@@ -68,38 +43,14 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
     options: q.options,
   });
 
-  const generateQuestion = useCallback((): BattleQuestion => {
-    const q = getUniqueQuestion(subject, gameState.selectedYearGroup);
-    return convertToQuestion(q);
-  }, [subject, gameState.selectedYearGroup]);
-
-  const loadAIQuestions = useCallback(async () => {
-    try {
-      const q = await getUniqueQuestionAsync(subject, gameState.selectedYearGroup);
-      questionBufferRef.current.push(q);
-      setIsAIGenerated(true);
-    } catch (error) {
-      console.log('Using static questions as fallback');
-    }
-  }, [subject, gameState.selectedYearGroup]);
-
   const nextQuestion = useCallback(() => {
-    // Try to use buffered AI question first
-    if (questionBufferRef.current.length > 0) {
-      const aiQ = questionBufferRef.current.shift()!;
-      setCurrentQuestion(convertToQuestion(aiQ));
-      setIsAIGenerated(true);
-    } else {
-      setCurrentQuestion(generateQuestion());
-      setIsAIGenerated(false);
-    }
-    setShowFeedback(null);
+    if (gameQuestions.length === 0) return;
     
-    // Pre-load more AI questions in background
-    if (questionBufferRef.current.length < 3) {
-      loadAIQuestions();
-    }
-  }, [generateQuestion, loadAIQuestions]);
+    const q = gameQuestions[questionIndex % gameQuestions.length];
+    setCurrentQuestion(convertToQuestion(q));
+    setQuestionIndex(prev => prev + 1);
+    setShowFeedback(null);
+  }, [gameQuestions, questionIndex]);
 
   // Timer
   useEffect(() => {
@@ -152,9 +103,7 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
     }, 500);
   };
 
-  const startGame = async () => {
-    startNewQuestionSession(); // Clear question history for new game
-    questionBufferRef.current = [];
+  const startGame = () => {
     setIsStarted(true);
     setGameOver(false);
     setTimeLeft(60);
@@ -164,26 +113,53 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
     setQuestionsAnswered(0);
     setTeamScores([0, 0]);
     setCurrentTeamIndex(0);
+    setQuestionIndex(0);
     
-    // Pre-load AI questions
-    loadAIQuestions();
-    
-    // Start with a static question immediately for responsiveness
-    nextQuestion();
+    if (gameQuestions.length > 0) {
+      setCurrentQuestion(convertToQuestion(gameQuestions[0]));
+      setQuestionIndex(1);
+    }
   };
+
+  const handleStartGame = (questions: Question[], topic: string) => {
+    setGameQuestions(questions);
+    setGameTopic(topic);
+    setShowTopicInput(false);
+  };
+
+  const handleBackToTopic = () => {
+    setShowTopicInput(true);
+    setGameQuestions([]);
+    setGameTopic('');
+    setIsStarted(false);
+    setGameOver(false);
+    setCurrentQuestion(null);
+  };
+
+  if (showTopicInput) {
+    return (
+      <GameTopicInput
+        onStartGame={handleStartGame}
+        onBack={onBack}
+        gameTitle="Quiz Blitz ⚡"
+        gameIcon={<Zap className="w-5 h-5 text-primary" />}
+        questionCount={30}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 fade-in">
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={onBack}>
-            <ArrowLeft className="w-4 h-4" />
+          <Button variant="ghost" size="sm" onClick={handleBackToTopic}>
+            ← Back
           </Button>
           <div>
             <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
               <Zap className="w-5 h-5 text-primary" />
-              {subjectNames[subject]} Blitz {subjectEmojis[subject]}
-              {isAIGenerated && <Sparkles className="w-4 h-4 text-secondary" />}
+              Blitz: {gameTopic}
+              <Sparkles className="w-4 h-4 text-secondary" />
             </h2>
             <p className="text-xs text-muted-foreground">
               Answer as many as you can in 60 seconds!
@@ -232,7 +208,7 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
             <div className="text-6xl mb-4">⚡</div>
             <h3 className="text-2xl font-bold text-foreground mb-2">Quiz Blitz</h3>
             <p className="text-muted-foreground mb-6">
-              Answer as many {subjectNames[subject]} questions as you can in 60 seconds!
+              Answer as many questions about <span className="font-bold text-primary">{gameTopic}</span> as you can in 60 seconds!
             </p>
             <Button onClick={startGame} size="lg" className="gradient-primary text-white">
               <Zap className="w-5 h-5 mr-2" />
@@ -274,7 +250,10 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack, subject }) => {
               </div>
             )}
 
-            <Button onClick={startGame}>Play Again</Button>
+            <div className="flex gap-2 justify-center">
+              <Button onClick={startGame}>Play Again</Button>
+              <Button variant="outline" onClick={handleBackToTopic}>New Topic</Button>
+            </div>
           </div>
         ) : currentQuestion && (
           <div className="space-y-4">
