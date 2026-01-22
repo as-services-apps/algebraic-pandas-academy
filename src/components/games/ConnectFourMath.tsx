@@ -1,16 +1,17 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ArrowLeft, RotateCcw, Keyboard } from 'lucide-react';
+import { RotateCcw, Keyboard, Grid3X3, Sparkles } from 'lucide-react';
 import { useGame } from '@/context/GameContext';
-import { getUniqueQuestion, startNewQuestionSession } from '@/lib/questionPool';
 import confetti from '@/lib/confetti';
+import { Question } from '@/types/game';
+import GameTopicInput from './GameTopicInput';
 
 interface ConnectFourMathProps {
   onBack: () => void;
 }
 
-interface MathQuestion {
+interface GameQuestion {
   question: string;
   correctAnswer: string;
   options: string[];
@@ -22,28 +23,10 @@ type Board = Cell[][];
 const ROWS = 6;
 const COLS = 7;
 
-/* ---------------- QUESTION GENERATOR (uses session-based unique questions) ---------------- */
-const generateQuestion = (yearGroup: number): MathQuestion => {
-  const q = getUniqueQuestion('maths', yearGroup as any);
-
-  return { 
-    question: q.question, 
-    correctAnswer: q.options[q.correctAnswer], 
-    options: q.options 
-  };
-};
-
-
-/* ---------------- HELPER FUNCTIONS ---------------- */
 const createEmptyBoard = (): Board => Array.from({ length: ROWS }, () => Array(COLS).fill('empty'));
 
 const checkWinner = (board: Board, player: Cell): boolean => {
-  const dirs = [
-    [0, 1],
-    [1, 0],
-    [1, 1],
-    [-1, 1],
-  ];
+  const dirs = [[0, 1], [1, 0], [1, 1], [-1, 1]];
 
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
@@ -61,35 +44,32 @@ const checkWinner = (board: Board, player: Cell): boolean => {
       }
     }
   }
-
   return false;
 };
 
 const isBoardFull = (board: Board) => board[0].every(c => c !== 'empty');
 
-/* ---------------- AI ---------------- */
 const getAIMove = (board: Board): number => {
   const validCols = board[0].map((cell, idx) => cell === 'empty' ? idx : -1).filter(c => c !== -1);
   return validCols[Math.floor(Math.random() * validCols.length)];
 };
 
-/* ---------------- COMPONENT ---------------- */
 const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
   const { gameState, updateTeamScore } = useGame();
   const isTeamMode = gameState.gameMode === 'team' && gameState.teams.length >= 2;
   const isSoloMode = gameState.gameMode === 'solo';
 
-  const team1 = isTeamMode
-    ? gameState.teams[0]
-    : { id: '1', name: isSoloMode ? 'You' : 'Player 1', score: 0, color: 'team-1' };
+  const team1 = isTeamMode ? gameState.teams[0] : { id: '1', name: isSoloMode ? 'You' : 'Player 1', score: 0, color: 'team-1' };
+  const team2 = isTeamMode ? gameState.teams[1] : { id: '2', name: isSoloMode ? 'AI' : 'Player 2', score: 0, color: 'team-2' };
 
-  const team2 = isTeamMode
-    ? gameState.teams[1]
-    : { id: '2', name: isSoloMode ? 'AI' : 'Player 2', score: 0, color: 'team-2' };
+  const [showTopicInput, setShowTopicInput] = useState(true);
+  const [gameQuestions, setGameQuestions] = useState<Question[]>([]);
+  const [gameTopic, setGameTopic] = useState('');
+  const [questionIndex, setQuestionIndex] = useState(0);
 
   const [board, setBoard] = useState<Board>(createEmptyBoard());
   const [currentPlayer, setCurrentPlayer] = useState<'team1' | 'team2'>('team1');
-  const [currentQuestion, setCurrentQuestion] = useState<MathQuestion | null>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<GameQuestion | null>(null);
   const [selectedCol, setSelectedCol] = useState<number | null>(null);
   const [winner, setWinner] = useState<'team1' | 'team2' | 'draw' | null>(null);
   const [team1Score, setTeam1Score] = useState(0);
@@ -99,6 +79,21 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
   const [isAIThinking, setIsAIThinking] = useState(false);
   const [showFeedback, setShowFeedback] = useState<'correct' | 'wrong' | null>(null);
   const [lastCorrectAnswer, setLastCorrectAnswer] = useState<string>('');
+
+  const convertToGameQuestion = (q: Question): GameQuestion => ({
+    question: q.question,
+    correctAnswer: q.options[q.correctAnswer],
+    options: q.options,
+  });
+
+  const getNextQuestion = useCallback((): GameQuestion => {
+    if (gameQuestions.length === 0) {
+      return { question: 'Loading...', correctAnswer: '', options: [] };
+    }
+    const q = gameQuestions[questionIndex % gameQuestions.length];
+    setQuestionIndex(prev => prev + 1);
+    return convertToGameQuestion(q);
+  }, [gameQuestions, questionIndex]);
 
   const dropPiece = useCallback((col: number, player: Cell, board: Board) => {
     const newBoard = board.map(r => [...r]);
@@ -111,17 +106,16 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
     return null;
   }, []);
 
-  /* ---------- AI TURN ---------- */
+  // AI Turn
   useEffect(() => {
-    if (!isSoloMode || currentPlayer !== 'team2' || winner || currentQuestion || isAIThinking) return;
+    if (!isSoloMode || currentPlayer !== 'team2' || winner || currentQuestion || isAIThinking || showTopicInput) return;
 
     setIsAIThinking(true);
     const aiCol = getAIMove(board);
     setTimeout(() => {
       setSelectedCol(aiCol);
-      setCurrentQuestion(generateQuestion(gameState.selectedYearGroup));
+      setCurrentQuestion(getNextQuestion());
 
-      // Simulate AI answering correctly
       setTimeout(() => {
         const newBoard = dropPiece(aiCol, 'team2', board);
         if (newBoard) {
@@ -137,13 +131,13 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
         setIsAIThinking(false);
       }, 1000);
     }, 500);
-  }, [board, currentPlayer, winner, currentQuestion, isAIThinking, dropPiece, isSoloMode, gameState.selectedYearGroup]);
+  }, [board, currentPlayer, winner, currentQuestion, isAIThinking, dropPiece, isSoloMode, getNextQuestion, showTopicInput]);
 
   const handleColumnClick = (col: number) => {
     if (winner || currentQuestion || isAIThinking || board[0][col] !== 'empty') return;
     if (isSoloMode && currentPlayer === 'team2') return;
     setSelectedCol(col);
-    setCurrentQuestion(generateQuestion(gameState.selectedYearGroup));
+    setCurrentQuestion(getNextQuestion());
   };
 
   const handleAnswer = (selectedOption: string) => {
@@ -180,7 +174,6 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
   const handleTypedSubmit = () => {
     if (!currentQuestion || !typedAnswer.trim()) return;
     
-    // Normalize both answers for comparison
     const normalizeAnswer = (str: string) => str.toLowerCase().replace(/\s+/g, '').trim();
     const userAnswer = normalizeAnswer(typedAnswer);
     const correct = normalizeAnswer(currentQuestion.correctAnswer);
@@ -188,12 +181,11 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
     if (userAnswer === correct) {
       handleAnswer(currentQuestion.correctAnswer);
     } else {
-      handleAnswer(typedAnswer); // Will trigger wrong answer logic
+      handleAnswer(typedAnswer);
     }
   };
 
   const resetGame = () => {
-    startNewQuestionSession(); // Clear question history for new game
     setBoard(createEmptyBoard());
     setWinner(null);
     setCurrentPlayer('team1');
@@ -201,19 +193,49 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
     setSelectedCol(null);
     setTypedAnswer('');
     setIsAIThinking(false);
+    setQuestionIndex(0);
+  };
+
+  const handleStartGame = (questions: Question[], topic: string) => {
+    setGameQuestions(questions);
+    setGameTopic(topic);
+    setShowTopicInput(false);
+  };
+
+  const handleBackToTopic = () => {
+    setShowTopicInput(true);
+    setGameQuestions([]);
+    setGameTopic('');
+    resetGame();
   };
 
   const getCurrentTeamName = () => currentPlayer === 'team1' ? team1.name : team2.name;
   const isHumanTurn = !isSoloMode || currentPlayer === 'team1';
+
+  if (showTopicInput) {
+    return (
+      <GameTopicInput
+        onStartGame={handleStartGame}
+        onBack={onBack}
+        gameTitle="Connect Four 🔴🟡"
+        gameIcon={<Grid3X3 className="w-5 h-5 text-primary" />}
+        questionCount={25}
+      />
+    );
+  }
 
   return (
     <div className="space-y-4 fade-in">
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-2">
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={onBack}><ArrowLeft className="w-4 h-4" /></Button>
+          <Button variant="ghost" size="sm" onClick={handleBackToTopic}>← Back</Button>
           <div>
-            <h2 className="text-lg md:text-xl font-bold text-foreground">Connect Four Math 🔴🟡</h2>
+            <h2 className="text-lg md:text-xl font-bold text-foreground flex items-center gap-2">
+              <Grid3X3 className="w-5 h-5 text-primary" />
+              Connect Four: {gameTopic}
+              <Sparkles className="w-4 h-4 text-secondary" />
+            </h2>
             <p className="text-xs text-muted-foreground">{isSoloMode ? 'You vs AI' : isTeamMode ? 'Team vs Team' : 'Player vs Player'}</p>
           </div>
         </div>
@@ -226,7 +248,7 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
         </div>
       </div>
 
-      {/* Scores & Turn */}
+      {/* Turn Indicator */}
       {!winner && (
         <div className={`text-center p-2 rounded-lg ${currentPlayer === 'team1' ? 'bg-secondary' : 'bg-destructive'} text-white font-bold text-sm`}>
           {isAIThinking ? 'AI is thinking...' : `${getCurrentTeamName()}'s Turn!`}
@@ -265,7 +287,10 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
               {winner === 'team2' && `🎉 ${team2.name} Wins!`}
               {winner === 'draw' && "🤝 Draw!"}
             </div>
-            <Button onClick={resetGame} size="sm" className="mt-2">Play Again</Button>
+            <div className="flex gap-2 justify-center mt-2">
+              <Button onClick={resetGame} size="sm">Play Again</Button>
+              <Button variant="outline" size="sm" onClick={handleBackToTopic}>New Topic</Button>
+            </div>
           </div>
         )}
 
@@ -273,7 +298,6 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
         {currentQuestion && isHumanTurn && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 fade-in p-4">
             <div className="bg-card rounded-xl p-4 md:p-6 max-w-sm w-full panda-shadow scale-in">
-              {/* Feedback Display */}
               {showFeedback ? (
                 <div className={`text-center p-6 rounded-xl ${
                   showFeedback === 'correct' 
@@ -299,8 +323,8 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
               ) : (
                 <>
                   <h3 className="text-lg font-bold text-center mb-1 text-foreground">{getCurrentTeamName()}'s Question</h3>
-                  {isHardMode && <p className="text-xs text-center text-muted-foreground mb-2">Type the answer exactly (e.g., 50%, 3/4, x = 5)</p>}
-                  <div className="text-3xl font-bold text-center text-primary mb-4">{currentQuestion.question}</div>
+                  {isHardMode && <p className="text-xs text-center text-muted-foreground mb-2">Type the answer exactly</p>}
+                  <div className="text-2xl md:text-3xl font-bold text-center text-primary mb-4">{currentQuestion.question}</div>
                   {isHardMode ? (
                     <div className="space-y-3">
                       <Input
