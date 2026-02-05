@@ -1,20 +1,26 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/context/GameContext';
-import { User, Users, ArrowLeft } from 'lucide-react';
+import { User, Users, Gamepad2, ArrowLeft } from 'lucide-react';
 import pandaLogo from '@/assets/panda-logo.png';
 
 interface GameModeSelectionProps {
   onSelect: () => void;
+  onMultiplayer?: () => void;
   onBack?: () => void;
 }
 
-const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect, onBack }) => {
+const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect, onMultiplayer, onBack }) => {
   const { setGameMode, gameState } = useGame();
 
   const handleSelect = (mode: 'solo' | 'team') => {
     setGameMode(mode);
     onSelect();
+  };
+
+  const handleMultiplayer = () => {
+    setGameMode('multiplayer');
+    onMultiplayer?.();
   };
 
   return (
@@ -32,7 +38,7 @@ const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect, onBack 
       
       {/* Main content - fits in viewport */}
       <div className="h-screen flex flex-col items-center justify-center p-4 sm:p-6">
-        <div className="max-w-2xl w-full text-center">
+        <div className="max-w-3xl w-full text-center">
           {/* Header */}
           <div className="mb-4 sm:mb-6 bounce-in">
             <img 
@@ -52,7 +58,7 @@ const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect, onBack 
           </div>
 
           {/* Selection Cards */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4 md:gap-6">
             {/* Solo Card */}
             <button
               onClick={() => handleSelect('solo')}
@@ -82,16 +88,36 @@ const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect, onBack 
                 Compete for glory! 🏆
               </p>
             </button>
+
+            {/* Multiplayer Card */}
+            <button
+              onClick={handleMultiplayer}
+              className="group bg-card p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl panda-shadow hover:scale-105 transition-all duration-300 border-2 border-transparent hover:border-primary slide-up col-span-2 md:col-span-1"
+              style={{ animationDelay: '0.3s' }}
+            >
+              <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto mb-2 sm:mb-3 rounded-xl sm:rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <Gamepad2 className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" />
+              </div>
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-1">Live Quiz</h2>
+              <p className="text-muted-foreground text-xs sm:text-sm">
+                {gameState.userType === 'teacher' ? 'Host a class game! 🎯' : 'Join a live game! 🎮'}
+              </p>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Footer */}
       <footer className="py-4 sm:py-6 text-center border-t border-border">
-        <p className="text-muted-foreground text-xs sm:text-sm">
+        <a 
+          href="https://as-services.info" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-muted-foreground text-xs sm:text-sm hover:text-foreground transition-colors"
+        >
           Made by <span className="font-semibold text-foreground">Angad Singh</span> from{' '}
           <span className="font-semibold text-foreground">AS Services</span>
-        </p>
+        </a>
       </footer>
     </div>
   );
