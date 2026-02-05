@@ -157,28 +157,28 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
 
                     <button
                       onClick={() => setView('memory')}
-                      className="bg-gradient-to-br from-purple-500 to-pink-500 p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
+                      className="bg-gradient-to-br from-primary to-accent p-4 sm:p-5 rounded-xl sm:rounded-2xl text-primary-foreground text-left hover:scale-105 transition-transform panda-shadow group"
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Brain className="w-5 h-5 sm:w-6 sm:h-6" />
                         <span className="text-lg">🧠</span>
                       </div>
                       <h4 className="text-sm sm:text-base font-bold">Memory Match</h4>
-                      <p className="text-white/80 text-xs hidden sm:block">
+                      <p className="text-primary-foreground/80 text-xs hidden sm:block">
                         Match Q&A pairs!
                       </p>
                     </button>
 
                     <button
                       onClick={() => setView('blitz')}
-                      className="bg-gradient-to-br from-yellow-500 to-orange-500 p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-105 transition-transform panda-shadow group"
+                      className="bg-gradient-to-br from-accent to-secondary p-4 sm:p-5 rounded-xl sm:rounded-2xl text-accent-foreground text-left hover:scale-105 transition-transform panda-shadow group"
                     >
                       <div className="flex items-center gap-2 mb-1">
                         <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
                         <span className="text-lg">⚡</span>
                       </div>
                       <h4 className="text-sm sm:text-base font-bold">Quiz Blitz</h4>
-                      <p className="text-white/80 text-xs hidden sm:block">
+                      <p className="text-accent-foreground/80 text-xs hidden sm:block">
                         60 second challenge!
                       </p>
                     </button>
@@ -265,10 +265,15 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
       {/* Footer */}
       <footer className="mt-20 py-6 text-center border-t border-border">
         <div className="container mx-auto px-4">
-          <p className="text-muted-foreground text-sm">
+          <a 
+            href="https://as-services.info" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="text-muted-foreground text-sm hover:text-foreground transition-colors"
+          >
             <span className="text-[hsl(35,90%,65%)]">👋</span> Made by <span className="font-semibold text-foreground">Angad Singh</span> from{' '}
             <span className="font-semibold text-foreground">AS Services</span>
-          </p>
+          </a>
         </div>
       </footer>
     </div>

@@ -48,4 +48,5 @@ const confetti = () => {
   }
 };
 
+export const triggerConfetti = confetti;
 export default confetti;
