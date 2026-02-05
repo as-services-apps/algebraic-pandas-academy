@@ -39,10 +39,10 @@ const AISuggestions: React.FC = () => {
         <span>Have suggestions? Email us:</span>
       </div>
       <a 
-        href="mailto:as.services.ai@gmail.com" 
+        href="mailto:angad@as-services.info" 
         className="text-sm text-primary hover:underline font-medium mt-1 block"
       >
-        as.services.ai@gmail.com
+        angad@as-services.info
       </a>
     </div>
   );
