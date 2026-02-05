@@ -69,10 +69,15 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ onComplete }) => {
       
       {/* Footer */}
       <footer className="py-4 text-center">
-        <p className="text-white/70 text-xs sm:text-sm">
+        <a 
+          href="https://as-services.info" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-white/70 text-xs sm:text-sm hover:text-white transition-colors"
+        >
           Made by <span className="font-semibold text-white">Angad Singh</span> from{' '}
           <span className="font-semibold text-white">AS Services</span>
-        </p>
+        </a>
       </footer>
     </div>
   );
