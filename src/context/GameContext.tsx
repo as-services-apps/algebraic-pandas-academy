@@ -15,7 +15,6 @@ interface GameContextType {
   setHardMode: (isHard: boolean) => void;
   setCustomQuestions: (questions: Question[]) => void;
   setCustomTopic: (topic: string, context?: string) => void;
-  setMultiplayerSession: (sessionId: string, roomCode: string, isHost: boolean) => void;
   startGame: () => void;
   resetGame: () => void;
   nextRound: () => void;
@@ -96,16 +95,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setGameState(prev => ({ ...prev, customTopic: topic, customContext: context }));
   };
 
-  const setMultiplayerSession = (sessionId: string, roomCode: string, isHost: boolean) => {
-    setGameState(prev => ({ 
-      ...prev, 
-      sessionId, 
-      roomCode, 
-      isHost,
-      gameMode: 'multiplayer'
-    }));
-  };
-
   const startGame = () => {
     setGameState(prev => ({ ...prev, gameStarted: true }));
   };
@@ -134,7 +123,6 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setHardMode,
         setCustomQuestions,
         setCustomTopic,
-        setMultiplayerSession,
         startGame,
         resetGame,
         nextRound,
