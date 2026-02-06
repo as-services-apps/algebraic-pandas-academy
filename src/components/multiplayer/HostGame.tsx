@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, Play, Loader2, Sparkles } from 'lucide-react';
 import { useMultiplayer } from '@/hooks/useMultiplayer';
 import { useGame } from '@/context/GameContext';
@@ -15,13 +16,17 @@ interface HostGameProps {
   onBack: () => void;
 }
 
+const yearGroups: YearGroup[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+
 const HostGame: React.FC<HostGameProps> = ({ onCreated, onBack }) => {
   const [topic, setTopic] = useState('');
   const [context, setContext] = useState('');
   const [questionCount, setQuestionCount] = useState(10);
+  const [selectedYear, setSelectedYear] = useState<YearGroup>(7);
+  const [isHardMode, setIsHardMode] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { createSession, isLoading } = useMultiplayer();
-  const { gameState, setCustomQuestions } = useGame();
+  const { gameState, setCustomQuestions, setYearGroup, setHardMode, setMultiplayerSession } = useGame();
 
   const handleCreate = async () => {
     if (!topic.trim()) {
@@ -35,26 +40,32 @@ const HostGame: React.FC<HostGameProps> = ({ onCreated, onBack }) => {
       const questions = await generateAIQuestions(
         'custom',
         topic.trim(),
-        gameState.selectedYearGroup,
+        selectedYear,
         questionCount
       );
 
       if (questions.length === 0) {
         toast.error('Failed to generate questions. Please try again.');
+        setIsGenerating(false);
         return;
       }
+
+      // Update game context
+      setYearGroup(selectedYear);
+      setHardMode(isHardMode);
 
       // Create the session
       const result = await createSession(
         gameState.player?.name || 'Teacher',
         gameState.player?.school || 'School',
         topic.trim(),
-        gameState.selectedYearGroup,
+        selectedYear,
         questions
       );
 
       if (result) {
         setCustomQuestions(questions);
+        setMultiplayerSession(result.session.id, result.roomCode, true);
         onCreated();
       }
     } catch (error) {
@@ -75,13 +86,13 @@ const HostGame: React.FC<HostGameProps> = ({ onCreated, onBack }) => {
         <ArrowLeft className="w-5 h-5 text-foreground" />
       </button>
 
-      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 overflow-y-auto">
         <div className="max-w-md w-full">
           <div className="text-center mb-6 bounce-in">
             <img 
               src={pandaLogo} 
               alt="Panda Logo" 
-              className="w-24 h-24 mx-auto mb-3 float"
+              className="w-20 h-20 mx-auto mb-3 float"
             />
             <h1 className="text-2xl sm:text-3xl font-bold text-gradient mb-2">
               Host a Live Quiz
@@ -92,9 +103,10 @@ const HostGame: React.FC<HostGameProps> = ({ onCreated, onBack }) => {
           </div>
 
           <div className="bg-card rounded-2xl p-6 panda-shadow space-y-4 slide-up">
+            {/* Topic Input */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Quiz Topic
+                Quiz Topic *
               </label>
               <Input
                 value={topic}
@@ -104,6 +116,7 @@ const HostGame: React.FC<HostGameProps> = ({ onCreated, onBack }) => {
               />
             </div>
 
+            {/* Additional Context */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
                 Additional Context (Optional)
@@ -112,11 +125,48 @@ const HostGame: React.FC<HostGameProps> = ({ onCreated, onBack }) => {
                 value={context}
                 onChange={(e) => setContext(e.target.value)}
                 placeholder="Any specific areas to focus on..."
-                rows={3}
+                rows={2}
                 maxLength={500}
               />
             </div>
 
+            {/* Year Group Selection */}
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Year Group
+              </label>
+              <div className="grid grid-cols-6 gap-2">
+                {yearGroups.map((year) => (
+                  <button
+                    key={year}
+                    onClick={() => setSelectedYear(year)}
+                    className={`
+                      p-2 rounded-lg text-sm font-medium transition-all
+                      ${selectedYear === year
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }
+                    `}
+                  >
+                    {year}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Difficulty Toggle */}
+            <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+              <div>
+                <p className="font-medium text-foreground text-sm">Hard Mode</p>
+                <p className="text-xs text-muted-foreground">More challenging questions</p>
+              </div>
+              <Switch
+                checked={isHardMode}
+                onCheckedChange={setIsHardMode}
+              />
+            </div>
+
+            {/* Number of Questions */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
                 Number of Questions: {questionCount}
@@ -135,12 +185,10 @@ const HostGame: React.FC<HostGameProps> = ({ onCreated, onBack }) => {
               </div>
             </div>
 
-            <div className="bg-muted/50 rounded-lg p-3 text-sm">
-              <p className="text-muted-foreground">
-                <strong>Year Group:</strong> Year {gameState.selectedYearGroup}
-              </p>
-              <p className="text-muted-foreground">
-                <strong>Difficulty:</strong> {gameState.isHardMode ? 'Hard' : 'Normal'}
+            {/* Summary */}
+            <div className="bg-primary/10 rounded-lg p-3 text-sm border border-primary/20">
+              <p className="text-foreground">
+                <strong>Year {selectedYear}</strong> • {isHardMode ? 'Hard' : 'Normal'} difficulty • {questionCount} questions
               </p>
             </div>
 

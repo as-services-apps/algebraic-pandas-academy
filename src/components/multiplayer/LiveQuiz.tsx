@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useMultiplayer } from '@/hooks/useMultiplayer';
 import { Question } from '@/types/game';
-import { Check, X, Trophy, ArrowRight, Crown } from 'lucide-react';
+import { Check, X, Trophy, ArrowRight, Crown, Users, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { triggerConfetti } from '@/lib/confetti';
 
@@ -25,12 +25,18 @@ const LiveQuiz: React.FC<LiveQuizProps> = ({ isHost, onComplete }) => {
   const totalQuestions = session?.questions?.length || 0;
   const questionNumber = (session?.current_question || 0) + 1;
 
-  // Timer countdown
+  // Reset state when question changes
   useEffect(() => {
-    if (isFinished || showResults || hasAnswered) return;
-    
+    setSelectedAnswer(null);
+    setHasAnswered(false);
+    setShowResults(false);
     setTimeLeft(20);
     setStartTime(Date.now());
+  }, [session?.current_question]);
+
+  // Timer countdown (students only)
+  useEffect(() => {
+    if (isFinished || isHost) return;
     
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -46,14 +52,14 @@ const LiveQuiz: React.FC<LiveQuizProps> = ({ isHost, onComplete }) => {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [session?.current_question, isFinished]);
+  }, [session?.current_question, isFinished, isHost, hasAnswered]);
 
   const handleTimeUp = useCallback(() => {
     if (!hasAnswered && !isHost && currentQuestion) {
       submitAnswer(currentQuestion.id, -1, false, 20000);
       setHasAnswered(true);
+      setShowResults(true);
     }
-    setShowResults(true);
   }, [hasAnswered, isHost, currentQuestion, submitAnswer]);
 
   const handleAnswer = async (answerIndex: number) => {
@@ -75,9 +81,6 @@ const LiveQuiz: React.FC<LiveQuizProps> = ({ isHost, onComplete }) => {
   };
 
   const handleNext = async () => {
-    setSelectedAnswer(null);
-    setHasAnswered(false);
-    setShowResults(false);
     await nextQuestion();
   };
 
@@ -88,9 +91,24 @@ const LiveQuiz: React.FC<LiveQuizProps> = ({ isHost, onComplete }) => {
     }
   }, [isFinished]);
 
+  // Calculate answer stats for host
+  const getAnswerStats = () => {
+    if (!currentQuestion) return { answered: 0, correct: 0 };
+    const answered = players.filter(p => {
+      const answers = p.answers || [];
+      return answers.some(a => a.questionId === currentQuestion.id);
+    }).length;
+    const correct = players.filter(p => {
+      const answers = p.answers || [];
+      return answers.some(a => a.questionId === currentQuestion.id && a.correct);
+    }).length;
+    return { answered, correct };
+  };
+
+  const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
+
   // Game finished screen
   if (isFinished) {
-    const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
     const topThree = sortedPlayers.slice(0, 3);
     const myPlayer = players.find(p => p.id === myPlayerId);
     const myRank = sortedPlayers.findIndex(p => p.id === myPlayerId) + 1;
@@ -145,8 +163,23 @@ const LiveQuiz: React.FC<LiveQuizProps> = ({ isHost, onComplete }) => {
             )}
           </div>
 
-          {/* My Score */}
-          {myPlayer && (
+          {/* Full Leaderboard for Host */}
+          {isHost && sortedPlayers.length > 3 && (
+            <div className="bg-card rounded-xl p-4 panda-shadow mb-6 max-h-40 overflow-y-auto">
+              {sortedPlayers.slice(3).map((player, idx) => (
+                <div key={player.id} className="flex justify-between items-center py-2 border-b border-border last:border-0">
+                  <span className="text-sm text-foreground">
+                    <span className="font-bold text-muted-foreground mr-2">{idx + 4}.</span>
+                    {player.player_name}
+                  </span>
+                  <span className="text-sm font-medium text-primary">{player.score} pts</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* My Score (Students) */}
+          {!isHost && myPlayer && (
             <div className="bg-card rounded-xl p-4 panda-shadow mb-6">
               <p className="text-muted-foreground text-sm">Your Result</p>
               <p className="text-2xl font-bold text-foreground">
@@ -163,6 +196,120 @@ const LiveQuiz: React.FC<LiveQuizProps> = ({ isHost, onComplete }) => {
     );
   }
 
+  // TEACHER VIEW: Scoreboard Only
+  if (isHost) {
+    const stats = getAnswerStats();
+    
+    return (
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Header */}
+        <header className="bg-card border-b border-border p-4">
+          <div className="container mx-auto flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Question {questionNumber}/{totalQuestions}</p>
+              <p className="font-bold text-foreground text-lg">{session?.topic}</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Answered</p>
+                <p className="text-xl font-bold text-primary">{stats.answered}/{players.length}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-muted-foreground">Correct</p>
+                <p className="text-xl font-bold text-success">{stats.correct}</p>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Current Question Display */}
+        <div className="bg-primary/5 border-b border-primary/20 p-4">
+          <div className="container mx-auto">
+            <p className="text-center text-lg font-medium text-foreground">
+              {currentQuestion?.question}
+            </p>
+          </div>
+        </div>
+
+        {/* Live Leaderboard */}
+        <main className="flex-1 container mx-auto p-4 overflow-y-auto">
+          <div className="max-w-2xl mx-auto">
+            <div className="flex items-center gap-2 mb-4">
+              <Trophy className="w-5 h-5 text-accent" />
+              <h2 className="font-bold text-foreground">Live Leaderboard</h2>
+              <span className="text-muted-foreground text-sm">({players.length} players)</span>
+            </div>
+
+            <div className="space-y-2">
+              {sortedPlayers.map((player, idx) => {
+                const hasAnsweredCurrent = (player.answers || []).some(
+                  a => a.questionId === currentQuestion?.id
+                );
+                const answeredCorrect = (player.answers || []).some(
+                  a => a.questionId === currentQuestion?.id && a.correct
+                );
+
+                return (
+                  <div
+                    key={player.id}
+                    className={cn(
+                      "flex items-center justify-between p-4 rounded-xl transition-all",
+                      idx === 0 ? "bg-accent/20 border-2 border-accent" :
+                      idx === 1 ? "bg-muted border border-border" :
+                      idx === 2 ? "bg-secondary/50 border border-border" :
+                      "bg-card border border-border"
+                    )}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className={cn(
+                        "w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm",
+                        idx === 0 ? "bg-accent text-accent-foreground" :
+                        idx === 1 ? "bg-foreground text-background" :
+                        idx === 2 ? "bg-secondary text-secondary-foreground" :
+                        "bg-muted text-muted-foreground"
+                      )}>
+                        {idx + 1}
+                      </span>
+                      <div>
+                        <p className="font-medium text-foreground">{player.player_name}</p>
+                        <div className="flex items-center gap-1">
+                          {hasAnsweredCurrent ? (
+                            answeredCorrect ? (
+                              <Check className="w-3 h-3 text-success" />
+                            ) : (
+                              <X className="w-3 h-3 text-destructive" />
+                            )
+                          ) : (
+                            <Clock className="w-3 h-3 text-muted-foreground animate-pulse" />
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {hasAnsweredCurrent ? 'Answered' : 'Waiting...'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-xl font-bold text-primary">{player.score}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </main>
+
+        {/* Next Question Button */}
+        <footer className="bg-card border-t border-border p-4">
+          <div className="container mx-auto text-center">
+            <Button onClick={handleNext} size="lg" className="font-bold px-8">
+              <ArrowRight className="w-5 h-5 mr-2" />
+              {questionNumber >= totalQuestions ? 'Finish Game' : 'Next Question'}
+            </Button>
+          </div>
+        </footer>
+      </div>
+    );
+  }
+
+  // STUDENT VIEW: Questions Only
   if (!currentQuestion) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -183,7 +330,12 @@ const LiveQuiz: React.FC<LiveQuizProps> = ({ isHost, onComplete }) => {
             <p className="font-bold text-foreground">{session?.topic}</p>
           </div>
           <div className="text-right">
-            <p className="text-2xl font-bold text-primary">{timeLeft}s</p>
+            <p className={cn(
+              "text-3xl font-bold",
+              timeLeft <= 5 ? "text-destructive animate-pulse" : "text-primary"
+            )}>
+              {timeLeft}s
+            </p>
             <Progress value={(timeLeft / 20) * 100} className="w-24 h-2" />
           </div>
         </div>
@@ -202,27 +354,34 @@ const LiveQuiz: React.FC<LiveQuizProps> = ({ isHost, onComplete }) => {
           {currentQuestion.options.map((option, index) => {
             const isSelected = selectedAnswer === index;
             const isCorrect = index === currentQuestion.correctAnswer;
-            const showCorrectness = showResults || hasAnswered;
+            const showCorrectness = showResults;
 
             return (
               <button
                 key={index}
                 onClick={() => handleAnswer(index)}
-                disabled={hasAnswered || isHost}
+                disabled={hasAnswered}
                 className={cn(
                   "relative p-4 sm:p-6 rounded-xl font-medium text-left transition-all min-h-[80px]",
                   "border-2 text-foreground",
-                  !showCorrectness && "bg-card hover:bg-muted/50 border-border hover:border-primary",
+                  !showCorrectness && !hasAnswered && "bg-card hover:bg-muted/50 border-border hover:border-primary hover:scale-[1.02] active:scale-[0.98]",
+                  !showCorrectness && hasAnswered && isSelected && "bg-primary/20 border-primary",
+                  !showCorrectness && hasAnswered && !isSelected && "opacity-50 bg-card border-border",
                   showCorrectness && isCorrect && "bg-success/20 border-success",
                   showCorrectness && isSelected && !isCorrect && "bg-destructive/20 border-destructive",
-                  hasAnswered && !isSelected && !isCorrect && "opacity-50"
+                  showCorrectness && !isSelected && !isCorrect && "opacity-50"
                 )}
               >
                 <span className="flex items-center gap-3">
-                  <span className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-sm font-bold shrink-0">
+                  <span className={cn(
+                    "w-10 h-10 rounded-full flex items-center justify-center text-sm font-bold shrink-0",
+                    showCorrectness && isCorrect ? "bg-success text-success-foreground" :
+                    showCorrectness && isSelected && !isCorrect ? "bg-destructive text-destructive-foreground" :
+                    "bg-muted"
+                  )}>
                     {String.fromCharCode(65 + index)}
                   </span>
-                  <span className="flex-1 break-words">{option}</span>
+                  <span className="flex-1 break-words text-lg">{option}</span>
                   {showCorrectness && isCorrect && (
                     <Check className="w-6 h-6 text-success shrink-0" />
                   )}
@@ -235,38 +394,31 @@ const LiveQuiz: React.FC<LiveQuizProps> = ({ isHost, onComplete }) => {
           })}
         </div>
 
-        {/* Host Controls */}
-        {isHost && showResults && (
+        {/* Waiting message */}
+        {hasAnswered && !isFinished && (
           <div className="mt-6 text-center">
-            <Button onClick={handleNext} size="lg" className="font-bold">
-              <ArrowRight className="w-5 h-5 mr-2" />
-              Next Question
-            </Button>
-          </div>
-        )}
-
-        {/* Waiting message for students */}
-        {!isHost && hasAnswered && !isFinished && (
-          <div className="mt-4 text-center">
-            <p className="text-muted-foreground animate-pulse">
-              Waiting for next question...
-            </p>
+            <div className="inline-flex items-center gap-2 bg-muted rounded-full px-4 py-2">
+              <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+              <p className="text-muted-foreground text-sm">
+                Waiting for teacher to show next question...
+              </p>
+            </div>
           </div>
         )}
       </main>
 
-      {/* Live Leaderboard (Compact) */}
+      {/* Score Display */}
       <footer className="bg-card border-t border-border p-3">
-        <div className="container mx-auto">
-          <div className="flex items-center gap-4 overflow-x-auto">
-            <span className="text-xs text-muted-foreground shrink-0">🏆 Top:</span>
-            {[...players].sort((a, b) => b.score - a.score).slice(0, 5).map((player, idx) => (
-              <div key={player.id} className="flex items-center gap-1 shrink-0">
-                <span className="text-xs font-bold text-primary">{idx + 1}.</span>
-                <span className="text-xs text-foreground truncate max-w-[80px]">{player.player_name}</span>
-                <span className="text-xs text-muted-foreground">({player.score})</span>
-              </div>
-            ))}
+        <div className="container mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm text-muted-foreground">{players.length} playing</span>
+          </div>
+          <div className="text-right">
+            <span className="text-xs text-muted-foreground">Your Score</span>
+            <p className="font-bold text-primary">
+              {players.find(p => p.id === myPlayerId)?.score || 0} pts
+            </p>
           </div>
         </div>
       </footer>
