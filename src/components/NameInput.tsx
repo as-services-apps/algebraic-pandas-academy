@@ -171,10 +171,15 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
 
       {/* Footer */}
       <footer className="py-4 sm:py-6 text-center border-t border-border">
-        <p className="text-muted-foreground text-xs sm:text-sm">
+        <a 
+          href="https://as-services.info" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          className="text-muted-foreground text-xs sm:text-sm hover:text-foreground transition-colors"
+        >
           Made by <span className="font-semibold text-foreground">Angad Singh</span> from{' '}
           <span className="font-semibold text-foreground">AS Services</span>
-        </p>
+        </a>
       </footer>
     </div>
   );
