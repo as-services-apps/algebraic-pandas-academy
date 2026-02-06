@@ -13,24 +13,24 @@ interface JoinGameProps {
 
 const JoinGame: React.FC<JoinGameProps> = ({ onJoined, onBack }) => {
   const [roomCode, setRoomCode] = useState('');
-  const [name, setName] = useState('');
-  const [school, setSchool] = useState('');
+  const [nickname, setNickname] = useState('');
   const { joinSession, isLoading } = useMultiplayer();
-  const { setPlayer, setGameMode } = useGame();
+  const { setPlayer, setGameMode, setMultiplayerSession } = useGame();
 
   const handleJoin = async () => {
-    if (!roomCode.trim() || !name.trim() || !school.trim()) return;
+    if (!roomCode.trim() || !nickname.trim()) return;
 
-    const result = await joinSession(roomCode.trim(), name.trim(), school.trim());
+    const result = await joinSession(roomCode.trim(), nickname.trim(), 'Student');
     if (result) {
       setPlayer({
         id: result.playerId,
-        name: name.trim(),
-        school: school.trim(),
+        name: nickname.trim(),
+        school: 'Student',
         type: 'student',
         score: 0
       });
       setGameMode('multiplayer');
+      setMultiplayerSession(result.session.id, result.session.room_code, false);
       onJoined();
     }
   };
@@ -38,6 +38,12 @@ const JoinGame: React.FC<JoinGameProps> = ({ onJoined, onBack }) => {
   const handleCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
     setRoomCode(value);
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && roomCode.length === 6 && nickname.trim()) {
+      handleJoin();
+    }
   };
 
   return (
@@ -62,11 +68,12 @@ const JoinGame: React.FC<JoinGameProps> = ({ onJoined, onBack }) => {
               Join a Game
             </h1>
             <p className="text-muted-foreground text-sm">
-              Enter the room code from your teacher
+              Enter the code from your teacher
             </p>
           </div>
 
-          <div className="bg-card rounded-2xl p-6 panda-shadow space-y-4 slide-up">
+          <div className="bg-card rounded-2xl p-6 panda-shadow space-y-5 slide-up">
+            {/* Room Code */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
                 Room Code
@@ -74,40 +81,36 @@ const JoinGame: React.FC<JoinGameProps> = ({ onJoined, onBack }) => {
               <Input
                 value={roomCode}
                 onChange={handleCodeChange}
-                placeholder="Enter 6-letter code"
-                className="text-center text-2xl font-bold tracking-widest uppercase h-14"
+                onKeyPress={handleKeyPress}
+                placeholder="ABCD12"
+                className="text-center text-3xl font-bold tracking-[0.3em] uppercase h-16"
                 maxLength={6}
+                autoFocus
               />
             </div>
 
+            {/* Nickname */}
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Your Name
+                Your Nickname
               </label>
               <Input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter your name"
-                maxLength={30}
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="e.g. SuperPanda123"
+                maxLength={20}
+                className="text-lg h-12"
               />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                School
-              </label>
-              <Input
-                value={school}
-                onChange={(e) => setSchool(e.target.value)}
-                placeholder="Enter your school"
-                maxLength={50}
-              />
+              <p className="text-xs text-muted-foreground mt-1">
+                This will be shown on the leaderboard
+              </p>
             </div>
 
             <Button
               onClick={handleJoin}
-              disabled={roomCode.length !== 6 || !name.trim() || !school.trim() || isLoading}
-              className="w-full h-12 text-lg font-bold"
+              disabled={roomCode.length !== 6 || !nickname.trim() || isLoading}
+              className="w-full h-14 text-lg font-bold"
             >
               {isLoading ? (
                 <>
