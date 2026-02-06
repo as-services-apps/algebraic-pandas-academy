@@ -22,7 +22,7 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
   const [questionCount, setQuestionCount] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showResult, setShowResult] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(gameState.isHardMode ? 30 : 20);
+  const [timeLeft, setTimeLeft] = useState(20);
   const [currentTeamIndex, setCurrentTeamIndex] = useState(0);
   const [gameComplete, setGameComplete] = useState(false);
   const [correctCount, setCorrectCount] = useState(0);
@@ -79,9 +79,6 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
       setIsAnswerLocked(true);
       setShowResult(true);
       setTimeRanOut(true);
-      if (gameState.isHardMode) {
-        setIsTypedCorrect(false);
-      }
     }
   };
 
@@ -169,7 +166,7 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
     setQuestionCount(nextQuestionNumber);
     setSelectedAnswer(null);
     setShowResult(false);
-    setTimeLeft(gameState.isHardMode ? 30 : 20);
+    setTimeLeft(20);
     setIsAnswerLocked(false);
     setTypedAnswer('');
     setIsTypedCorrect(null);
@@ -402,10 +399,9 @@ const GamePlay: React.FC<GamePlayProps> = ({ topic, onComplete, customQuestions 
                     {showResult && isSelected && !isCorrect && <X className="w-5 h-5 shrink-0" />}
                   </div>
                 </button>
-              );
-            })}
-          </div>
-        )}
+            );
+          })}
+        </div>
 
         {/* Result & Next Button - inside card */}
         {showResult && (

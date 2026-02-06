@@ -3,11 +3,10 @@ import { Bot, Mail, Lightbulb, Sparkles } from 'lucide-react';
 
 const AISuggestions: React.FC = () => {
   const suggestions = [
-    "Try practising times tables in Year 3-4 for speed improvement!",
-    "Mixing subjects helps build connections between topics.",
-    "Challenge yourself with Hard Mode once you feel confident.",
-    "Interactive games like Math Racing make learning more fun!",
-    "Practice 10-15 minutes daily for the best results.",
+    'Try practising times tables in Year 3-4 for speed improvement!',
+    'Mixing subjects helps build connections between topics.',
+    'Interactive games like Math Racing make learning more fun!',
+    'Practice 10-15 minutes daily for the best results.',
   ];
 
   const randomSuggestion = suggestions[Math.floor(Math.random() * suggestions.length)];
@@ -38,8 +37,8 @@ const AISuggestions: React.FC = () => {
         <Mail className="w-3 h-3" />
         <span>Have suggestions? Email us:</span>
       </div>
-      <a 
-        href="mailto:angad@as-services.info" 
+      <a
+        href="mailto:angad@as-services.info"
         className="text-sm text-primary hover:underline font-medium mt-1 block"
       >
         angad@as-services.info

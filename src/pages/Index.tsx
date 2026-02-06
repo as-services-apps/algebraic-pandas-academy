@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { GameProvider } from '@/context/GameContext';
+import { MultiplayerProvider } from '@/hooks/useMultiplayer';
 import LoadingScreen from '@/components/LoadingScreen';
 import UserTypeSelection from '@/components/UserTypeSelection';
 import GameModeSelection from '@/components/GameModeSelection';
@@ -13,7 +14,17 @@ import LiveQuiz from '@/components/multiplayer/LiveQuiz';
 import { useGame } from '@/context/GameContext';
 import { useMultiplayer } from '@/hooks/useMultiplayer';
 
-type AppStep = 'loading' | 'userType' | 'gameMode' | 'name' | 'teamSetup' | 'dashboard' | 'joinGame' | 'hostGame' | 'waitingRoom' | 'liveQuiz';
+type AppStep =
+  | 'loading'
+  | 'userType'
+  | 'gameMode'
+  | 'name'
+  | 'teamSetup'
+  | 'dashboard'
+  | 'joinGame'
+  | 'hostGame'
+  | 'waitingRoom'
+  | 'liveQuiz';
 
 const GameApp: React.FC = () => {
   const [step, setStep] = useState<AppStep>('loading');
@@ -34,10 +45,8 @@ const GameApp: React.FC = () => {
 
   const handleMultiplayerSelect = () => {
     if (gameState.userType === 'teacher') {
-      // Teachers go to name input first, then host
       setStep('name');
     } else {
-      // Students go directly to join
       setStep('joinGame');
     }
   };
@@ -78,42 +87,25 @@ const GameApp: React.FC = () => {
       {step === 'loading' && <LoadingScreen onComplete={() => setStep('userType')} />}
       {step === 'userType' && <UserTypeSelection onSelect={() => setStep('gameMode')} />}
       {step === 'gameMode' && (
-        <GameModeSelection 
-          onSelect={handleModeSelect} 
+        <GameModeSelection
+          onSelect={handleModeSelect}
           onMultiplayer={handleMultiplayerSelect}
-          onBack={() => setStep('userType')} 
+          onBack={() => setStep('userType')}
         />
       )}
       {step === 'name' && <NameInput onComplete={handleNameComplete} onBack={() => setStep('gameMode')} />}
-      {step === 'teamSetup' && <TeamSetup onComplete={() => setStep('dashboard')} onBack={() => setStep('name')} />}
+      {step === 'teamSetup' && (
+        <TeamSetup onComplete={() => setStep('dashboard')} onBack={() => setStep('name')} />
+      )}
       {step === 'dashboard' && <GameDashboard onReset={handleReset} />}
-      
+
       {/* Multiplayer Steps */}
-      {step === 'joinGame' && (
-        <JoinGame 
-          onJoined={handleGameJoined} 
-          onBack={() => setStep('gameMode')} 
-        />
-      )}
-      {step === 'hostGame' && (
-        <HostGame 
-          onCreated={handleGameCreated} 
-          onBack={() => setStep('gameMode')} 
-        />
-      )}
+      {step === 'joinGame' && <JoinGame onJoined={handleGameJoined} onBack={() => setStep('gameMode')} />}
+      {step === 'hostGame' && <HostGame onCreated={handleGameCreated} onBack={() => setStep('gameMode')} />}
       {step === 'waitingRoom' && (
-        <WaitingRoom 
-          isHost={isHost} 
-          onGameStart={handleGameStart}
-          onBack={handleReset}
-        />
+        <WaitingRoom isHost={isHost} onGameStart={handleGameStart} onBack={handleReset} />
       )}
-      {step === 'liveQuiz' && (
-        <LiveQuiz 
-          isHost={isHost} 
-          onComplete={handleLiveQuizComplete}
-        />
-      )}
+      {step === 'liveQuiz' && <LiveQuiz isHost={isHost} onComplete={handleLiveQuizComplete} />}
     </>
   );
 };
@@ -121,7 +113,9 @@ const GameApp: React.FC = () => {
 const Index: React.FC = () => {
   return (
     <GameProvider>
-      <GameApp />
+      <MultiplayerProvider>
+        <GameApp />
+      </MultiplayerProvider>
     </GameProvider>
   );
 };

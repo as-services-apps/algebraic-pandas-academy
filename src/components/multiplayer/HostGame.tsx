@@ -23,10 +23,9 @@ const HostGame: React.FC<HostGameProps> = ({ onCreated, onBack }) => {
   const [context, setContext] = useState('');
   const [questionCount, setQuestionCount] = useState(10);
   const [selectedYear, setSelectedYear] = useState<YearGroup>(7);
-  const [isHardMode, setIsHardMode] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const { createSession, isLoading } = useMultiplayer();
-  const { gameState, setCustomQuestions, setYearGroup, setHardMode, setMultiplayerSession } = useGame();
+  const { gameState, setCustomQuestions, setYearGroup, setMultiplayerSession } = useGame();
 
   const handleCreate = async () => {
     if (!topic.trim()) {
@@ -52,7 +51,6 @@ const HostGame: React.FC<HostGameProps> = ({ onCreated, onBack }) => {
 
       // Update game context
       setYearGroup(selectedYear);
-      setHardMode(isHardMode);
 
       // Create the session
       const result = await createSession(
