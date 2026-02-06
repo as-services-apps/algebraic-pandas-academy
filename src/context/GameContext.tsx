@@ -12,9 +12,9 @@ interface GameContextType {
   setYearGroup: (year: YearGroup) => void;
   setSubject: (subject: Subject) => void;
   setAIOpponent: (isAI: boolean) => void;
+  setHardMode: (isHard: boolean) => void;
   setCustomQuestions: (questions: Question[]) => void;
   setCustomTopic: (topic: string, context?: string) => void;
-  setMultiplayerSession: (sessionId: string, roomCode: string, isHost: boolean) => void;
   startGame: () => void;
   resetGame: () => void;
   nextRound: () => void;
@@ -30,6 +30,7 @@ const initialState: GameState = {
   selectedSubject: 'maths',
   isAIOpponent: false,
   gameStarted: false,
+  isHardMode: false,
   customQuestions: [],
 };
 
@@ -82,22 +83,16 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setGameState(prev => ({ ...prev, selectedSubject: subject }));
   };
 
+  const setHardMode = (isHard: boolean) => {
+    setGameState(prev => ({ ...prev, isHardMode: isHard }));
+  };
+
   const setCustomQuestions = (questions: Question[]) => {
     setGameState(prev => ({ ...prev, customQuestions: questions }));
   };
 
   const setCustomTopic = (topic: string, context?: string) => {
     setGameState(prev => ({ ...prev, customTopic: topic, customContext: context }));
-  };
-
-  const setMultiplayerSession = (sessionId: string, roomCode: string, isHost: boolean) => {
-    setGameState(prev => ({
-      ...prev,
-      sessionId,
-      roomCode,
-      isHost,
-      gameMode: 'multiplayer',
-    }));
   };
 
   const startGame = () => {
@@ -125,9 +120,9 @@ export const GameProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setYearGroup,
         setSubject,
         setAIOpponent,
+        setHardMode,
         setCustomQuestions,
         setCustomTopic,
-        setMultiplayerSession,
         startGame,
         resetGame,
         nextRound,

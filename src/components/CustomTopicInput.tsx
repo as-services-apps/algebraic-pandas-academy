@@ -4,7 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useGame } from '@/context/GameContext';
 import { YearGroup, Question } from '@/types/game';
-import { Sparkles, Loader2, BookOpen } from 'lucide-react';
+import { Zap, Sparkles, Loader2, BookOpen } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
@@ -22,7 +22,7 @@ const exampleTopics = [
 ];
 
 const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz }) => {
-  const { gameState, setYearGroup, setCustomTopic } = useGame();
+  const { gameState, setYearGroup, setHardMode, setCustomTopic } = useGame();
   const [topic, setTopic] = useState('');
   const [extraContext, setExtraContext] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -40,7 +40,7 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz }) => {
     }
 
     setIsLoading(true);
-
+    
     try {
       const { data, error } = await supabase.functions.invoke('generate-questions', {
         body: {
@@ -51,8 +51,13 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz }) => {
         },
       });
 
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      if (error) {
+        throw error;
+      }
+
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       const questions: Question[] = (data.questions || []).map((q: any, index: number) => ({
         id: `custom-${Date.now()}-${index}`,
@@ -70,8 +75,9 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz }) => {
         throw new Error('No questions were generated. Try a different topic.');
       }
 
+      // Store custom topic in game state
       setCustomTopic(topic.trim(), extraContext.trim() || undefined);
-
+      
       toast({
         title: 'Quiz Ready! 🎉',
         description: `Generated ${questions.length} questions about "${topic}"`,
@@ -82,10 +88,7 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz }) => {
       console.error('Failed to generate questions:', error);
       toast({
         title: 'Generation Failed',
-        description:
-          error instanceof Error
-            ? error.message
-            : 'Failed to generate questions. Please try again.',
+        description: error instanceof Error ? error.message : 'Failed to generate questions. Please try again.',
         variant: 'destructive',
       });
     } finally {
@@ -103,9 +106,12 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz }) => {
       <div className="bg-card rounded-xl sm:rounded-2xl p-4 sm:p-6 panda-shadow space-y-4">
         <div className="flex items-center gap-2 mb-2">
           <Sparkles className="w-5 h-5 text-secondary" />
-          <h3 className="font-bold text-foreground text-base sm:text-lg">AI-Powered Quiz on Any Topic!</h3>
+          <h3 className="font-bold text-foreground text-base sm:text-lg">
+            AI-Powered Quiz on Any Topic!
+          </h3>
         </div>
 
+        {/* Topic Input */}
         <div className="space-y-2">
           <label className="text-sm font-medium text-foreground flex items-center gap-2">
             <BookOpen className="w-4 h-4" />
@@ -121,8 +127,11 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz }) => {
           />
         </div>
 
+        {/* Extra Context */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-muted-foreground">Any specific focus? (optional)</label>
+          <label className="text-sm font-medium text-muted-foreground">
+            Any specific focus? (optional)
+          </label>
           <Textarea
             placeholder="e.g., his six wives, causes of the war, key dates, solving by factoring..."
             value={extraContext}
@@ -132,6 +141,7 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz }) => {
           />
         </div>
 
+        {/* Example Topics */}
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">💡 Try these examples:</p>
           <div className="flex flex-wrap gap-2">
@@ -149,6 +159,7 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz }) => {
         </div>
       </div>
 
+      {/* Year Group Selector */}
       <div className="bg-card rounded-xl sm:rounded-2xl p-3 sm:p-4 panda-shadow">
         <h3 className="font-bold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Select Year Group</h3>
         <div className="grid grid-cols-6 sm:flex sm:flex-wrap gap-1.5 sm:gap-2">
@@ -169,6 +180,38 @@ const CustomTopicInput: React.FC<CustomTopicInputProps> = ({ onStartQuiz }) => {
         </div>
       </div>
 
+      {/* Hard Mode Toggle */}
+      <div className="bg-card rounded-xl sm:rounded-2xl p-3 sm:p-4 panda-shadow">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Zap className={`w-4 h-4 sm:w-5 sm:h-5 ${gameState.isHardMode ? 'text-destructive' : 'text-muted-foreground'}`} />
+            <div>
+              <h3 className="font-bold text-foreground text-sm sm:text-base">Hard Mode</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Type your answers!</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setHardMode(!gameState.isHardMode)}
+            disabled={isLoading}
+            className={`relative w-12 h-6 sm:w-14 sm:h-8 rounded-full transition-colors duration-200 ${
+              gameState.isHardMode ? 'bg-destructive' : 'bg-muted'
+            }`}
+          >
+            <div
+              className={`absolute top-0.5 sm:top-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white shadow transition-transform duration-200 ${
+                gameState.isHardMode ? 'translate-x-6 sm:translate-x-7' : 'translate-x-0.5 sm:translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+        {gameState.isHardMode && (
+          <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-destructive/10 rounded-lg sm:rounded-xl text-xs sm:text-sm text-destructive">
+            <strong>⚠️ Hard Mode:</strong> Type your answer exactly!
+          </div>
+        )}
+      </div>
+
+      {/* Generate Button */}
       <Button
         onClick={handleGenerateQuiz}
         disabled={isLoading || !topic.trim()}

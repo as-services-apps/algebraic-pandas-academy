@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { GameTopic, YearGroup } from '@/types/game';
 import { gameTopics } from '@/data/questions';
 import { useGame } from '@/context/GameContext';
-import { ChevronRight, ArrowLeft } from 'lucide-react';
+import { ChevronRight, Zap, ArrowLeft } from 'lucide-react';
 import { getSubjectTopics } from '@/lib/subjectQuestionGenerator';
 
 interface TopicSelectorProps {
@@ -12,24 +12,29 @@ interface TopicSelectorProps {
 }
 
 const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic, onBack }) => {
-  const { gameState, setYearGroup } = useGame();
+  const { gameState, setYearGroup, setHardMode } = useGame();
 
   const yearGroups: YearGroup[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
 
+  // Get topics based on selected subject
   const getTopicsForSubject = () => {
     if (gameState.selectedSubject === 'maths') {
-      return gameTopics.filter((topic) => topic.yearGroups.includes(gameState.selectedYearGroup));
+      // Use existing maths topics
+      return gameTopics.filter(topic => 
+        topic.yearGroups.includes(gameState.selectedYearGroup)
+      );
+    } else {
+      // Use subject-specific topics
+      const subjectTopics = getSubjectTopics(gameState.selectedSubject);
+      return subjectTopics.map(t => ({
+        id: t.id,
+        name: t.name,
+        icon: t.icon,
+        description: t.description,
+        yearGroups: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as YearGroup[],
+        color: 'primary',
+      }));
     }
-
-    const subjectTopics = getSubjectTopics(gameState.selectedSubject);
-    return subjectTopics.map((t) => ({
-      id: t.id,
-      name: t.name,
-      icon: t.icon,
-      description: t.description,
-      yearGroups: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] as YearGroup[],
-      color: 'primary',
-    }));
   };
 
   const filteredTopics = getTopicsForSubject();
@@ -45,6 +50,7 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic, onBack }) 
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Back to Subject Selection */}
       {onBack && (
         <Button variant="ghost" onClick={onBack} className="mb-2" size="sm">
           <ArrowLeft className="w-4 h-4 mr-2" />
@@ -52,6 +58,7 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic, onBack }) 
         </Button>
       )}
 
+      {/* Current Subject */}
       <div className="bg-primary/10 rounded-xl sm:rounded-2xl p-3 sm:p-4 text-center">
         <p className="text-xs sm:text-sm text-muted-foreground">Current Subject</p>
         <h2 className="text-lg sm:text-2xl font-bold text-primary">
@@ -59,6 +66,7 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic, onBack }) 
         </h2>
       </div>
 
+      {/* Year Group Selector */}
       <div className="bg-card rounded-xl sm:rounded-2xl p-3 sm:p-4 panda-shadow">
         <h3 className="font-bold text-foreground mb-2 sm:mb-3 text-sm sm:text-base">Select Year Group</h3>
         <div className="grid grid-cols-6 sm:flex sm:flex-wrap gap-1.5 sm:gap-2">
@@ -78,6 +86,37 @@ const TopicSelector: React.FC<TopicSelectorProps> = ({ onSelectTopic, onBack }) 
         </div>
       </div>
 
+      {/* Hard Mode Toggle */}
+      <div className="bg-card rounded-xl sm:rounded-2xl p-3 sm:p-4 panda-shadow">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Zap className={`w-4 h-4 sm:w-5 sm:h-5 ${gameState.isHardMode ? 'text-destructive' : 'text-muted-foreground'}`} />
+            <div>
+              <h3 className="font-bold text-foreground text-sm sm:text-base">Hard Mode</h3>
+              <p className="text-xs sm:text-sm text-muted-foreground">Type your answers!</p>
+            </div>
+          </div>
+          <button
+            onClick={() => setHardMode(!gameState.isHardMode)}
+            className={`relative w-12 h-6 sm:w-14 sm:h-8 rounded-full transition-colors duration-200 ${
+              gameState.isHardMode ? 'bg-destructive' : 'bg-muted'
+            }`}
+          >
+            <div
+              className={`absolute top-0.5 sm:top-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white shadow transition-transform duration-200 ${
+                gameState.isHardMode ? 'translate-x-6 sm:translate-x-7' : 'translate-x-0.5 sm:translate-x-1'
+              }`}
+            />
+          </button>
+        </div>
+        {gameState.isHardMode && (
+          <div className="mt-2 sm:mt-3 p-2 sm:p-3 bg-destructive/10 rounded-lg sm:rounded-xl text-xs sm:text-sm text-destructive">
+            <strong>⚠️ Hard Mode:</strong> Type your answer exactly!
+          </div>
+        )}
+      </div>
+
+      {/* Topics Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {filteredTopics.map((topic) => (
           <button
