@@ -1,10 +1,47 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { GameSession, SessionPlayer, Question } from '@/types/game';
 import { toast } from 'sonner';
 import { Json } from '@/integrations/supabase/types';
 
-export const useMultiplayer = () => {
+type MultiplayerStore = {
+  session: GameSession | null;
+  players: SessionPlayer[];
+  myPlayerId: string | null;
+  isLoading: boolean;
+  createSession: (
+    hostName: string,
+    hostSchool: string,
+    topic: string,
+    yearGroup: number,
+    questions: Question[]
+  ) => Promise<{ session: GameSession; roomCode: string } | null>;
+  joinSession: (
+    roomCode: string,
+    playerName: string,
+    school: string
+  ) => Promise<{ session: GameSession; playerId: string } | null>;
+  startGame: () => Promise<void>;
+  nextQuestion: () => Promise<void>;
+  submitAnswer: (
+    questionId: string,
+    answer: number,
+    correct: boolean,
+    timeMs: number
+  ) => Promise<void>;
+  leaveSession: () => void;
+};
+
+const MultiplayerContext = createContext<MultiplayerStore | undefined>(undefined);
+
+const useProvideMultiplayer = (): MultiplayerStore => {
   const [session, setSession] = useState<GameSession | null>(null);
   const [players, setPlayers] = useState<SessionPlayer[]>([]);
   const [myPlayerId, setMyPlayerId] = useState<string | null>(null);
@@ -21,11 +58,17 @@ export const useMultiplayer = () => {
   };
 
   // Create a new game session (teacher)
-  const createSession = async (hostName: string, hostSchool: string, topic: string, yearGroup: number, questions: Question[]) => {
+  const createSession = async (
+    hostName: string,
+    hostSchool: string,
+    topic: string,
+    yearGroup: number,
+    questions: Question[]
+  ) => {
     setIsLoading(true);
     try {
       const roomCode = generateRoomCode();
-      
+
       const { data, error } = await supabase
         .from('game_sessions')
         .insert({
@@ -35,13 +78,13 @@ export const useMultiplayer = () => {
           topic,
           year_group: yearGroup,
           questions: JSON.parse(JSON.stringify(questions)) as Json,
-          status: 'waiting'
+          status: 'waiting',
         })
         .select()
         .single();
 
       if (error) throw error;
-      
+
       const sessionData: GameSession = {
         id: data.id,
         room_code: data.room_code,
@@ -54,10 +97,12 @@ export const useMultiplayer = () => {
         questions: data.questions as unknown as Question[],
         created_at: data.created_at,
         started_at: data.started_at || undefined,
-        finished_at: data.finished_at || undefined
+        finished_at: data.finished_at || undefined,
       };
-      
+
       setSession(sessionData);
+      setPlayers([]);
+      setMyPlayerId(null);
       return { session: sessionData, roomCode };
     } catch (error) {
       console.error('Error creating session:', error);
@@ -89,6 +134,17 @@ export const useMultiplayer = () => {
         return null;
       }
 
+      // Prevent duplicates (same name) within a session
+      const { data: existingPlayers } = await supabase
+        .from('session_players')
+        .select('id, player_name')
+        .eq('session_id', sessionData.id);
+
+      if ((existingPlayers || []).some((p) => (p.player_name || '').toLowerCase() === playerName.toLowerCase())) {
+        toast.error('That nickname is already taken. Choose another one.');
+        return null;
+      }
+
       // Join as a player
       const { data: playerData, error: playerError } = await supabase
         .from('session_players')
@@ -98,7 +154,7 @@ export const useMultiplayer = () => {
           school,
           score: 0,
           answers: [] as Json,
-          is_ready: true
+          is_ready: true,
         })
         .select()
         .single();
@@ -117,12 +173,12 @@ export const useMultiplayer = () => {
         questions: sessionData.questions as unknown as Question[],
         created_at: sessionData.created_at,
         started_at: sessionData.started_at || undefined,
-        finished_at: sessionData.finished_at || undefined
+        finished_at: sessionData.finished_at || undefined,
       };
 
       setSession(mappedSession);
       setMyPlayerId(playerData.id);
-      
+
       toast.success(`Joined ${sessionData.topic} game!`);
       return { session: mappedSession, playerId: playerData.id };
     } catch (error) {
@@ -137,14 +193,14 @@ export const useMultiplayer = () => {
   // Start the game (teacher only)
   const startGame = async () => {
     if (!session) return;
-    
+
     try {
       const { error } = await supabase
         .from('game_sessions')
-        .update({ 
-          status: 'playing', 
+        .update({
+          status: 'playing',
           started_at: new Date().toISOString(),
-          current_question: 0
+          current_question: 0,
         })
         .eq('id', session.id);
 
@@ -159,17 +215,17 @@ export const useMultiplayer = () => {
   // Move to next question (teacher only)
   const nextQuestion = async () => {
     if (!session) return;
-    
+
     const nextIdx = session.current_question + 1;
     const isFinished = nextIdx >= session.questions.length;
-    
+
     try {
       const { error } = await supabase
         .from('game_sessions')
-        .update({ 
+        .update({
           current_question: nextIdx,
           status: isFinished ? 'finished' : 'playing',
-          finished_at: isFinished ? new Date().toISOString() : null
+          finished_at: isFinished ? new Date().toISOString() : null,
         })
         .eq('id', session.id);
 
@@ -182,9 +238,9 @@ export const useMultiplayer = () => {
   // Submit answer (student)
   const submitAnswer = async (questionId: string, answer: number, correct: boolean, timeMs: number) => {
     if (!myPlayerId || !session) return;
-    
+
     const points = correct ? Math.max(100, 500 - Math.floor(timeMs / 100)) : 0;
-    
+
     try {
       // Get current player data
       const { data: playerData } = await supabase
@@ -200,9 +256,9 @@ export const useMultiplayer = () => {
 
       const { error } = await supabase
         .from('session_players')
-        .update({ 
+        .update({
           answers: JSON.parse(JSON.stringify(newAnswers)) as Json,
-          score: playerData.score + points
+          score: playerData.score + points,
         })
         .eq('id', myPlayerId);
 
@@ -224,7 +280,7 @@ export const useMultiplayer = () => {
           event: '*',
           schema: 'public',
           table: 'game_sessions',
-          filter: `id=eq.${session.id}`
+          filter: `id=eq.${session.id}`,
         },
         (payload) => {
           if (payload.new) {
@@ -241,7 +297,7 @@ export const useMultiplayer = () => {
               questions: data.questions as unknown as Question[],
               created_at: data.created_at as string,
               started_at: data.started_at as string | undefined,
-              finished_at: data.finished_at as string | undefined
+              finished_at: data.finished_at as string | undefined,
             });
           }
         }
@@ -252,27 +308,28 @@ export const useMultiplayer = () => {
           event: '*',
           schema: 'public',
           table: 'session_players',
-          filter: `session_id=eq.${session.id}`
+          filter: `session_id=eq.${session.id}`,
         },
         async () => {
-          // Refetch all players
           const { data } = await supabase
             .from('session_players')
             .select('*')
             .eq('session_id', session.id)
             .order('score', { ascending: false });
-          
+
           if (data) {
-            setPlayers(data.map(p => ({
-              id: p.id,
-              session_id: p.session_id,
-              player_name: p.player_name,
-              school: p.school,
-              score: p.score,
-              answers: p.answers as unknown as SessionPlayer['answers'],
-              joined_at: p.joined_at,
-              is_ready: p.is_ready
-            })));
+            setPlayers(
+              data.map((p) => ({
+                id: p.id,
+                session_id: p.session_id,
+                player_name: p.player_name,
+                school: p.school,
+                score: p.score,
+                answers: p.answers as unknown as SessionPlayer['answers'],
+                joined_at: p.joined_at,
+                is_ready: p.is_ready,
+              }))
+            );
           }
         }
       )
@@ -286,16 +343,18 @@ export const useMultiplayer = () => {
       .order('score', { ascending: false })
       .then(({ data }) => {
         if (data) {
-          setPlayers(data.map(p => ({
-            id: p.id,
-            session_id: p.session_id,
-            player_name: p.player_name,
-            school: p.school,
-            score: p.score,
-            answers: p.answers as unknown as SessionPlayer['answers'],
-            joined_at: p.joined_at,
-            is_ready: p.is_ready
-          })));
+          setPlayers(
+            data.map((p) => ({
+              id: p.id,
+              session_id: p.session_id,
+              player_name: p.player_name,
+              school: p.school,
+              score: p.score,
+              answers: p.answers as unknown as SessionPlayer['answers'],
+              joined_at: p.joined_at,
+              is_ready: p.is_ready,
+            }))
+          );
         }
       });
 
@@ -321,6 +380,20 @@ export const useMultiplayer = () => {
     startGame,
     nextQuestion,
     submitAnswer,
-    leaveSession
+    leaveSession,
   };
 };
+
+export const MultiplayerProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const store = useProvideMultiplayer();
+  return React.createElement(MultiplayerContext.Provider, { value: store }, children);
+};
+
+export const useMultiplayer = () => {
+  const ctx = useContext(MultiplayerContext);
+  if (!ctx) {
+    throw new Error('useMultiplayer must be used within a MultiplayerProvider');
+  }
+  return ctx;
+};
+
