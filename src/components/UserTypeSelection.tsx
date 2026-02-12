@@ -8,7 +8,7 @@ interface UserTypeSelectionProps {
   onSelect: () => void;
 }
 
-const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({ onSelect }) => {
+const UserTypeSelection = React.forwardRef<HTMLDivElement, UserTypeSelectionProps>(({ onSelect }, ref) => {
   const { setUserType } = useGame();
 
   const handleSelect = (type: 'student' | 'teacher') => {
@@ -17,7 +17,7 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({ onSelect }) => {
   };
 
   return (
-    <div className="min-h-[120vh] bg-background flex flex-col">
+    <div ref={ref} className="min-h-[120vh] bg-background flex flex-col">
       {/* Main content - fits in viewport */}
       <div className="h-screen flex flex-col items-center justify-center p-4 sm:p-6">
         <div className="max-w-2xl w-full text-center">
@@ -80,6 +80,7 @@ const UserTypeSelection: React.FC<UserTypeSelectionProps> = ({ onSelect }) => {
       </footer>
     </div>
   );
-};
+});
+UserTypeSelection.displayName = 'UserTypeSelection';
 
 export default UserTypeSelection;
