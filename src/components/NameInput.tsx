@@ -12,7 +12,7 @@ interface NameInputProps {
   onBack?: () => void;
 }
 
-const NameInput = React.forwardRef<HTMLDivElement, NameInputProps>(({ onComplete, onBack }, ref) => {
+const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
   const { gameState, setPlayer } = useGame();
   const [title, setTitle] = useState('');
   const [name, setName] = useState('');
@@ -50,7 +50,7 @@ const NameInput = React.forwardRef<HTMLDivElement, NameInputProps>(({ onComplete
   const displayName = isTeacher && title ? `${title} ${name}` : name;
 
   return (
-    <div ref={ref} className="min-h-[120vh] bg-background flex flex-col">
+    <div className="min-h-[120vh] bg-background flex flex-col">
       {/* Back Button - Mobile */}
       {onBack && (
         <button
@@ -178,7 +178,6 @@ const NameInput = React.forwardRef<HTMLDivElement, NameInputProps>(({ onComplete
       </footer>
     </div>
   );
-});
-NameInput.displayName = 'NameInput';
+};
 
 export default NameInput;

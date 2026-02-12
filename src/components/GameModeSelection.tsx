@@ -9,7 +9,7 @@ interface GameModeSelectionProps {
   onBack?: () => void;
 }
 
-const GameModeSelection = React.forwardRef<HTMLDivElement, GameModeSelectionProps>(({ onSelect, onBack }, ref) => {
+const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect, onBack }) => {
   const { setGameMode, gameState } = useGame();
 
   const handleSelect = (mode: 'solo' | 'team') => {
@@ -18,7 +18,7 @@ const GameModeSelection = React.forwardRef<HTMLDivElement, GameModeSelectionProp
   };
 
   return (
-    <div ref={ref} className="min-h-[120vh] bg-background flex flex-col">
+    <div className="min-h-[120vh] bg-background flex flex-col">
       {/* Back Button - Mobile */}
       {onBack && (
         <button
@@ -95,7 +95,6 @@ const GameModeSelection = React.forwardRef<HTMLDivElement, GameModeSelectionProp
       </footer>
     </div>
   );
-});
-GameModeSelection.displayName = 'GameModeSelection';
+};
 
 export default GameModeSelection;
