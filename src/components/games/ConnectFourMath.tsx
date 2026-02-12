@@ -341,7 +341,9 @@ const ConnectFourMath: React.FC<ConnectFourMathProps> = ({ onBack }) => {
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
                       {currentQuestion.options.map((option, idx) => (
-                        <Button key={idx} variant="outline" size="lg" onClick={() => handleAnswer(option)} className="text-lg py-4 hover:bg-primary hover:text-primary-foreground">{option}</Button>
+                        <Button key={idx} variant="outline" size="lg" onClick={() => handleAnswer(option)} className="text-sm md:text-base py-4 hover:bg-primary hover:text-primary-foreground overflow-hidden text-ellipsis whitespace-normal break-words min-h-[3rem] h-auto leading-tight">
+                          <span className="block w-full overflow-hidden text-ellipsis line-clamp-2">{option}</span>
+                        </Button>
                       ))}
                     </div>
                   )}
