@@ -349,9 +349,9 @@ const MathRacing: React.FC<MathRacingProps> = ({ onBack }) => {
                         variant="outline"
                         size="lg"
                         onClick={() => handleAnswer(option)}
-                        className="text-lg py-4 hover:bg-primary hover:text-primary-foreground transition-all"
+                        className="text-sm md:text-base py-4 hover:bg-primary hover:text-primary-foreground transition-all overflow-hidden text-ellipsis whitespace-normal break-words min-h-[3rem] h-auto leading-tight"
                       >
-                        {option}
+                        <span className="block w-full overflow-hidden text-ellipsis line-clamp-2">{option}</span>
                       </Button>
                     ))}
                   </div>

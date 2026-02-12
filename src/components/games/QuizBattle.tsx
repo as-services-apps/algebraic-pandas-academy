@@ -278,13 +278,13 @@ const QuizBattle: React.FC<QuizBattleProps> = ({ onBack }) => {
                   size="lg"
                   onClick={() => handleAnswer(option)}
                   disabled={showFeedback !== null}
-                  className={`text-base py-6 hover:bg-primary hover:text-primary-foreground transition-all ${
+                  className={`text-sm md:text-base py-6 hover:bg-primary hover:text-primary-foreground transition-all overflow-hidden text-ellipsis whitespace-normal break-words min-h-[3rem] h-auto leading-tight ${
                     showFeedback && option === currentQuestion.correctAnswer
                       ? 'bg-success text-white border-success'
                       : ''
                   }`}
                 >
-                  {option}
+                  <span className="block w-full overflow-hidden text-ellipsis line-clamp-2">{option}</span>
                 </Button>
               ))}
             </div>

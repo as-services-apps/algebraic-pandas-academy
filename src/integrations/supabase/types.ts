@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      game_sessions: {
+        Row: {
+          created_at: string
+          current_question: number
+          finished_at: string | null
+          host_name: string
+          host_school: string
+          id: string
+          questions: Json
+          room_code: string
+          started_at: string | null
+          status: string
+          topic: string
+          year_group: number
+        }
+        Insert: {
+          created_at?: string
+          current_question?: number
+          finished_at?: string | null
+          host_name: string
+          host_school: string
+          id?: string
+          questions?: Json
+          room_code: string
+          started_at?: string | null
+          status?: string
+          topic: string
+          year_group?: number
+        }
+        Update: {
+          created_at?: string
+          current_question?: number
+          finished_at?: string | null
+          host_name?: string
+          host_school?: string
+          id?: string
+          questions?: Json
+          room_code?: string
+          started_at?: string | null
+          status?: string
+          topic?: string
+          year_group?: number
+        }
+        Relationships: []
+      }
       players: {
         Row: {
           created_at: string
@@ -40,6 +85,47 @@ export type Database = {
           user_type?: string
         }
         Relationships: []
+      }
+      session_players: {
+        Row: {
+          answers: Json
+          id: string
+          is_ready: boolean
+          joined_at: string
+          player_name: string
+          school: string
+          score: number
+          session_id: string
+        }
+        Insert: {
+          answers?: Json
+          id?: string
+          is_ready?: boolean
+          joined_at?: string
+          player_name: string
+          school: string
+          score?: number
+          session_id: string
+        }
+        Update: {
+          answers?: Json
+          id?: string
+          is_ready?: boolean
+          joined_at?: string
+          player_name?: string
+          school?: string
+          score?: number
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_players_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "game_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
