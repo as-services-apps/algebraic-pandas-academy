@@ -52,34 +52,49 @@ const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect, onBack 
           </div>
 
           {/* Selection Cards */}
-          <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-6">
             {/* Solo Card */}
             <button
               onClick={() => handleSelect('solo')}
-              className="group bg-card p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl panda-shadow hover:scale-105 transition-all duration-300 border-2 border-transparent hover:border-accent slide-up"
+              className="group bg-card p-3 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl panda-shadow hover:scale-105 transition-all duration-300 border-2 border-transparent hover:border-accent slide-up"
               style={{ animationDelay: '0.1s' }}
             >
-              <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto mb-2 sm:mb-3 rounded-xl sm:rounded-2xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
-                <User className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-accent" />
+              <div className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto mb-2 sm:mb-3 rounded-xl sm:rounded-2xl bg-accent/10 flex items-center justify-center group-hover:bg-accent/20 transition-colors">
+                <User className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-accent" />
               </div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-1">Solo</h2>
-              <p className="text-muted-foreground text-xs sm:text-sm">
-                Practice or challenge AI! 🤖
+              <h2 className="text-base sm:text-xl md:text-2xl font-bold text-foreground mb-1">Solo</h2>
+              <p className="text-muted-foreground text-[10px] sm:text-sm">
+                Challenge AI! 🤖
               </p>
             </button>
 
             {/* Team Card */}
             <button
               onClick={() => handleSelect('team')}
-              className="group bg-card p-4 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl panda-shadow hover:scale-105 transition-all duration-300 border-2 border-transparent hover:border-success slide-up"
+              className="group bg-card p-3 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl panda-shadow hover:scale-105 transition-all duration-300 border-2 border-transparent hover:border-success slide-up"
               style={{ animationDelay: '0.2s' }}
             >
-              <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto mb-2 sm:mb-3 rounded-xl sm:rounded-2xl bg-success/10 flex items-center justify-center group-hover:bg-success/20 transition-colors">
-                <Users className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-success" />
+              <div className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto mb-2 sm:mb-3 rounded-xl sm:rounded-2xl bg-success/10 flex items-center justify-center group-hover:bg-success/20 transition-colors">
+                <Users className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-success" />
               </div>
-              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-foreground mb-1">Teams</h2>
-              <p className="text-muted-foreground text-xs sm:text-sm">
-                Compete for glory! 🏆
+              <h2 className="text-base sm:text-xl md:text-2xl font-bold text-foreground mb-1">Teams</h2>
+              <p className="text-muted-foreground text-[10px] sm:text-sm">
+                Compete locally! 🏆
+              </p>
+            </button>
+
+            {/* Multiplayer Card */}
+            <button
+              onClick={() => handleSelect('multiplayer')}
+              className="group bg-card p-3 sm:p-6 md:p-8 rounded-2xl sm:rounded-3xl panda-shadow hover:scale-105 transition-all duration-300 border-2 border-transparent hover:border-primary slide-up"
+              style={{ animationDelay: '0.3s' }}
+            >
+              <div className="w-10 h-10 sm:w-16 sm:h-16 md:w-20 md:h-20 mx-auto mb-2 sm:mb-3 rounded-xl sm:rounded-2xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                <Globe className="w-5 h-5 sm:w-8 sm:h-8 md:w-10 md:h-10 text-primary" />
+              </div>
+              <h2 className="text-base sm:text-xl md:text-2xl font-bold text-foreground mb-1">Online</h2>
+              <p className="text-muted-foreground text-[10px] sm:text-sm">
+                Play with friends! 🌍
               </p>
             </button>
           </div>
