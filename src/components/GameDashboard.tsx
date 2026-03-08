@@ -209,6 +209,22 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                       </p>
                     </button>
                   </div>
+
+                  {/* Multiplayer Button - Full Width */}
+                  <button
+                    onClick={() => setView('multiplayer')}
+                    className="w-full bg-gradient-to-r from-primary via-accent to-secondary p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-[1.02] transition-transform panda-shadow"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Users className="w-6 h-6 sm:w-7 sm:h-7" />
+                      <div>
+                        <h4 className="text-sm sm:text-base font-bold">🌐 Multiplayer Quiz</h4>
+                        <p className="text-white/80 text-xs sm:text-sm">
+                          Play with friends on different devices! Create or join a room.
+                        </p>
+                      </div>
+                    </div>
+                  </button>
                 </div>
 
                 {/* Custom Topic Input */}
@@ -252,6 +268,31 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
 
             {view === 'blitz' && (
               <QuizBattle onBack={() => setView('home')} />
+            )}
+
+            {view === 'multiplayer' && (
+              <MultiplayerLobby
+                onJoinSession={handleJoinSession}
+                onBack={() => setView('home')}
+              />
+            )}
+
+            {view === 'mp-waiting' && (
+              <WaitingRoom
+                sessionId={mpSessionId}
+                playerId={mpPlayerId}
+                isHost={mpIsHost}
+                onGameStart={handleMpGameStart}
+                onLeave={handleMpComplete}
+              />
+            )}
+
+            {view === 'mp-playing' && (
+              <MultiplayerQuiz
+                sessionId={mpSessionId}
+                playerId={mpPlayerId}
+                onComplete={handleMpComplete}
+              />
             )}
           </div>
 
