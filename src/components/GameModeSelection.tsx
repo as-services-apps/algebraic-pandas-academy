@@ -12,7 +12,7 @@ interface GameModeSelectionProps {
 const GameModeSelection: React.FC<GameModeSelectionProps> = ({ onSelect, onBack }) => {
   const { setGameMode, gameState } = useGame();
 
-  const handleSelect = (mode: 'solo' | | 'multiplayer' 'team') => {
+  const handleSelect = (mode: 'solo' | 'team' | 'multiplayer') => {
     setGameMode(mode);
     onSelect();
   };
