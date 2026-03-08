@@ -22,12 +22,15 @@ interface GameDashboardProps {
   onReset: () => void;
 }
 
-type DashboardView = 'home' | 'playing' | 'custom' | 'racing' | 'connect4' | 'memory' | 'blitz';
+type DashboardView = 'home' | 'playing' | 'custom' | 'racing' | 'connect4' | 'memory' | 'blitz' | 'multiplayer' | 'mp-waiting' | 'mp-playing';
 
 const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
   const { gameState, setCustomQuestions } = useGame();
   const [view, setView] = useState<DashboardView>('home');
   const [selectedTopic, setSelectedTopic] = useState<GameTopic | null>(null);
+  const [mpSessionId, setMpSessionId] = useState<string>('');
+  const [mpPlayerId, setMpPlayerId] = useState<string>('');
+  const [mpIsHost, setMpIsHost] = useState(false);
 
   const handleCustomTopicQuiz = (questions: Question[]) => {
     setCustomQuestions(questions);
