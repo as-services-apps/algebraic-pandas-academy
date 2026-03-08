@@ -31,6 +31,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({ sessionId, onBack }) 
   const [myScore, setMyScore] = useState(0);
   const [leaderboard, setLeaderboard] = useState<{ player_name: string; score: number }[]>([]);
   const [myPlayerId, setMyPlayerId] = useState('');
+  const [hostName, setHostName] = useState('');
 
   // Load session data
   useEffect(() => {
