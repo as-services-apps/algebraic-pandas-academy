@@ -66,6 +66,26 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
     setView('playing');
   };
 
+  const handleJoinSession = useCallback((sessionId: string, playerId: string, isHost: boolean) => {
+    setMpSessionId(sessionId);
+    setMpPlayerId(playerId);
+    setMpIsHost(isHost);
+    setView('mp-waiting');
+  }, []);
+
+  const handleMpGameStart = useCallback((sessionId: string, playerId: string) => {
+    setMpSessionId(sessionId);
+    setMpPlayerId(playerId);
+    setView('mp-playing');
+  }, []);
+
+  const handleMpComplete = () => {
+    setMpSessionId('');
+    setMpPlayerId('');
+    setMpIsHost(false);
+    setView('home');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
