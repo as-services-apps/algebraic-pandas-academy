@@ -47,6 +47,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({ sessionId, onBack }) 
         setQuestions((session.questions as any) || []);
         setCurrentQ(session.current_question);
         setStatus(session.status as any);
+        setHostName(session.host_name);
       }
 
       // Find my player record
