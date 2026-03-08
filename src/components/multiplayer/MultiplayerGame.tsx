@@ -147,8 +147,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({ sessionId, onBack }) 
     }
   };
 
-  const isHost = gameState.player?.name === leaderboard[0]?.player_name || 
-    (leaderboard.length > 0 && leaderboard.some(p => p.player_name === playerName));
+  const isHost = playerName === hostName;
 
   const question = questions[currentQ];
 
