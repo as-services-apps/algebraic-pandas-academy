@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useGame } from '@/context/GameContext';
 import { Player } from '@/types/game';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Mail } from 'lucide-react';
 import pandaLogo from '@/assets/panda-logo.png';
 import { supabase } from '@/integrations/supabase/client';
+import { AVAILABLE_SCHOOLS } from '@/data/schools';
 
 interface NameInputProps {
   onComplete: () => void;
