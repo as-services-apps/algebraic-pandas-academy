@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import { useGame } from '@/context/GameContext';
 import { GameTopic, Question } from '@/types/game';
 import Scoreboard from './Scoreboard';
@@ -11,26 +11,20 @@ import SubjectRacing from './games/SubjectRacing';
 import MemoryMatch from './games/MemoryMatch';
 import QuizBattle from './games/QuizBattle';
 import AISuggestions from './AISuggestions';
-import MultiplayerLobby from './multiplayer/MultiplayerLobby';
-import WaitingRoom from './multiplayer/WaitingRoom';
-import MultiplayerQuiz from './multiplayer/MultiplayerQuiz';
 import { Button } from '@/components/ui/button';
-import { Home, PlusCircle, RotateCcw, Car, Grid3X3, Brain, Zap, Users } from 'lucide-react';
+import { Home, PlusCircle, RotateCcw, Car, Grid3X3, Brain, Zap } from 'lucide-react';
 import pandaLogo from '@/assets/panda-logo.png';
 
 interface GameDashboardProps {
   onReset: () => void;
 }
 
-type DashboardView = 'home' | 'playing' | 'custom' | 'racing' | 'connect4' | 'memory' | 'blitz' | 'multiplayer' | 'mp-waiting' | 'mp-playing';
+type DashboardView = 'home' | 'playing' | 'custom' | 'racing' | 'connect4' | 'memory' | 'blitz';
 
 const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
   const { gameState, setCustomQuestions } = useGame();
   const [view, setView] = useState<DashboardView>('home');
   const [selectedTopic, setSelectedTopic] = useState<GameTopic | null>(null);
-  const [mpSessionId, setMpSessionId] = useState<string>('');
-  const [mpPlayerId, setMpPlayerId] = useState<string>('');
-  const [mpIsHost, setMpIsHost] = useState(false);
 
   const handleCustomTopicQuiz = (questions: Question[]) => {
     setCustomQuestions(questions);
@@ -64,26 +58,6 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
     };
     setSelectedTopic(customTopic);
     setView('playing');
-  };
-
-  const handleJoinSession = useCallback((sessionId: string, playerId: string, isHost: boolean) => {
-    setMpSessionId(sessionId);
-    setMpPlayerId(playerId);
-    setMpIsHost(isHost);
-    setView('mp-waiting');
-  }, []);
-
-  const handleMpGameStart = useCallback((sessionId: string, playerId: string) => {
-    setMpSessionId(sessionId);
-    setMpPlayerId(playerId);
-    setView('mp-playing');
-  }, []);
-
-  const handleMpComplete = () => {
-    setMpSessionId('');
-    setMpPlayerId('');
-    setMpIsHost(false);
-    setView('home');
   };
 
   return (
@@ -209,22 +183,6 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
                       </p>
                     </button>
                   </div>
-
-                  {/* Multiplayer Button - Full Width */}
-                  <button
-                    onClick={() => setView('multiplayer')}
-                    className="w-full bg-gradient-to-r from-primary via-accent to-secondary p-4 sm:p-5 rounded-xl sm:rounded-2xl text-white text-left hover:scale-[1.02] transition-transform panda-shadow"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Users className="w-6 h-6 sm:w-7 sm:h-7" />
-                      <div>
-                        <h4 className="text-sm sm:text-base font-bold">🌐 Multiplayer Quiz</h4>
-                        <p className="text-white/80 text-xs sm:text-sm">
-                          Play with friends on different devices! Create or join a room.
-                        </p>
-                      </div>
-                    </div>
-                  </button>
                 </div>
 
                 {/* Custom Topic Input */}
@@ -268,31 +226,6 @@ const GameDashboard: React.FC<GameDashboardProps> = ({ onReset }) => {
 
             {view === 'blitz' && (
               <QuizBattle onBack={() => setView('home')} />
-            )}
-
-            {view === 'multiplayer' && (
-              <MultiplayerLobby
-                onJoinSession={handleJoinSession}
-                onBack={() => setView('home')}
-              />
-            )}
-
-            {view === 'mp-waiting' && (
-              <WaitingRoom
-                sessionId={mpSessionId}
-                playerId={mpPlayerId}
-                isHost={mpIsHost}
-                onGameStart={handleMpGameStart}
-                onLeave={handleMpComplete}
-              />
-            )}
-
-            {view === 'mp-playing' && (
-              <MultiplayerQuiz
-                sessionId={mpSessionId}
-                playerId={mpPlayerId}
-                onComplete={handleMpComplete}
-              />
             )}
           </div>
 
