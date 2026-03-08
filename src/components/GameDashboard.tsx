@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useGame } from '@/context/GameContext';
 import { GameTopic, Question } from '@/types/game';
 import Scoreboard from './Scoreboard';
@@ -11,8 +11,11 @@ import SubjectRacing from './games/SubjectRacing';
 import MemoryMatch from './games/MemoryMatch';
 import QuizBattle from './games/QuizBattle';
 import AISuggestions from './AISuggestions';
+import MultiplayerLobby from './multiplayer/MultiplayerLobby';
+import WaitingRoom from './multiplayer/WaitingRoom';
+import MultiplayerQuiz from './multiplayer/MultiplayerQuiz';
 import { Button } from '@/components/ui/button';
-import { Home, PlusCircle, RotateCcw, Car, Grid3X3, Brain, Zap } from 'lucide-react';
+import { Home, PlusCircle, RotateCcw, Car, Grid3X3, Brain, Zap, Users } from 'lucide-react';
 import pandaLogo from '@/assets/panda-logo.png';
 
 interface GameDashboardProps {
