@@ -1,7 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useGame } from '@/context/GameContext';
-import { User, Users, ArrowLeft } from 'lucide-react';
+import { User, Users, Globe, ArrowLeft } from 'lucide-react';
 import pandaLogo from '@/assets/panda-logo.png';
 
 interface GameModeSelectionProps {
