@@ -52,7 +52,7 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
   const displayName = isTeacher && title ? `${title} ${name}` : name;
 
   return (
-    <div className="min-h-[120vh] bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Back Button - Mobile */}
       {onBack && (
         <button
@@ -64,15 +64,15 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
         </button>
       )}
       
-      {/* Main content - fits in viewport */}
-      <div className="h-screen flex flex-col items-center justify-center p-4 sm:p-6">
+      {/* Main content */}
+      <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-6">
         <div className="max-w-md w-full">
           {/* Header */}
           <div className="text-center mb-3 sm:mb-4 bounce-in">
             <img 
               src={pandaLogo} 
               alt="Panda Logo" 
-              className="w-24 h-24 sm:w-32 sm:h-32 md:w-36 md:h-36 mx-auto mb-2 float"
+              className="w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-2 float"
             />
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gradient mb-1">
               What's your name?
@@ -86,21 +86,21 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 slide-up">
+          <form onSubmit={handleSubmit} className="space-y-3 slide-up">
             <div className="bg-card rounded-2xl sm:rounded-3xl p-4 sm:p-5 panda-shadow">
               {/* Title Selection for Teachers */}
               {isTeacher && (
-                <div className="mb-3 sm:mb-4">
-                  <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
+                <div className="mb-3">
+                  <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5">
                     Title
                   </label>
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                  <div className="flex flex-wrap gap-1.5">
                     {titles.map((t) => (
                       <button
                         key={t}
                         type="button"
                         onClick={() => setTitle(t)}
-                        className={`px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-sm font-medium transition-all duration-200 ${
+                        className={`px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                           title === t
                             ? 'bg-primary text-primary-foreground scale-105'
                             : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -114,8 +114,8 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
               )}
 
               {/* School Selection */}
-              <div className="mb-3 sm:mb-4">
-                <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
+              <div className="mb-3">
+                <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5">
                   School Name
                 </label>
                 <Select value={school} onValueChange={setSchool}>
@@ -128,18 +128,18 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-                  <Mail className="w-3 h-3" />
-                  Want to add your school? Reach out to{' '}
+                <p className="mt-1.5 text-[11px] text-muted-foreground flex items-center gap-1 flex-wrap">
+                  <Mail className="w-3 h-3 shrink-0" />
+                  <span>Want to add your school? Email{' '}
                   <a href="mailto:angad@as-services.info" className="text-primary font-medium hover:underline">
                     angad@as-services.info
-                  </a>
+                  </a></span>
                 </p>
               </div>
 
               {/* Name Input */}
               <div>
-                <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
+                <label className="block text-xs sm:text-sm font-medium text-foreground mb-1.5">
                   {isTeacher ? 'Surname' : 'Your Name'}
                 </label>
                 <Input
@@ -153,9 +153,9 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
 
               {/* Preview */}
               {(displayName || school) && (
-                <div className="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-muted rounded-lg sm:rounded-xl text-center">
+                <div className="mt-3 p-2.5 bg-muted rounded-lg sm:rounded-xl text-center">
                   <p className="text-xs text-muted-foreground mb-0.5">You'll be known as:</p>
-                  <p className="text-lg sm:text-xl font-bold text-foreground">
+                  <p className="text-lg font-bold text-foreground">
                     {displayName || '...'}
                   </p>
                   {school && (
@@ -181,8 +181,8 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
       </div>
 
       {/* Footer */}
-      <footer className="py-4 sm:py-6 text-center border-t border-border">
-        <p className="text-muted-foreground text-xs sm:text-sm">
+      <footer className="py-3 text-center border-t border-border shrink-0">
+        <p className="text-muted-foreground text-xs">
           Made by <span className="font-semibold text-foreground">Angad Singh</span> from{' '}
           <span className="font-semibold text-foreground">AS Services</span>
         </p>
