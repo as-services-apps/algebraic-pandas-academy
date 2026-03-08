@@ -31,6 +31,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({ sessionId, onBack }) 
   const [myScore, setMyScore] = useState(0);
   const [leaderboard, setLeaderboard] = useState<{ player_name: string; score: number }[]>([]);
   const [myPlayerId, setMyPlayerId] = useState('');
+  const [hostName, setHostName] = useState('');
 
   // Load session data
   useEffect(() => {
@@ -46,6 +47,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({ sessionId, onBack }) 
         setQuestions((session.questions as any) || []);
         setCurrentQ(session.current_question);
         setStatus(session.status as any);
+        setHostName(session.host_name);
       }
 
       // Find my player record
@@ -145,8 +147,7 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({ sessionId, onBack }) 
     }
   };
 
-  const isHost = gameState.player?.name === leaderboard[0]?.player_name || 
-    (leaderboard.length > 0 && leaderboard.some(p => p.player_name === playerName));
+  const isHost = playerName === hostName;
 
   const question = questions[currentQ];
 
@@ -276,10 +277,16 @@ const MultiplayerGame: React.FC<MultiplayerGameProps> = ({ sessionId, onBack }) 
                   💡 {question.explanation}
                 </div>
               )}
-              {/* Host can advance */}
-              <Button onClick={advanceQuestion} size="lg" className="w-full gradient-primary text-white">
-                {currentQ + 1 >= questions.length ? 'Finish Game' : 'Next Question →'}
-              </Button>
+              {isHost && (
+                <Button onClick={advanceQuestion} size="lg" className="w-full gradient-primary text-white">
+                  {currentQ + 1 >= questions.length ? 'Finish Game' : 'Next Question →'}
+                </Button>
+              )}
+              {!isHost && (
+                <p className="text-center text-sm text-muted-foreground animate-pulse">
+                  Waiting for host to advance...
+                </p>
+              )}
             </div>
           )}
 
