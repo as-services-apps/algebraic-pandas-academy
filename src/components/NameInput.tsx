@@ -113,19 +113,28 @@ const NameInput: React.FC<NameInputProps> = ({ onComplete, onBack }) => {
                 </div>
               )}
 
-              {/* School Input */}
+              {/* School Selection */}
               <div className="mb-3 sm:mb-4">
                 <label className="block text-xs sm:text-sm font-medium text-foreground mb-2">
                   School Name
                 </label>
-                <Input
-                  type="text"
-                  placeholder="Enter your school name"
-                  value={school}
-                  onChange={(e) => setSchool(e.target.value)}
-                  className="h-10 sm:h-12 text-base rounded-lg sm:rounded-xl border-2 focus:border-primary"
-                  autoFocus
-                />
+                <Select value={school} onValueChange={setSchool}>
+                  <SelectTrigger className="h-10 sm:h-12 text-base rounded-lg sm:rounded-xl border-2 focus:border-primary">
+                    <SelectValue placeholder="Select your school" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AVAILABLE_SCHOOLS.map((s) => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+                  <Mail className="w-3 h-3" />
+                  Want to add your school? Reach out to{' '}
+                  <a href="mailto:angad@as-services.info" className="text-primary font-medium hover:underline">
+                    angad@as-services.info
+                  </a>
+                </p>
               </div>
 
               {/* Name Input */}
